@@ -24,6 +24,7 @@ public class Search_Keyword {
     private Long search_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "USER_IDX")
     private User user;
 

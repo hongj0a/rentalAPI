@@ -15,37 +15,39 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "user_memo")
+@Table(name = "terms")
 @Entity
 @DynamicInsert
-public class User_Memo {
+public class Terms {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long memo_idx;
-
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "USER_IDX")
-    private User user;
+    private Long terms_idx;
 
     @ManyToOne
     @NotNull
     @JoinColumn (name = "ADMIN_IDX")
     private Admin admin;
 
-    @Column(length = 10000)
-    private String memo;
+    @NotNull (message = "제목은 Null일 수 없습니다.")
+    private String title;
+
+    @NotNull (message = "내용은 Null일 수 없습니다.")
+    @Lob
+    private String content;
+
+    @NotNull (message = "version은 Null일 수 없습니다.")
+    private String version;
+
+    @ColumnDefault("1")
+    private boolean active_yn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     private Date create_at;
 
-    @ColumnDefault("0")
-    private boolean delete_yn;
-
     @Column
-    private Date delete_at;
+    private Date update_at;
 
 }

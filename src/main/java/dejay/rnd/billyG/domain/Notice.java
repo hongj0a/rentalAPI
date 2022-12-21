@@ -25,18 +25,9 @@ public class Notice {
     private Long notice_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "ADMIN_IDX")
     private Admin admin;
-
-
-    /**
-     * 추후에 정의 할것
-     * 0 : 공지
-     * 1 : 채용
-     * 2 : 이벤트 ...
-     */
-    @ColumnDefault("0")
-    private Integer type;
 
     @Column
     private String title;
@@ -50,6 +41,12 @@ public class Notice {
 
     @ColumnDefault("1")
     private boolean active_yn;
+
+    @ColumnDefault("0")
+    private boolean main_yn;
+
+    @ColumnDefault("0")
+    private boolean fix_yn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)

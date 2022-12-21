@@ -25,6 +25,7 @@ public class Alarm {
     private Long alarm_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "USER_IDX")
     private User user;
 

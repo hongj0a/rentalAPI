@@ -24,6 +24,7 @@ public class Rental_Town_Info {
     private Long rental_town_info_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "RENTAL_IDX")
     private Rental rental;
 

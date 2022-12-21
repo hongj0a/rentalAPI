@@ -25,18 +25,9 @@ public class Faq {
     private Long faq_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "ADMIN_IDX")
     private Admin admin;
-
-
-    /**
-     * 추후에 정의 할것
-     * 0 : 전체
-     * 1 : 렌탈하기
-     * 2 : 렌탈받기 ...
-     */
-    @ColumnDefault("0")
-    private Integer type;
 
     @Column
     private String title;

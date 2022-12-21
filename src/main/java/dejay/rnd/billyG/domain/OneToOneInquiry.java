@@ -25,17 +25,9 @@ public class OneToOneInquiry {
     private Long one_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "USER_IDX")
     private User user;
-
-    /**
-     * 추후에 정의 할것
-     * 0 : 전체
-     * 1 : 렌탈하기
-     * 2 : 렌탈받기 ...
-     */
-    @ColumnDefault("0")
-    private Integer type;
 
     @Column
     private String title;

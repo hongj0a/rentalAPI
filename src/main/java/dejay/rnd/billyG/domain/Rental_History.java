@@ -25,6 +25,7 @@ public class Rental_History {
     private Long history_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "RENTAL_IDX")
     private Rental rental;
 

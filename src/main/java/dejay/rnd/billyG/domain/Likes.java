@@ -15,14 +15,14 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "user_memo")
+@Table(name = "likes")
 @Entity
 @DynamicInsert
-public class User_Memo {
+public class Likes {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long memo_idx;
+    private Long like_idx;
 
     @ManyToOne
     @NotNull
@@ -31,11 +31,8 @@ public class User_Memo {
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
-    private Admin admin;
-
-    @Column(length = 10000)
-    private String memo;
+    @JoinColumn (name = "RENTAL_IDX")
+    private Rental rental;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)

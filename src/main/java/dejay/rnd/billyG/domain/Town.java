@@ -27,6 +27,7 @@ public class Town {
     private Long town_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "USER_IDX")
     private User user;
 

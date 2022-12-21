@@ -25,6 +25,7 @@ public class Chat_Room {
     private Long chat_room_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "RENTAL_IDX")
     private Rental rental;
 

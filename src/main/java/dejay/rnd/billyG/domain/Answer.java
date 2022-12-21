@@ -25,10 +25,12 @@ public class Answer {
     private Long answer_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "ONE_IDX")
     private OneToOneInquiry one_to_one_inquiry;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "ADMIN_IDX")
     private Admin admin;
 

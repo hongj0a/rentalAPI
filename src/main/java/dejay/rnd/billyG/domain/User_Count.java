@@ -25,29 +25,30 @@ public class User_Count {
     private Long count_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "USER_IDX")
     private User user;
 
     @ColumnDefault("0")
-    private Integer receive_review_cnt;
+    private Long receive_review_cnt;
 
     @ColumnDefault("0")
-    private Integer give_review_cnt;
+    private Long give_review_cnt;
 
     @ColumnDefault("0")
-    private Integer login_cnt;
+    private Long login_cnt;
 
     @ColumnDefault("0")
-    private Integer cell_cnt;
+    private Long cell_cnt;
 
     @ColumnDefault("0")
-    private Integer buy_cnt;
+    private Long buy_cnt;
 
     @ColumnDefault("0")
-    private Integer block_user_cnt;
+    private Long block_user_cnt;
 
     @ColumnDefault("0")
-    private Integer block_post_cnt;
+    private Long block_post_cnt;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)

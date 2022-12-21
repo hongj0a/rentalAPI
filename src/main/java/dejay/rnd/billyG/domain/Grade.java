@@ -25,6 +25,7 @@ public class Grade {
     private Long grade_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "USER_IDX")
     private User user;
 

@@ -25,10 +25,12 @@ public class Black {
     private Long black_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "USER_IDX")
     private User user;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "ADMIN_IDX")
     private Admin admin;
 

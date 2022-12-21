@@ -24,6 +24,7 @@ public class User_Log {
     private Long log_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "USER_IDX")
     private User user;
 

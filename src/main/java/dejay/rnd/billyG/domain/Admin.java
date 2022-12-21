@@ -30,7 +30,6 @@ public class Admin {
     @NotNull(message = " admin password는 Null 일 수 없습니다. ")
     private String password;
 
-
     @ColumnDefault("1")
     private Integer admin_level;
 

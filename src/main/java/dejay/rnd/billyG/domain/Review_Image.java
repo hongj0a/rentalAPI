@@ -24,6 +24,7 @@ public class Review_Image {
     private Long image_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "REVIEW_IDX")
     private Review review;
 

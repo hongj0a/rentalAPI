@@ -25,13 +25,15 @@ public class Rental {
     private Long rental_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "USER_IDX")
     private User user;
 
     @ColumnDefault("0")
-    private boolean status;
+    private Integer status;
 
     @Column
+    @NotNull(message = "제목은 Null일 수 없습니다.")
     private String title;
 
     @NotNull(message = " 보증금은 Null일 수 없습니다. ")
@@ -41,7 +43,6 @@ public class Rental {
     @NotNull(message = " 렌탈료는 Null일 수 없습니다. ")
     @ColumnDefault("0")
     private Integer rental_price;
-
 
     @NotNull(message = "상품설명은 Null일 수 없습니다.")
     @Lob

@@ -25,6 +25,7 @@ public class Chat_Content {
     private Long chat_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "CHAT_ROOM_IDX")
     private Chat_Room chat_room;
 

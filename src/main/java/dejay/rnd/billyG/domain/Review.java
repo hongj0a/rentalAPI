@@ -25,10 +25,12 @@ public class Review {
     private Long review_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "RENTAL_IDX")
     private Rental rental;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "USER_IDX")
     private User user;
 

@@ -25,11 +25,9 @@ public class Block_Post {
     private Long block_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "RENTAL_IDX")
     private Rental rental;
-
-    @ColumnDefault("0")
-    private Integer block_type;
 
     @Column
     private String reason;

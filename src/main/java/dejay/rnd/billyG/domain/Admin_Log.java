@@ -24,6 +24,7 @@ public class Admin_Log {
     private Long log_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "ADMIN_IDX")
     private Admin admin;
 

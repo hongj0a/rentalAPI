@@ -25,10 +25,12 @@ public class My_Attention {
     private Long attention_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "USER_IDX")
     private User user;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "CATEGORY_IDX")
     private Category category;
 

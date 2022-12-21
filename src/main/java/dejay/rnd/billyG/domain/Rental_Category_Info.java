@@ -24,10 +24,12 @@ public class Rental_Category_Info {
     private Long rental_category_info_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "RENTAL_IDX")
     private Rental rental;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "CATEGORY_IDX")
     private Category category;
 

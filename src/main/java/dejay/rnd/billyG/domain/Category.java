@@ -25,10 +25,12 @@ public class Category {
     private Long category_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "ADMIN_IDX")
     private Admin admin;
 
     @Column
+    @NotNull(message = "카테고리명은 Null일 수 없습니다.")
     private String name;
 
     @Column

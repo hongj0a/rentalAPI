@@ -25,10 +25,12 @@ public class Transaction {
     private Long transaction_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "RENTAL_IDX")
     private Rental rental;
 
     @ManyToOne
+    @NotNull
     //빌려간 사람의 idx
     @JoinColumn (name = "USER_IDX")
     private User user;

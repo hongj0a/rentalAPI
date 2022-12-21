@@ -25,11 +25,9 @@ public class Block_User {
     private Long block_idx;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "USER_IDX")
     private User user;
-
-    @ColumnDefault("0")
-    private Integer block_type;
 
     @Column
     private String reason;
