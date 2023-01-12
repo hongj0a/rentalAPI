@@ -27,17 +27,16 @@ public class Answer {
     @ManyToOne
     @NotNull
     @JoinColumn (name = "ONE_IDX")
-    private OneToOneInquiry one_to_one_inquiry;
+    private One_To_OneInquiry one_to_one_inquiry;
 
     @ManyToOne
     @NotNull
     @JoinColumn (name = "ADMIN_IDX")
     private Admin admin;
 
-
-    @ColumnDefault("0")
     // 답변상태 1:완료 0:대기
     // 관리자가 답변을 남기고 노출을 시키는 시점에 완료로 변경
+    @ColumnDefault("0")
     private boolean status;
 
     @Column
@@ -55,11 +54,14 @@ public class Answer {
     @CreationTimestamp
     private Date create_at;
 
-    @Column
     //status 바뀌는 시점에 timestamp.
+    @Column
     private Date update_at;
 
     @Column
     private Date delete_at;
+
+    @Column
+    private String updator;
 
 }

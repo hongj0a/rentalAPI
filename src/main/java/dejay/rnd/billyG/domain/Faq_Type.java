@@ -3,6 +3,7 @@ package dejay.rnd.billyG.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 
@@ -14,14 +15,14 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "admin_log")
+@Table(name = "faq_type")
 @Entity
 @DynamicInsert
-public class Admin_Log {
+public class Faq_Type {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long log_idx;
+    private Long faq_type_idx;
 
     @ManyToOne
     @NotNull
@@ -29,14 +30,24 @@ public class Admin_Log {
     private Admin admin;
 
     @Column
-    private String menu_name;
+    @NotNull (message = "타입명은 Null일 수 없습니다.")
+    private String type_name;
 
-    @Column
-    private String content;
+    @ColumnDefault("0")
+    private boolean delete_yn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     private Date create_at;
+
+    @Column
+    private Date update_at;
+
+    @Column
+    private Date delete_at;
+
+    @Column
+    private String updator;
 
 }

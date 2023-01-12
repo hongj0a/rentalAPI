@@ -53,4 +53,7 @@ public class Category {
     @Column
     private Date delete_at;
 
+    @Column
+    private String updator;
+
 }

@@ -30,10 +30,12 @@ public class Chat_Content {
     private Chat_Room chat_room;
 
     @Column
+    @NotNull (message = "user_idx는 Null일 수 없습니다.")
     private Integer user_idx;
 
     @Column
     @Lob
+    @NotNull (message = "채팅 내용을 입력해 주세요.")
     private String content;
 
     @ColumnDefault("0")
@@ -48,4 +50,6 @@ public class Chat_Content {
     @CreationTimestamp
     private Date create_at;
 
+    @Column
+    private String updator;
 }

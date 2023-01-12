@@ -39,5 +39,7 @@ public class Review_Image {
     @Column
     private Date update_at;
 
+    @Column
+    private String updator;
 
 }

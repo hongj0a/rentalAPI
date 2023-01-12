@@ -24,21 +24,22 @@ public class Admin {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long admin_idx;
 
+    @Column
     @NotNull(message = " admin id는 Null 일 수 없습니다.")
     private String id;
 
+    @Column
     @NotNull(message = " admin password는 Null 일 수 없습니다. ")
     private String password;
 
     @ColumnDefault("1")
-    private Integer admin_level;
-
-    @ColumnDefault("1")
     private boolean active_yn;
 
+    @Column
     @NotNull(message = " admin 이름은 Null 일 수 없습니다.")
     private String name;
 
+    @Column
     @NotNull(message = " admin 닉네임은 Null 일 수 없습니다.")
     private String nick_name;
 
@@ -56,17 +57,17 @@ public class Admin {
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date levelup_at;
-
-    @NotNull
-    @Temporal(value = TemporalType.TIMESTAMP)
-    @CreationTimestamp
     private Date last_login_date;
 
+    @Column
     @Lob
     //접속허용 ip 관리 필드
     private String ip_value;
 
     @Column
     private Date delete_at;
+
+    @Column
+    private String updator;
+
 }

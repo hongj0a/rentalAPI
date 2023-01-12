@@ -34,7 +34,8 @@ public class User_Memo {
     @JoinColumn (name = "ADMIN_IDX")
     private Admin admin;
 
-    @Column(length = 10000)
+    @Column
+    @Lob
     private String memo;
 
     @NotNull

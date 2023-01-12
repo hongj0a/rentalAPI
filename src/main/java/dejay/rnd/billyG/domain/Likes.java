@@ -45,4 +45,6 @@ public class Likes {
     @Column
     private Date delete_at;
 
+    @Column
+    private String updator;
 }

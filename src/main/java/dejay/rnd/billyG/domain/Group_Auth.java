@@ -1,5 +1,6 @@
 package dejay.rnd.billyG.domain;
 
+import com.mysql.cj.exceptions.MysqlErrorNumbers;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -15,32 +16,33 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "review")
+@Table(name = "group_auth")
 @Entity
 @DynamicInsert
-public class Review {
+public class Group_Auth {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long review_idx;
+    private Long group_auth_idx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "RENTAL_IDX")
-    private Rental rental;
+    @JoinColumn (name = "GROUP_IDX")
+    private Admin_Group admin_group;
+
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "menu_idx")
+    private Menu menu;
 
     @ColumnDefault("0")
-    private Integer review_score;
-
-    @Column
-    @Lob
-    private String review_content;
+    private boolean read_auth;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    private boolean write_auth;
 
-    @ColumnDefault("1")
-    private boolean active_yn;
+    @ColumnDefault("0")
+    private boolean update_auth;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
@@ -51,15 +53,5 @@ public class Review {
     private Date update_at;
 
     @Column
-    private Date delete_at;
-
-    @Column
-    private Long owner_idx;
-
-    @Column
-    private Long renter_idx;
-
-    @Column
     private String updator;
-
 }

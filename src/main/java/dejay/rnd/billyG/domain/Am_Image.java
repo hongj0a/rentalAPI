@@ -15,28 +15,26 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "block_type")
+@Table(name = "am_image")
 @Entity
 @DynamicInsert
-public class BlockType {
+public class Am_Image {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long block_type_idx;
+    private Long image_idx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
-    private Admin admin;
+    @JoinColumn (name = "AM_IDX")
+    private Arbitration_Management arbitration_management;
 
-    @NotNull (message = "타입명은 Null일 수 없습니다.")
-    private String type_name;
+    @Column
+    @Lob
+    private String image_url;
 
-    @NotNull (message = "타입유형은 Null일 수 없습니다.")
-    private boolean type_flag;
-
-    @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column
+    private String updator;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
@@ -44,9 +42,7 @@ public class BlockType {
     private Date create_at;
 
     @Column
+    //status 바뀌는 시점에 timestamp.
     private Date update_at;
-
-    @Column
-    private Date delete_at;
 
 }

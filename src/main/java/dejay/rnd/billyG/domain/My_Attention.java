@@ -45,4 +45,7 @@ public class My_Attention {
     @Column
     private Date delete_at;
 
+    @Column
+    private String updator;
+
 }

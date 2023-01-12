@@ -3,7 +3,6 @@ package dejay.rnd.billyG.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 
@@ -15,35 +14,28 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "one_to_one_type")
+@Table(name = "user_item")
 @Entity
 @DynamicInsert
-public class OneToOneType {
+public class User_item {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long one_type_idx;
+    private Long user_item_idx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
-    private Admin admin;
+    @JoinColumn (name = "USER_IDX")
+    private User user;
 
-    @NotNull (message = "타입명은 Null일 수 없습니다.")
-    private String type_name;
-
-    @ColumnDefault("0")
-    private boolean delete_yn;
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "ITEMS_IDX")
+    private Evaluation_Items evaluation_items;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     private Date create_at;
-
-    @Column
-    private Date update_at;
-
-    @Column
-    private Date delete_at;
 
 }

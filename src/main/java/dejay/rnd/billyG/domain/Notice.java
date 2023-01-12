@@ -29,6 +29,16 @@ public class Notice {
     @JoinColumn (name = "ADMIN_IDX")
     private Admin admin;
 
+    /**
+     * 공지사항 타입 고정값, 하드코딩
+     * 0. 공지
+     * 1. 이벤트
+     * 2. 채용
+     */
+    @NotNull
+    @Column
+    private Integer notice_type;
+
     @Column
     private String title;
 
@@ -45,9 +55,6 @@ public class Notice {
     @ColumnDefault("0")
     private boolean main_yn;
 
-    @ColumnDefault("0")
-    private boolean fix_yn;
-
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
@@ -58,5 +65,8 @@ public class Notice {
 
     @Column
     private Date delete_at;
+
+    @Column
+    private String updator;
 
 }

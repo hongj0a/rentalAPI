@@ -29,6 +29,19 @@ public class Terms {
     @JoinColumn (name = "ADMIN_IDX")
     private Admin admin;
 
+    /**
+     * 약관 분류값
+     * 0 : 개인정보처리방침
+     * 1 : 이용약관
+     * 2 : 마케팅동의
+     * 3 : 제3자정보제공
+     * 4 : 위치기반
+     * ...
+     */
+    @Column
+    @NotNull
+    private Integer type;
+
     @NotNull (message = "제목은 Null일 수 없습니다.")
     private String title;
 
@@ -39,8 +52,18 @@ public class Terms {
     @NotNull (message = "version은 Null일 수 없습니다.")
     private String version;
 
-    @ColumnDefault("1")
-    private boolean active_yn;
+    @ColumnDefault("0")
+    private boolean delete_yn;
+
+    @Column
+    @Lob
+    private String major_changes;
+
+    @Column
+    private String updator;
+
+    @Column
+    private Date reservation_date;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)

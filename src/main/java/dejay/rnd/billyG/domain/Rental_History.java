@@ -36,7 +36,7 @@ public class Rental_History {
     private String owner;
 
     @Column
-    private String trader;
+    private String renter;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)

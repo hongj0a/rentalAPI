@@ -55,4 +55,7 @@ public class Black {
     @Column
     private Date delete_at;
 
+    @Column
+    private String updator;
+
 }

@@ -15,26 +15,33 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "review")
+@Table(name = "arbitration_management")
 @Entity
 @DynamicInsert
-public class Review {
+public class Arbitration_Management {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long review_idx;
+    private Long am_idx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "RENTAL_IDX")
-    private Rental rental;
+    @JoinColumn (name = "ONE_IDX")
+    private One_To_OneInquiry one_to_one_inquiry;
 
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "ADMIN_IDX")
+    private Admin admin;
+
+    // 답변상태 1:완료 0:대기
+    // 관리자가 답변을 남기고 노출을 시키는 시점에 완료로 변경
     @ColumnDefault("0")
-    private Integer review_score;
+    private boolean status;
 
     @Column
     @Lob
-    private String review_content;
+    private String answer_content;
 
     @ColumnDefault("0")
     private boolean delete_yn;
@@ -48,16 +55,11 @@ public class Review {
     private Date create_at;
 
     @Column
+    //status 바뀌는 시점에 timestamp.
     private Date update_at;
 
     @Column
     private Date delete_at;
-
-    @Column
-    private Long owner_idx;
-
-    @Column
-    private Long renter_idx;
 
     @Column
     private String updator;

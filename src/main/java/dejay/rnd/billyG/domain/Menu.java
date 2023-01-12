@@ -15,32 +15,25 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "one_to_one_inquiry")
+@Table(name = "menu")
 @Entity
 @DynamicInsert
-public class OneToOneInquiry {
+public class Menu {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long one_idx;
+    private Long menu_idx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "USER_IDX")
-    private User user;
+    @JoinColumn (name = "ADMIN_IDX")
+    private Admin admin;
 
     @Column
-    private String title;
+    private String menu_name;
 
     @Column
-    @Lob
-    private String content;
-
-    @ColumnDefault("0")
-    private boolean delete_yn;
-
-    @ColumnDefault("1")
-    private boolean active_yn;
+    private Integer menu_num;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
@@ -51,6 +44,5 @@ public class OneToOneInquiry {
     private Date update_at;
 
     @Column
-    private Date delete_at;
-
+    private String updator;
 }

@@ -50,6 +50,9 @@ public class User_Count {
     @ColumnDefault("0")
     private Long block_post_cnt;
 
+    @ColumnDefault("0")
+    private Long block_review_cnt;
+
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp

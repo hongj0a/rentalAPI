@@ -43,4 +43,6 @@ public class Grade {
     @Column
     private Date update_at;
 
+    @Column
+    private String updator;
 }

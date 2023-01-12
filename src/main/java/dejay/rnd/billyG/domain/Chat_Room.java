@@ -29,6 +29,13 @@ public class Chat_Room {
     @JoinColumn (name = "RENTAL_IDX")
     private Rental rental;
 
+    /**
+     * status 정의
+     * 0 : 매칭 대기중..
+     * 1 : 매칭 완료
+     * 2 : 결제 대기중
+     * ...
+     */
     @ColumnDefault("0")
     private boolean seller_status;
 
@@ -36,9 +43,11 @@ public class Chat_Room {
     private boolean buyer_status;
 
     @Column
+    @NotNull
     private Integer seller_idx;
 
     @Column
+    @NotNull
     private Integer buyer_idx;
 
     @ColumnDefault("0")
@@ -54,5 +63,8 @@ public class Chat_Room {
 
     @Column
     private Date delete_at;
+
+    @Column
+    private String updator;
 
 }

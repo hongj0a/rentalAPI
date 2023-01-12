@@ -29,6 +29,11 @@ public class Faq {
     @JoinColumn (name = "ADMIN_IDX")
     private Admin admin;
 
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "FAQ_TYPE_IDX")
+    private Faq_Type faq_type;
+
     @Column
     private String title;
 
@@ -52,5 +57,8 @@ public class Faq {
 
     @Column
     private Date delete_at;
+
+    @Column
+    private String updator;
 
 }

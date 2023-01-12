@@ -43,8 +43,8 @@ public class Town {
     @ColumnDefault("0")
     private Integer auth_count;
 
-    @ColumnDefault("0")
     //0 관심지역 1 대표지역
+    @ColumnDefault("0")
     private boolean lead_town;
 
     @Column( precision = 18, scale = 10 )
@@ -63,5 +63,8 @@ public class Town {
 
     @Column
     private Date delete_at;
+
+    @Column
+    private String updator;
 
 }

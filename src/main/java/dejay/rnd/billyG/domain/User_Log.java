@@ -29,6 +29,9 @@ public class User_Log {
     private User user;
 
     @Column
+    private String menu_name;
+
+    @Column
     private String content;
 
     @NotNull

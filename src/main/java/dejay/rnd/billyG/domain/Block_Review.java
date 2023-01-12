@@ -3,6 +3,7 @@ package dejay.rnd.billyG.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import lombok.extern.apachecommons.CommonsLog;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
@@ -15,26 +16,35 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "notice_type")
+@Table(name = "block_review")
 @Entity
 @DynamicInsert
-public class NoticeType {
+public class Block_Review {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long notice_type_idx;
+    private Long block_review_idx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
-    private Admin admin;
+    @JoinColumn (name = "BLOCK_TYPE_IDX")
+    private Block_Type block_type;
 
-    @NotNull (message = "타입명은 Null일 수 없습니다.")
-    private String type_name;
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "REVIEW_IDX")
+    private Review review;
+
+    @Column
+    private String reason;
+
+    @Column
+    @NotNull(message = " 차단하는 사용자의 값이 Null일 수 없습니다. ")
+    private Integer reporter_idx;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
-
+    private Integer processing_status;
+    
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
@@ -43,7 +53,13 @@ public class NoticeType {
     @Column
     private Date update_at;
 
+    @ColumnDefault("0")
+    private boolean delete_yn;
+
     @Column
     private Date delete_at;
+
+    @Column
+    private String updator;
 
 }

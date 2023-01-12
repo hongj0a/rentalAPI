@@ -114,4 +114,15 @@ public class User {
     @Column(length = 1000)
     private String ci_value;
 
+    @Column
+    @NotNull (message = " 초대코드 랜덤값은 null일 수 없습니다. ")
+    private String invitation_code;
+
+    @ColumnDefault("0")
+    private String billy_pay;
+
+    @Column
+    @NotNull (message = "디바이스 아이디는 null일 수 없습니다.")
+    private String device_id;
+
 }

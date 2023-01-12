@@ -29,9 +29,16 @@ public class Block_Post {
     @JoinColumn (name = "RENTAL_IDX")
     private Rental rental;
 
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "BLOCK_TYPE_IDX")
+    private Block_Type block_type;
+
     @Column
+    @NotNull(message = " 차단하는 사유가 Null 일 수 없습니다. ")
     private String reason;
 
+    @Column
     @NotNull(message = " 차단하는 사용자의 값이 Null일 수 없습니다. ")
     private Integer reporter_idx;
 
@@ -51,5 +58,8 @@ public class Block_Post {
 
     @Column
     private Date delete_at;
+
+    @Column
+    private String updator;
 
 }

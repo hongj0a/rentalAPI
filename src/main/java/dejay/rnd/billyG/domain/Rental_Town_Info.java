@@ -38,6 +38,7 @@ public class Rental_Town_Info {
 
     @Column
     private Date update_at;
-    
 
+    @Column
+    private String updator;
 }

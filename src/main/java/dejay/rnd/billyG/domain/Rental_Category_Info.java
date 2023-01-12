@@ -41,4 +41,7 @@ public class Rental_Category_Info {
     @Column
     private Date update_at;
 
+    @Column
+    private String updator;
+
 }

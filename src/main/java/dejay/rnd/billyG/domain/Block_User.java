@@ -32,6 +32,7 @@ public class Block_User {
     @Column
     private String reason;
 
+    @Column
     @NotNull(message = " 차단하는 사용자의 값이 Null일 수 없습니다. ")
     private Integer reporter_idx;
 
@@ -51,5 +52,8 @@ public class Block_User {
 
     @Column
     private Date delete_at;
+
+    @Column
+    private String updator;
 
 }

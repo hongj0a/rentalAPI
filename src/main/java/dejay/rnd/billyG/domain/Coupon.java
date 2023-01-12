@@ -15,32 +15,41 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "review")
+@Table(name = "coupon")
 @Entity
 @DynamicInsert
-public class Review {
+public class Coupon {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long review_idx;
+    private Long coupon_idx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "RENTAL_IDX")
-    private Rental rental;
+    @JoinColumn (name = "ADMIN_IDX")
+    private Admin admin;
 
-    @ColumnDefault("0")
-    private Integer review_score;
+    @Column(length = 100)
+    @NotNull(message = "쿠폰 이름은 Null일 수 없습니다.")
+    private String coupon_name;
+
+    @Column(length = 1000)
+    private String coupon_desc;
 
     @Column
-    @Lob
-    private String review_content;
+    private Date open_date;
+
+    @Column
+    private Date start_date;
+
+    @Column
+    private Date end_date;
+
+    @Column (length = 100)
+    private String coupon_fee;
 
     @ColumnDefault("0")
     private boolean delete_yn;
-
-    @ColumnDefault("1")
-    private boolean active_yn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
@@ -52,12 +61,6 @@ public class Review {
 
     @Column
     private Date delete_at;
-
-    @Column
-    private Long owner_idx;
-
-    @Column
-    private Long renter_idx;
 
     @Column
     private String updator;
