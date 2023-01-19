@@ -29,6 +29,14 @@ public class Rental {
     @JoinColumn (name = "USER_IDX")
     private User user;
 
+    @NotNull
+    @Column (name = "owner_name")
+    private String ownerName;
+
+    @Column (name = "renter_name")
+    @ColumnDefault("'-'")
+    private String renterName;
+
     @ColumnDefault("0")
     private Integer status;
 
@@ -64,6 +72,9 @@ public class Rental {
 
     @Column
     private Date update_at;
+
+    @Column
+    private Date complete_at;
 
     @ColumnDefault("1")
     private boolean active_yn;

@@ -14,37 +14,32 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "menu")
+@Table(name = "withdraw")
 @Entity
 @DynamicInsert
-public class Menu {
+public class Withdraw {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long menu_idx;
+    private Long withdraw_idx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
-    private Admin admin;
-
-    @Column (length = 1000)
-    private String menu_url;
+    @JoinColumn (name = "USER_IDX")
+    private User user;
 
     @Column
-    private String menu_name;
+    private String pay_fee;
 
     @Column
-    private Integer menu_num;
+    private String bank_name;
+
+    @Column
+    private String bank_number;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     private Date create_at;
 
-    @Column
-    private Date update_at;
-
-    @Column
-    private String updator;
 }

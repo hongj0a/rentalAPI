@@ -1,6 +1,5 @@
 package dejay.rnd.billyG.domain;
 
-import com.mysql.cj.exceptions.MysqlErrorNumbers;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
