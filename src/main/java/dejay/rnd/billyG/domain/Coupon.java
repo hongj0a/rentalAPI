@@ -22,45 +22,48 @@ public class Coupon {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long coupon_idx;
+    @Column (name = "coupon_idx")
+    private Long couponIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
+    @JoinColumn (name = "adminIdx")
     private Admin admin;
 
-    @Column(length = 100)
+    @Column(length = 100, name = "coupon_name")
     @NotNull(message = "쿠폰 이름은 Null일 수 없습니다.")
-    private String coupon_name;
+    private String couponName;
 
-    @Column(length = 1000)
-    private String coupon_desc;
+    @Column(length = 1000, name = "coupon_desc")
+    private String couponDesc;
 
-    @Column
-    private Date open_date;
+    @Column (name = "open_date")
+    private Date openDate;
 
-    @Column
-    private Date start_date;
+    @Column (name = "start_date")
+    private Date startDate;
 
-    @Column
-    private Date end_date;
+    @Column (name = "end_date")
+    private Date endDate;
 
-    @Column (length = 100)
-    private String coupon_fee;
+    @Column (length = 100, name = "coupon_fee")
+    private String couponFee;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
     @Column
     private String updator;

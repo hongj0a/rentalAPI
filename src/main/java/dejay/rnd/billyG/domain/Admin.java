@@ -22,7 +22,8 @@ public class Admin {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long admin_idx;
+    @Column(name = "admin_idx")
+    private Long adminIdx;
 
     @Column
     @NotNull(message = " admin id는 Null 일 수 없습니다.")
@@ -33,41 +34,54 @@ public class Admin {
     private String password;
 
     @ColumnDefault("1")
-    private boolean active_yn;
+    @Column (name = "active_yn")
+    private boolean activeYn;
 
     @Column
     @NotNull(message = " admin 이름은 Null 일 수 없습니다.")
     private String name;
 
-    @Column
+    @Column (name = "nick_name")
     @NotNull(message = " admin 닉네임은 Null 일 수 없습니다.")
-    private String nick_name;
+    private String nickName;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date last_login_date;
+    @Column (name ="last_login_date")
+    private Date lastLoginDate;
 
-    @Column
+    @Column (name = "ip_value")
     @Lob
     //접속허용 ip 관리 필드
-    private String ip_value;
+    private String ipValue;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
     @Column
     private String updator;
+
+    @Column (name = "certification_number")
+    @NotNull(message = "인증번호 값은 Null일 수 없습니다.")
+    private String certificationNumber;
+
+    @Column (name = "certification_yn")
+    @ColumnDefault("0")
+    private boolean certificationYn;
+
 
 }

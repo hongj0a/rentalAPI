@@ -15,42 +15,41 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "group_auth")
+@Table(name = "user_memo")
 @Entity
 @DynamicInsert
-public class Group_Auth {
+public class UserMemo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long group_auth_idx;
+    @Column (name ="memo_idx")
+    private Long memoIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "GROUP_IDX")
-    private Admin_Group admin_group;
+    @JoinColumn (name = "userIdx")
+    private User user;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "menu_idx")
-    private Menu menu;
+    @JoinColumn (name = "adminIdx")
+    private Admin admin;
 
-    @ColumnDefault("0")
-    private boolean read_auth;
-
-    @ColumnDefault("0")
-    private boolean write_auth;
-
-    @ColumnDefault("0")
-    private boolean update_auth;
+    @Column
+    @Lob
+    private String memo;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @ColumnDefault("0")
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
-    @Column
-    private String updator;
+    @Column (name = "delete_at")
+    private Date deleteAt;
+
 }

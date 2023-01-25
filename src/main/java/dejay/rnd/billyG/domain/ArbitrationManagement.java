@@ -18,20 +18,21 @@ import java.util.Date;
 @Table(name = "arbitration_management")
 @Entity
 @DynamicInsert
-public class Arbitration_Management {
+public class ArbitrationManagement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long am_idx;
+    @Column (name = "am_idx")
+    private Long amIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ONE_IDX")
-    private One_To_OneInquiry one_to_one_inquiry;
+    @JoinColumn (name = "oneIdx")
+    private OneToOneInquiry oneToOneInquiry;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
+    @JoinColumn (name = "adminIdx")
     private Admin admin;
 
     // 답변상태 1:완료 0:대기
@@ -39,27 +40,30 @@ public class Arbitration_Management {
     @ColumnDefault("0")
     private boolean status;
 
-    @Column
+    @Column (name = "answer_content")
     @Lob
-    private String answer_content;
+    private String answerContent;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
     @ColumnDefault("1")
-    private boolean active_yn;
+    @Column (name = "active_yn")
+    private boolean activeYn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
+    @Column (name = "update_at")
     //status 바뀌는 시점에 timestamp.
-    private Date update_at;
+    private Date updateAt;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
     @Column
     private String updator;

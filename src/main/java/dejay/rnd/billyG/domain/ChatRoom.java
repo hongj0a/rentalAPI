@@ -18,15 +18,16 @@ import java.util.Date;
 @Table(name = "chat_room")
 @Entity
 @DynamicInsert
-public class Chat_Room {
+public class ChatRoom {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long chat_room_idx;
+    @Column (name = "chat_room_idx")
+    private Long chatRoomIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "RENTAL_IDX")
+    @JoinColumn (name = "rentalIdx")
     private Rental rental;
 
     /**
@@ -37,32 +38,36 @@ public class Chat_Room {
      * ...
      */
     @ColumnDefault("0")
-    private boolean seller_status;
+    @Column (name = "seller_status")
+    private boolean sellerStatus;
 
     @ColumnDefault("0")
-    private boolean buyer_status;
+    @Column (name = "buyer_status")
+    private boolean buyerStatus;
 
-    @Column
+    @Column (name = "seller_idx")
     @NotNull
-    private Integer seller_idx;
+    private Integer sellerIdx;
 
-    @Column
+    @Column (name = "buyer_idx")
     @NotNull
-    private Integer buyer_idx;
+    private Integer buyerIdx;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
     @Column
     private String updator;

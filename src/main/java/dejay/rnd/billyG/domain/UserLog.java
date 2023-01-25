@@ -14,28 +14,31 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "user_item")
+@Table(name = "user_log")
 @Entity
 @DynamicInsert
-public class User_item {
+public class UserLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long user_item_idx;
+    @Column (name = "log_idx")
+    private Long logIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "USER_IDX")
+    @JoinColumn (name = "userIdx")
     private User user;
 
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "ITEMS_IDX")
-    private Evaluation_Items evaluation_items;
+    @Column (name = "menu_name")
+    private String menuName;
+
+    @Column
+    private String content;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
 }

@@ -21,25 +21,27 @@ public class Withdraw {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long withdraw_idx;
+    @Column (name = "withdraw_idx")
+    private Long withdrawIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "USER_IDX")
+    @JoinColumn (name = "userIdx")
     private User user;
 
-    @Column
-    private String pay_fee;
+    @Column (name = "pay_fee")
+    private String payFee;
 
-    @Column
-    private String bank_name;
+    @Column (name = "bank_name")
+    private String bankName;
 
-    @Column
-    private String bank_number;
+    @Column (name = "bank_number")
+    private String bankNumber;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
 }

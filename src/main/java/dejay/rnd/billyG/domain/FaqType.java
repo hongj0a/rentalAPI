@@ -15,47 +15,39 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "one_to_one_inquiry")
+@Table(name = "faq_type")
 @Entity
 @DynamicInsert
-public class One_To_OneInquiry {
+public class FaqType {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long one_idx;
+    @Column (name = "faq_type_idx")
+    private Long faqTypeIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "USER_IDX")
-    private User user;
+    @JoinColumn (name = "adminIdx")
+    private Admin admin;
 
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "ONE_TYPE_IDX")
-    private One_To_One_Type oneType;
-
-    @Column
-    private String title;
-
-    @Column
-    @Lob
-    private String content;
+    @Column (name = "type_name")
+    @NotNull (message = "타입명은 Null일 수 없습니다.")
+    private String typeName;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
-
-    @ColumnDefault("1")
-    private boolean active_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
-    @Column
+    @Column (name = "deleteAt")
     private Date delete_at;
 
     @Column

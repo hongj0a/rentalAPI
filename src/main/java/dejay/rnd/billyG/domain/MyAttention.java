@@ -3,6 +3,7 @@ package dejay.rnd.billyG.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 
@@ -14,32 +15,38 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "rental_category_info")
+@Table(name = "my_attention")
 @Entity
 @DynamicInsert
-public class Rental_Category_Info {
+public class MyAttention {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long rental_category_info_idx;
+    @Column (name = "attention_idx")
+    private Long attentionIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "RENTAL_IDX")
-    private Rental rental;
+    @JoinColumn (name = "userIdx")
+    private User user;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "CATEGORY_IDX")
+    @JoinColumn (name = "categoryIdx")
     private Category category;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @ColumnDefault("0")
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
+
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
     @Column
     private String updator;

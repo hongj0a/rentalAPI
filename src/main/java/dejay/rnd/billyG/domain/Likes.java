@@ -22,28 +22,31 @@ public class Likes {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long like_idx;
+    @Column (name = "like_idx")
+    private Long likeIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "USER_IDX")
+    @JoinColumn (name = "userIdx")
     private User user;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "RENTAL_IDX")
+    @JoinColumn (name = "rentalIdx")
     private Rental rental;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
     @Column
     private String updator;

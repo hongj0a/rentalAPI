@@ -22,11 +22,12 @@ public class Rental {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long rental_idx;
+    @Column (name = "rental_idx")
+    private Long rentalIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "USER_IDX")
+    @JoinColumn (name = "userIdx")
     private User user;
 
     @NotNull
@@ -50,41 +51,57 @@ public class Rental {
 
     @NotNull(message = " 렌탈료는 Null일 수 없습니다. ")
     @ColumnDefault("0")
-    private Integer rental_price;
+    @Column (name = "rental_price")
+    private Integer rentalPrice;
 
     @NotNull(message = "상품설명은 Null일 수 없습니다.")
     @Lob
     private String content;
 
     @ColumnDefault("0")
-    private Integer trading_method;
+    @Column (name = "trading_method")
+    private Integer tradingMethod;
 
     @ColumnDefault("0")
-    private Integer like_cnt;
+    @Column (name = "like_cnt")
+    private Integer likeCnt;
 
     @ColumnDefault("0")
-    private Integer view_cnt;
+    @Column (name = "view_cnt")
+    private Integer viewCnt;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
-    @Column
-    private Date complete_at;
+    @Column (name = "complete_at")
+    private Date completeAt;
 
     @ColumnDefault("1")
-    private boolean active_yn;
+    @Column (name = "active_yn")
+    private boolean activeYn;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
     @Column
     private String updator;
+
+    @NotNull
+    @Temporal(value = TemporalType.TIMESTAMP)
+    @CreationTimestamp
+    @Column(name ="pull_up_at")
+    private Date pullUpAt;
+
+    @Column(name ="pull_up_cnt")
+    private Integer pullUpCnt;
 }

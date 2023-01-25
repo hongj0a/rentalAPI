@@ -22,42 +22,47 @@ public class Review {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long review_idx;
+    @Column (name = "review_idx")
+    private Long reviewIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "RENTAL_IDX")
+    @JoinColumn (name = "rentalIdx")
     private Rental rental;
 
     @ColumnDefault("0")
-    private Integer review_score;
+    @Column (name = "review_score")
+    private Integer reviewScore;
 
-    @Column
+    @Column (name = "review_content")
     @Lob
-    private String review_content;
+    private String reviewContent;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
     @ColumnDefault("1")
-    private boolean active_yn;
+    @Column (name = "active_yn")
+    private boolean activeYn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
-    @Column
-    private Long owner_idx;
+    @Column (name = "owner_idx")
+    private Long ownerIdx;
 
-    @Column
-    private Long renter_idx;
+    @Column (name = "renter_idx")
+    private Long renterIdx;
 
     @Column
     private String updator;

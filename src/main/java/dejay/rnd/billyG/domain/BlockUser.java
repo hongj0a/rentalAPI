@@ -15,49 +15,47 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "block_post")
+@Table(name = "block_user")
 @Entity
 @DynamicInsert
-public class Block_Post {
+public class BlockUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long block_idx;
+    @Column (name = "block_idx")
+    private Long blockIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "RENTAL_IDX")
-    private Rental rental;
-
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "BLOCK_TYPE_IDX")
-    private Block_Type block_type;
+    @JoinColumn (name = "userIdx")
+    private User user;
 
     @Column
-    @NotNull(message = " 차단하는 사유가 Null 일 수 없습니다. ")
     private String reason;
 
-    @Column
+    @Column (name = "reporter_idx")
     @NotNull(message = " 차단하는 사용자의 값이 Null일 수 없습니다. ")
-    private Integer reporter_idx;
+    private Integer reporterIdx;
 
     @ColumnDefault("0")
-    private Integer processing_status;
-
+    @Column (name = "processing_status")
+    private Integer processingStatus;
+    
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
     @Column
     private String updator;

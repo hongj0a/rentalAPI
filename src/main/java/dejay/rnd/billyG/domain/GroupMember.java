@@ -14,29 +14,33 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "user_log")
+@Table(name = "group_member")
 @Entity
 @DynamicInsert
-public class User_Log {
+public class GroupMember {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long log_idx;
+    @Column (name = "group_member_idx")
+    private Long groupMemberIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "USER_IDX")
-    private User user;
+    @JoinColumn (name = "groupIdx")
+    private AdminGroup adminGroup;
 
-    @Column
-    private String menu_name;
-
-    @Column
-    private String content;
+    @Column (name = "member_idx")
+    private Integer memberIdx;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
+    @Column (name = "update_at")
+    private Date updateAt;
+
+    @Column
+    private String updator;
 }

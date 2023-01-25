@@ -22,38 +22,41 @@ public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long transaction_idx;
+    @Column (name = "transaction_idx")
+    private Long transactionIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "RENTAL_IDX")
+    @JoinColumn (name = "rentalIdx")
     private Rental rental;
 
     //빌려간 사람의 idx
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "USER_IDX")
+    @JoinColumn (name = "userIdx")
     private User user;
 
     @ColumnDefault("0")
-    private boolean cancel_yn;
+    @Column (name = "cancel_yn")
+    private boolean cancelYn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
-    @Column
-    private Date pay_at;
+    @Column (name = "pay_at")
+    private Date payAt;
 
-    @Column
-    private Date cancel_at;
+    @Column (name = "cancel_at")
+    private Date cancelAt;
 
-    @Column
-    private Date return_at;
+    @Column (name = "return_at")
+    private Date returnAt;
 
     /**
      *  * 렌탈오너 상태
@@ -62,10 +65,10 @@ public class Transaction {
      *      * 2 : 배송완료
      *      * 3 : 반납완료...
      */
-    @Column
+    @Column (name = "owner_status")
     @NotNull
     @ColumnDefault("0")
-    private Integer owner_status;
+    private Integer ownerStatus;
 
     /**
      *  * 렌터 상태
@@ -74,28 +77,29 @@ public class Transaction {
      *      * 2 : 배송완료
      *      * 3 : 반납완료...
      */
-    @Column
+    @Column (name = "renter_status")
     @NotNull
     @ColumnDefault("0")
-    private Integer renter_status;
+    private Integer renterStatus;
 
     @Column
     private String updator;
 
     @ColumnDefault("0")
-    private boolean return_yn;
+    @Column (name = "return_yn")
+    private boolean returnYn;
 
-    @Column
-    private Integer coupon_idx;
+    @Column (name = "coupon_idx")
+    private Integer couponIdx;
 
-    @Column (length = 100)
-    private String mypay_fee;
+    @Column (length = 100, name = "mypay_fee")
+    private String myPayFee;
 
-    @Column (length = 100)
-    private String coupon_fee;
+    @Column (length = 100, name = "coupon_fee")
+    private String couponFee;
 
-    @Column (length = 100)
-    private String final_pay_fee;
+    @Column (length = 100 , name = "final_pay_fee")
+    private String finalPayFee;
 
     /**
      * 결제방식
@@ -103,13 +107,13 @@ public class Transaction {
      * 1 : 카드결제
      * 2 : 무통장입금
      */
-    @Column (length = 100)
-    private Integer pay_method;
+    @Column (length = 100 , name = "pay_method")
+    private Integer payMethod;
 
-    @Column (length = 100)
-    private String return_bankname;
+    @Column (length = 100 , name = "return_bankname")
+    private String returnBankname;
 
-    @Column (length = 100)
-    private String return_banknum;
+    @Column (length = 100 , name = "return_banknum")
+    private String returnBanknum;
 
 }

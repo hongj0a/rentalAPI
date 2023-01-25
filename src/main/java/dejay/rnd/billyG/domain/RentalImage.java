@@ -14,31 +14,34 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "rental_town_info")
+@Table(name = "rental_image")
 @Entity
 @DynamicInsert
-public class Rental_Town_Info {
+public class RentalImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long rental_town_info_idx;
+    @Column (name = "image_idx")
+    private Long imageIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "RENTAL_IDX")
+    @JoinColumn (name = "rentalIdx")
     private Rental rental;
 
-    @Column
-    private String town_name;
+    @Column (length = 1000, name = "image_url")
+    private String imageUrl;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
     @Column
     private String updator;
+
 }

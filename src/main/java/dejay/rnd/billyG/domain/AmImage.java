@@ -3,7 +3,6 @@ package dejay.rnd.billyG.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 
@@ -15,38 +14,36 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "user_memo")
+@Table(name = "am_image")
 @Entity
 @DynamicInsert
-public class User_Memo {
+public class AmImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long memo_idx;
+    @Column (name = "image_idx")
+    private Long imageIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "USER_IDX")
-    private User user;
+    @JoinColumn (name = "amIdx")
+    private ArbitrationManagement arbitrationManagement;
 
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
-    private Admin admin;
+    @Column (name = "image_url")
+    @Lob
+    private String imageUrl;
 
     @Column
-    @Lob
-    private String memo;
+    private String updator;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @ColumnDefault("0")
-    private boolean delete_yn;
-
-    @Column
-    private Date delete_at;
+    @Column (name = "update_at")
+    //status 바뀌는 시점에 timestamp.
+    private Date updateAt;
 
 }

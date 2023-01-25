@@ -15,40 +15,37 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "faq")
+@Table(name = "block_post")
 @Entity
 @DynamicInsert
-public class Faq {
+public class BlockPost {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "faq_idx")
-    private Long faqIdx;
+    @Column (name = "block_idx")
+    private Long blockIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "adminIdx")
-    private Admin admin;
+    @JoinColumn (name = "rentalIdx")
+    private Rental rental;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "faqTypeIdx")
-    private FaqType faqType;
+    @JoinColumn (name = "blockTypeIdx")
+    private BlockType blockType;
 
     @Column
-    private String title;
+    @NotNull(message = " 차단하는 사유가 Null 일 수 없습니다. ")
+    private String reason;
 
-    @Column
-    @Lob
-    private String content;
+    @Column (name = "reporter_idx")
+    @NotNull(message = " 차단하는 사용자의 값이 Null일 수 없습니다. ")
+    private Integer reporterIdx;
 
     @ColumnDefault("0")
-    @Column (name = "delete_yn")
-    private boolean deleteYn;
-
-    @ColumnDefault("1")
-    @Column (name = "active_yn")
-    private boolean activeYn;
+    @Column (name = "processing_status")
+    private Integer processingStatus;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
@@ -58,6 +55,10 @@ public class Faq {
 
     @Column (name = "update_at")
     private Date updateAt;
+
+    @ColumnDefault("0")
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
     @Column (name = "delete_at")
     private Date deleteAt;

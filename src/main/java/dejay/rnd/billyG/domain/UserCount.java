@@ -18,47 +18,57 @@ import java.util.Date;
 @Table(name = "user_count")
 @Entity
 @DynamicInsert
-public class User_Count {
+public class UserCount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long count_idx;
+    @Column (name = "count_idx")
+    private Long countIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "USER_IDX")
+    @JoinColumn (name = "userIdx")
     private User user;
 
     @ColumnDefault("0")
-    private Long receive_review_cnt;
+    @Column (name = "receive_review_cnt")
+    private Long receiveReviewCnt;
 
     @ColumnDefault("0")
-    private Long give_review_cnt;
+    @Column (name = "give_review_cnt")
+    private Long giveReviewCnt;
 
     @ColumnDefault("0")
-    private Long login_cnt;
+    @Column (name = "login_cnt")
+    private Long loginCnt;
 
     @ColumnDefault("0")
-    private Long cell_cnt;
+    @Column (name = "cell_cnt")
+    private Long cellCnt;
 
     @ColumnDefault("0")
-    private Long buy_cnt;
+    @Column (name = "buy_cnt")
+    private Long buyCnt;
 
     @ColumnDefault("0")
-    private Long block_user_cnt;
+    @Column (name = "block_user_cnt")
+    private Long blockUserCnt;
 
     @ColumnDefault("0")
-    private Long block_post_cnt;
+    @Column (name = "block_post_cnt")
+    private Long blockPostCnt;
 
     @ColumnDefault("0")
-    private Long block_review_cnt;
+    @Column (name = "block_review_cnt")
+    private Long blockReviewCnt;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
 }

@@ -22,16 +22,17 @@ public class Black {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long black_idx;
+    @Column (name = "black_idx")
+    private Long blackIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "USER_IDX")
+    @JoinColumn (name = "userIdx")
     private User user;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
+    @JoinColumn (name = "adminIdx")
     private Admin admin;
 
     @Column
@@ -40,20 +41,22 @@ public class Black {
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
+    @Column (name = "sign_at")
     @NotNull(message = " 가입일자는 Null일 수 없습니다.")
-    private Date sign_at;
+    private Date signAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
     @Column
     private String updator;

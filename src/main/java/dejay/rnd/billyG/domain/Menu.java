@@ -21,29 +21,31 @@ public class Menu {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long menu_idx;
+    @Column (name = "menu_idx")
+    private Long menuIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
+    @JoinColumn (name = "adminIdx")
     private Admin admin;
 
-    @Column (length = 1000)
-    private String menu_url;
+    @Column (length = 1000, name = "menu_url")
+    private String menuUrl;
 
-    @Column
-    private String menu_name;
+    @Column (name = "menu_name")
+    private String menuName;
 
-    @Column
-    private Integer menu_num;
+    @Column (name = "menu_num")
+    private Integer menuNum;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
     @Column
     private String updator;

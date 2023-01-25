@@ -15,37 +15,46 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "one_to_one_type")
+@Table(name = "group_auth")
 @Entity
 @DynamicInsert
-public class One_To_One_Type {
+public class GroupAuth {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long one_type_idx;
+    @Column (name = "group_auth_idx")
+    private Long groupAuthIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
-    private Admin admin;
+    @JoinColumn (name = "groupIdx")
+    private AdminGroup adminGroup;
 
-    @Column
-    @NotNull (message = "타입명은 Null일 수 없습니다.")
-    private String type_name;
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "menuIdx")
+    private Menu menu;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "read_auth")
+    private boolean readAuth;
+
+    @ColumnDefault("0")
+    @Column (name = "write_auth")
+    private boolean writeAuth;
+
+    @ColumnDefault("0")
+    @Column (name = "update_auth")
+    private boolean updateAuth;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
+    @Column (name = "createAt")
     private Date create_at;
 
-    @Column
-    private Date update_at;
-
-    @Column
-    private Date delete_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
     @Column
     private String updator;

@@ -22,11 +22,12 @@ public class Terms {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long terms_idx;
+    @Column (name = "terms_idx")
+    private Long termsIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
+    @JoinColumn (name = "adminIdx")
     private Admin admin;
 
     /**
@@ -53,24 +54,26 @@ public class Terms {
     private String version;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
-    @Column
+    @Column (name = "major_changes")
     @Lob
-    private String major_changes;
+    private String majorChanges;
 
     @Column
     private String updator;
 
-    @Column
-    private Date reservation_date;
+    @Column (name = "reservation_date")
+    private Date reservationDate;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
 }

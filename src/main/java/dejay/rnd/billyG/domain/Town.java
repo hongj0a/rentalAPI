@@ -23,45 +23,51 @@ public class Town {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long town_idx;
+    @Column (name = "town_idx")
+    private Long townIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "USER_IDX")
+    @JoinColumn (name = "userIdx")
     private User user;
 
-    @Column
-    private String town_name;
+    @Column (name = "town_name")
+    private String townName;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
     @ColumnDefault("0")
-    private boolean auth_status;
+    @Column (name = "auth_status")
+    private boolean authStatus;
 
     @ColumnDefault("0")
-    private Integer auth_count;
+    @Column (name = "auth_count")
+    private Integer authCount;
 
     //0 관심지역 1 대표지역
     @ColumnDefault("0")
-    private boolean lead_town;
+    @Column (name = "lead_town" )
+    private boolean leadTown;
 
-    @Column( precision = 18, scale = 10 )
-    private BigDecimal region_latitue;
+    @Column( precision = 18, scale = 10 , name = "region_latitue")
+    private BigDecimal regionLatitue;
 
-    @Column( precision = 18, scale = 10 )
-    private BigDecimal region_longitude;
+    @Column( precision = 18, scale = 10 , name = "region_longitude")
+    private BigDecimal regionLongitude;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
     @Column
     private String updator;

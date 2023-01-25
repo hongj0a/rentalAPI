@@ -3,7 +3,6 @@ package dejay.rnd.billyG.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 
@@ -15,46 +14,33 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "coupon_management")
+@Table(name = "rental_town_info")
 @Entity
 @DynamicInsert
-public class Coupon_Management {
+public class RentalTownInfo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long coupon_manage_idx;
+    @Column (name = "rental_town_info_idx")
+    private Long rentalTownInfoIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "COUPON_IDX")
-    private Coupon coupon;
+    @JoinColumn (name = "rentalIdx")
+    private Rental rental;
 
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "USER_IDX")
-    private User user;
-
-    @ColumnDefault("0")
-    private boolean delete_yn;
-
-    @ColumnDefault("0")
-    private boolean use_yn;
+    @Column (name = "town_name")
+    private String townName;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
-
-    @Column
-    private Date delete_at;
-
-    @Column
-    private Date use_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
     @Column
     private String updator;
-
 }

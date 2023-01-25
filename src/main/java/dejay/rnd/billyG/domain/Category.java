@@ -22,36 +22,40 @@ public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long category_idx;
+    @Column (name = "category_idx")
+    private Long categoryIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
+    @JoinColumn (name = "adminIdx")
     private Admin admin;
 
     @Column
     @NotNull(message = "카테고리명은 Null일 수 없습니다.")
     private String name;
 
-    @Column
-    private Integer order_num;
+    @Column (name = "order_num")
+    private Integer orderNum;
 
     @ColumnDefault("1")
-    private boolean active_yn;
+    @Column (name = "active_yn")
+    private boolean activeYn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
     @Column
     private String updator;

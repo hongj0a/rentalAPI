@@ -18,37 +18,40 @@ import java.util.Date;
 @Table(name = "block_type")
 @Entity
 @DynamicInsert
-public class Block_Type {
+public class BlockType {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long block_type_idx;
+    @Column (name = "block_type_idx")
+    private Long blockTypeIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
+    @JoinColumn (name = "adminIdx")
     private Admin admin;
 
-    @Column
+    @Column (name = "type_name")
     @NotNull (message = "타입명은 Null일 수 없습니다.")
-    private String type_name;
+    private String typeName;
 
-    @Column
+    @Column (name = "type_flag")
     @NotNull (message = "타입유형은 Null일 수 없습니다.")
-    private boolean type_flag;
+    private boolean typeFlag;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
 }

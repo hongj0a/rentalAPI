@@ -14,26 +14,34 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "search_keyword")
+@Table(name = "review_image")
 @Entity
 @DynamicInsert
-public class Search_Keyword {
+public class ReviewImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long search_idx;
+    @Column (name = "image_idx")
+    private Long imageIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "USER_IDX")
-    private User user;
+    @JoinColumn (name = "reviewIdx")
+    private Review review;
 
-    @Column
-    private String keyword;
+    @Column (length = 1000 , name = "image_url")
+    private String imageUrl;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
+
+    @Column (name = "update_at")
+    private Date updateAt;
+
+    @Column
+    private String updator;
 
 }

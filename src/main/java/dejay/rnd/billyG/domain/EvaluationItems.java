@@ -15,35 +15,39 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "my_attention")
+@Table(name = "evaluation_items")
 @Entity
 @DynamicInsert
-public class My_Attention {
+public class EvaluationItems {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long attention_idx;
+    @Column (name = "items_idx")
+    private Long itemsIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "USER_IDX")
-    private User user;
+    @JoinColumn (name = "adminIdx")
+    private Admin admin;
 
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "CATEGORY_IDX")
-    private Category category;
+    @Column( length = 100)
+    private String comment;
+
+    @ColumnDefault("0")
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "update_at")
+    private Date updateAt;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
     @Column
     private String updator;

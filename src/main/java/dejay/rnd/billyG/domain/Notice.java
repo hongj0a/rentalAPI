@@ -22,11 +22,12 @@ public class Notice {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long notice_idx;
+    @Column (name = "notice_idx")
+    private Long noticeIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
+    @JoinColumn (name = "adminIdx")
     private Admin admin;
 
     /**
@@ -36,8 +37,8 @@ public class Notice {
      * 2. 채용
      */
     @NotNull
-    @Column
-    private Integer notice_type;
+    @Column (name = "notice_type")
+    private Integer noticeType;
 
     @Column
     private String title;
@@ -47,24 +48,28 @@ public class Notice {
     private String content;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
     @ColumnDefault("1")
-    private boolean active_yn;
+    @Column (name = "active_yn")
+    private boolean activeYn;
 
     @ColumnDefault("0")
-    private boolean main_yn;
+    @Column (name = "main_yn")
+    private boolean mainYn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
     @Column
     private String updator;

@@ -14,45 +14,37 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "payments_info")
+@Table(name = "rental_history")
 @Entity
 @DynamicInsert
-public class Payments_Info {
+public class RentalHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long payments_info_idx;
+    @Column (name = "history_idx")
+    private Long historyIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "TRANSACTION_IDX")
-    private Transaction transaction;
+    @JoinColumn (name = "rentalIdx")
+    private Rental rental;
+
+    @Column(length = 1000)
+    private String content;
 
     @Column
-    private Date pay_request_date;
+    private String owner;
 
     @Column
-    private Date pay_finished_date;
-
-    @Column
-    private Date update_at;
-
-    @Column
-    private String updator;
-
-    @Column (length = 100)
-    private Integer renter_price;
-
-    @Column (length = 100)
-    private Integer rental_owner_price;
-
-    @Column
-    @Lob
-    private String reason;
+    private String renter;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
+
+    @Column (name = "update_at")
+    private Date updateAt;
 
 }

@@ -15,48 +15,48 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "block_review")
+@Table(name = "coupon_management")
 @Entity
 @DynamicInsert
-public class Block_Review {
+public class CouponManagement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long block_review_idx;
+    @Column (name = "coupon_manage_idx")
+    private Long couponManageIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "BLOCK_TYPE_IDX")
-    private Block_Type block_type;
+    @JoinColumn (name = "couponIdx")
+    private Coupon coupon;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "REVIEW_IDX")
-    private Review review;
-
-    @Column
-    private String reason;
-
-    @Column
-    @NotNull(message = " 차단하는 사용자의 값이 Null일 수 없습니다. ")
-    private Integer reporter_idx;
+    @JoinColumn (name = "userIdx")
+    private User user;
 
     @ColumnDefault("0")
-    private Integer processing_status;
-    
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
+
+    @ColumnDefault("0")
+    @Column (name = "use_yn")
+    private boolean useYn;
+
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
-    @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "use_at")
+    private Date useAt;
 
     @Column
     private String updator;

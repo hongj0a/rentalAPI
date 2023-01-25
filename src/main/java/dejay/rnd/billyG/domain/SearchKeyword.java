@@ -14,29 +14,28 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "admin_log")
+@Table(name = "search_keyword")
 @Entity
 @DynamicInsert
-public class Admin_Log {
+public class SearchKeyword {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long log_idx;
+    @Column (name = "search_idx")
+    private Long searchIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
-    private Admin admin;
+    @JoinColumn (name = "userIdx")
+    private User user;
 
     @Column
-    private String menu_name;
-
-    @Column
-    private String content;
+    private String keyword;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
 }

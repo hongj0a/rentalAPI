@@ -22,15 +22,17 @@ public class Alarm {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long alarm_idx;
+    @Column (name = "alarm_idx")
+    private Long alarmIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "USER_IDX")
+    @JoinColumn (name = "userIdx")
     private User user;
 
     @ColumnDefault("0")
-    private boolean read_yn;
+    @Column (name = "read_yn")
+    private boolean readYn;
 
     @Column
     private String content;
@@ -38,15 +40,17 @@ public class Alarm {
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
-    @Column
-    private Date update_at;
+    @Column (name = "update_at")
+    private Date updateAt;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
-    @Column
-    private Date delete_at;
+    @Column (name = "delete_at")
+    private Date deleteAt;
 
 }

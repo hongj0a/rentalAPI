@@ -15,39 +15,44 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "faq_type")
+@Table(name = "chat_content")
 @Entity
 @DynamicInsert
-public class Faq_Type {
+public class ChatContent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long faq_type_idx;
+    @Column (name = "chat_idx")
+    private Long chatIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "ADMIN_IDX")
-    private Admin admin;
+    @JoinColumn (name = "chatRoomIdx")
+    private ChatRoom chatRoom;
+
+    @Column (name = "user_idx")
+    @NotNull (message = "userIdx 값은 Null일 수 없습니다.")
+    private Integer userIdx;
 
     @Column
-    @NotNull (message = "타입명은 Null일 수 없습니다.")
-    private String type_name;
+    @Lob
+    @NotNull (message = "채팅 내용을 입력해 주세요.")
+    private String content;
 
     @ColumnDefault("0")
-    private boolean delete_yn;
+    @Column (name = "check_yn")
+    private boolean checkYn;
+
+    @Column (name = "image_url")
+    @Lob
+    private String imageUrl;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    private Date create_at;
-
-    @Column
-    private Date update_at;
-
-    @Column
-    private Date delete_at;
+    @Column (name = "create_at")
+    private Date createAt;
 
     @Column
     private String updator;
-
 }

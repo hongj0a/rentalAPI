@@ -15,40 +15,28 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "faq")
+@Table(name = "one_to_one_type")
 @Entity
 @DynamicInsert
-public class Faq {
+public class OneToOneType {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "faq_idx")
-    private Long faqIdx;
+    @Column (name = "one_type_idx")
+    private Long oneTypeIdx;
 
     @ManyToOne
     @NotNull
     @JoinColumn (name = "adminIdx")
     private Admin admin;
 
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "faqTypeIdx")
-    private FaqType faqType;
-
-    @Column
-    private String title;
-
-    @Column
-    @Lob
-    private String content;
+    @Column (name = "type_name")
+    @NotNull (message = "타입명은 Null일 수 없습니다.")
+    private String typeName;
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")
     private boolean deleteYn;
-
-    @ColumnDefault("1")
-    @Column (name = "active_yn")
-    private boolean activeYn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
@@ -64,5 +52,4 @@ public class Faq {
 
     @Column
     private String updator;
-
 }
