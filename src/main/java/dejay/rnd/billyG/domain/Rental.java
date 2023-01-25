@@ -103,5 +103,6 @@ public class Rental {
     private Date pullUpAt;
 
     @Column(name ="pull_up_cnt")
+    @ColumnDefault("0")
     private Integer pullUpCnt;
 }
