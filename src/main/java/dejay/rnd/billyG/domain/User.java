@@ -25,18 +25,15 @@ public class User {
     @Column (name = "user_idx")
     private Long userIdx;
 
-    @NotNull(message = " user 이름은 Null 일 수 없습니다.")
     @Column (name = "nick_name")
     private String nickName;
 
-    @NotNull(message = " user email은 Null 일 수 없습니다. ")
     @Column (name = "id_email")
     private String idEmail;
 
     @Column
     private String email;
 
-    @NotNull(message = "전화번호는 Null일 수 없습니다.")
     @Column (name = "phone_num")
     private String phoneNum;
 
@@ -51,16 +48,19 @@ public class User {
     @Column (name = "activity_score")
     private Integer activityScore;
 
-    @NotNull(message = "sns type은 Null일 수 없습니다.")
     @Column (name = "sns_type")
     private String snsType;
 
-    @NotNull(message = "token값은 Null일 수 없습니다.")
     //long text
     @Lob
-    private String token;
+    @Column (name = "access_token")
+    private String accessToken;
 
-    @NotNull(message = "token값은 Null일 수 없습니다.")
+    //long text
+    @Lob
+    @Column (name = "refresh_token")
+    private String refreshToken;
+
     @Lob
     @Column (name = "push_token")
     private String pushToken;
@@ -77,7 +77,6 @@ public class User {
     @Column (name = "block_yn")
     private boolean blockYn;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
@@ -92,7 +91,6 @@ public class User {
     @Column (name = "block_at")
     private Date blockAt;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "levelup_at")
@@ -124,7 +122,6 @@ public class User {
     @Column (name = "marketing_notice_yn")
     private boolean marketingNoticeYn;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "last_login_date")
@@ -134,7 +131,6 @@ public class User {
     private String ciValue;
 
     @Column (name = "invitation_code")
-    @NotNull (message = " 초대코드 랜덤값은 null일 수 없습니다. ")
     private String invitationCode;
 
     @ColumnDefault("0")
@@ -142,7 +138,13 @@ public class User {
     private String billyPay;
 
     @Column (name = "device_id")
-    @NotNull (message = "디바이스 아이디는 null일 수 없습니다.")
     private String deviceId;
+
+    @ManyToOne
+    @JoinColumn (name = "outIdx")
+    private MemberOutType memberOutType;
+
+    @Column (name = "out_reason", length = 1000)
+    private String outReason;
 
 }

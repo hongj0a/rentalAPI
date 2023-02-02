@@ -15,36 +15,31 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "grade")
+@Table(name = "crud_auth")
 @Entity
 @DynamicInsert
-public class Grade {
+public class CrudAuth {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "grade_idx")
-    private Long gradeIdx;
+    @Column (name = "crud_idx")
+    private Long crudIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "userIdx")
-    private User user;
+    @JoinColumn (name = "menuIdx")
+    private Menu menu;
 
-    @ColumnDefault("0")
-    private Integer grade;
+    @Column (name = "menu_url")
+    private String menuUrl;
 
     @Column
-    private String reason;
+    private Integer auth;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    @Column (name = "create_at")
-    private Date createAt;
+    @Column (name = "createAt")
+    private Date create_at;
 
-    @Column (name = "update_at")
-    private Date updateAt;
-
-    @Column
-    private String updator;
 }

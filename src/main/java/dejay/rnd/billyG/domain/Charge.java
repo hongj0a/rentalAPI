@@ -14,20 +14,22 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "withdraw")
+@Table(name = "charge")
 @Entity
 @DynamicInsert
-public class Withdraw {
-
+public class Charge {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "withdraw_idx")
-    private Long withdrawIdx;
+    @Column (name = "charge_idx")
+    private Long chargeIdx;
 
     @ManyToOne
-    @NotNull
     @JoinColumn (name = "userIdx")
     private User user;
+
+    @ManyToOne
+    @JoinColumn (name = "paymentsInfoIdx")
+    private PaymentsInfo paymentsInfo;
 
     @Column (name = "pay_fee")
     private String payFee;

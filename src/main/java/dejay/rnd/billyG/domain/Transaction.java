@@ -110,10 +110,4 @@ public class Transaction {
     @Column (length = 100 , name = "pay_method")
     private Integer payMethod;
 
-    @Column (length = 100 , name = "return_bankname")
-    private String returnBankname;
-
-    @Column (length = 100 , name = "return_banknum")
-    private String returnBanknum;
-
 }

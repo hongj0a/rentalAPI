@@ -24,14 +24,6 @@ public class Menu {
     @Column (name = "menu_idx")
     private Long menuIdx;
 
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "adminIdx")
-    private Admin admin;
-
-    @Column (length = 1000, name = "menu_url")
-    private String menuUrl;
-
     @Column (name = "menu_name")
     private String menuName;
 
@@ -44,9 +36,4 @@ public class Menu {
     @Column (name = "create_at")
     private Date createAt;
 
-    @Column (name = "update_at")
-    private Date updateAt;
-
-    @Column
-    private String updator;
 }

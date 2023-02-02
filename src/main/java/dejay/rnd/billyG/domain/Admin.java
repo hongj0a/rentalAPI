@@ -76,12 +76,23 @@ public class Admin {
     private String updator;
 
     @Column (name = "certification_number")
-    @NotNull(message = "인증번호 값은 Null일 수 없습니다.")
+    @NotNull(message = "인증번호 값은 Null 일 수 없습니다.")
     private String certificationNumber;
 
     @Column (name = "certification_yn")
     @ColumnDefault("0")
     private boolean certificationYn;
 
+    @NotNull(message = "token 값은 Null 일 수 없습니다.")
+    //long text
+    @Lob
+    @Column (name = "access_token")
+    private String accessToken;
+
+    @NotNull(message = "refresh token 값은 Null 일 수 없습니다.")
+    //long text
+    @Lob
+    @Column (name = "refresh_token")
+    private String refreshToken;
 
 }

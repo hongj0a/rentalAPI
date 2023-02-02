@@ -15,42 +15,43 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "group_auth")
+@Table(name = "member_out_type")
 @Entity
 @DynamicInsert
-public class GroupAuth {
+public class MemberOutType {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "group_auth_idx")
-    private Long groupAuthIdx;
+    @Column (name = "out_idx")
+    private Long outIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "groupIdx")
-    private AdminGroup adminGroup;
-
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "crudIdx")
-    private CrudAuth crudAuth;
-
-    @NotNull
-    @Temporal(value = TemporalType.TIMESTAMP)
-    @CreationTimestamp
-    @Column (name = "createAt")
-    private Date create_at;
-
-    @Column (name = "update_at")
-    private Date updateAt;
+    @JoinColumn (name = "adminIdx")
+    private Admin admin;
 
     @Column
-    private String updator;
-
-    @Column (name = "deleteAt")
-    private Date delete_at;
+    @NotNull
+    private String type;
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")
     private boolean deleteYn;
+
+    @Column
+    private String updator;
+
+    @NotNull
+    @Temporal(value = TemporalType.TIMESTAMP)
+    @CreationTimestamp
+    @Column (name = "create_at")
+    private Date createAt;
+
+    @Column (name = "update_at")
+    private Date updateAt;
+
+    @Column (name = "delete_at")
+    private Date deleteAt;
+
+
 }

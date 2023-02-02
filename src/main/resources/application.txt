@@ -1,16 +1,16 @@
-
 logging.level.org.springframework=debug
 logging.level.org.springframework.web=info
 logging.level.org.springframework.boot.autoconfigure= ERROR 
 logging.level.org.hibernate=ERROR
 #logging.file.path=d:/log
 
-spring.mvc.converters.preferred-json-mapper=gson
+
 server.servlet.encoding.charset=UTF-8
 server.servlet.encoding.force=true
 server.port= 8080
 server.tomcat.max-threads=500
 
+spring.mvc.converters.preferred-json-mapper=gson
 spring.servlet.multipart.maxFileSize=10MB
 spring.servlet.multipart.maxRequestSize=10MB
 spring.servlet.multipart.enabled=true
@@ -36,3 +36,4 @@ spring.jpa.hibernate.ddl-auto=update
 
 spring.jpa.properties.hibernate.format_sql=true
 spring.jpa.properties.hibernate.globally_quoted_identifiers=true
+jwt.secret =jwtsecret
