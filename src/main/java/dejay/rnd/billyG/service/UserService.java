@@ -18,26 +18,5 @@ public class UserService {
     }
 
 
-    @Transactional
-    public User signup(LoginDto loginDto) {
-
-        LocalDateTime date = LocalDateTime.now();
-        Date reg_date = Timestamp.valueOf(date);
-
-        User user = new User();
-
-        user.setIdEmail(loginDto.getIdEmail());
-        user.setEmail(loginDto.getIdEmail());
-        user.setSnsType(loginDto.getSnsType());
-        user.setCreateAt(reg_date);
-        user.setLevelupAt(reg_date);
-        user.setLastLoginDate(reg_date);
-
-        //token insert
-
-        System.out.println("UserService.signup");
-        return userRepository.save(user);
-    }
-
 
 }
