@@ -31,7 +31,6 @@ public class OneToOneType {
     private Admin admin;
 
     @Column (name = "type_name")
-    @NotNull (message = "타입명은 Null일 수 없습니다.")
     private String typeName;
 
     @ColumnDefault("0")
@@ -52,4 +51,7 @@ public class OneToOneType {
 
     @Column
     private String updator;
+
+    @Column (name = "order_num")
+    private Integer orderNum;
 }

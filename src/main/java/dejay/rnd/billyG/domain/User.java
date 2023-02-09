@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 
 import java.util.Date;
+import java.util.Set;
 
 
 @Getter
@@ -31,7 +32,7 @@ public class User {
     @Column (name = "id_email")
     private String idEmail;
 
-    @Column
+    @Column (name = "email", unique = true)
     private String email;
 
     @Column (name = "phone_num")
@@ -50,6 +51,9 @@ public class User {
 
     @Column (name = "sns_type")
     private String snsType;
+
+    @Column (name = "sns_name")
+    private String snsName;
 
     //long text
     @Lob
@@ -140,11 +144,21 @@ public class User {
     @Column (name = "device_id")
     private String deviceId;
 
+    @Column (name = "grade_idx")
+    private Integer gradeIdx;
+
     @ManyToOne
     @JoinColumn (name = "outIdx")
     private MemberOutType memberOutType;
 
     @Column (name = "out_reason", length = 1000)
     private String outReason;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_grade",
+            joinColumns = {@JoinColumn(name = "user_idx", referencedColumnName = "user_idx")},
+            inverseJoinColumns = {@JoinColumn(name = "grade_name", referencedColumnName = "grade_name")})
+    private Set<Grade> grades;
 
 }

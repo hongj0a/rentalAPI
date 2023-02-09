@@ -53,4 +53,6 @@ public class FaqType {
     @Column
     private String updator;
 
+    @Column (name = "order_num")
+    private Integer orderNum;
 }

@@ -53,5 +53,8 @@ public class MemberOutType {
     @Column (name = "delete_at")
     private Date deleteAt;
 
+    @ColumnDefault("0")
+    @Column (name = "active_yn")
+    private boolean activeYn;
 
 }

@@ -36,7 +36,7 @@ public class BlockType {
 
     @Column (name = "type_flag")
     @NotNull (message = "타입유형은 Null일 수 없습니다.")
-    private boolean typeFlag;
+    private Integer typeFlag;
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")
@@ -53,5 +53,9 @@ public class BlockType {
 
     @Column (name = "delete_at")
     private Date deleteAt;
+
+    @ColumnDefault("0")
+    @Column (name = "active_yn")
+    private boolean activeYn;
 
 }

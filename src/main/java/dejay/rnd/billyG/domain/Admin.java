@@ -89,10 +89,4 @@ public class Admin {
     @Column (name = "access_token")
     private String accessToken;
 
-    @NotNull(message = "refresh token 값은 Null 일 수 없습니다.")
-    //long text
-    @Lob
-    @Column (name = "refresh_token")
-    private String refreshToken;
-
 }
