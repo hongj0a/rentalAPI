@@ -21,4 +21,7 @@ public class TownRepository {
                 .getResultList();
     }
 
+    public void save(Town town) {
+        em.persist(town);
+    }
 }

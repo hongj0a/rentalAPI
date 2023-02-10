@@ -1,6 +1,7 @@
 package dejay.rnd.billyG.service;
 
 import dejay.rnd.billyG.domain.Grade;
+import dejay.rnd.billyG.domain.Town;
 import dejay.rnd.billyG.domain.User;
 import dejay.rnd.billyG.dto.TokenDto;
 import dejay.rnd.billyG.dto.UserDto;
@@ -96,9 +97,7 @@ public class UserService {
         return userRepositories.findById(email);
     }
 
-    public List<User> findByEmail(String email) {
-        return userRepositories.findByEmail(email);
-    }
+
 
     @Transactional
     public void setRefreshToken(Long userIdx, String refreshToken) {
@@ -111,4 +110,17 @@ public class UserService {
         findUser.setUpdateAt(now_date);
         findUser.setIdEmail(findUser.getEmail());
     }
+
+    @Transactional
+    public void setUserProfile(Long userIdx, String nickname, String image_name) {
+
+        LocalDateTime date = LocalDateTime.now();
+        Date now_date = Timestamp.valueOf(date);
+
+        User findUser = userRepositories.findOne(userIdx);
+        findUser.setProfileImageUrl(image_name);
+        findUser.setNickName(nickname);
+        findUser.setUpdateAt(now_date);
+    }
+
 }

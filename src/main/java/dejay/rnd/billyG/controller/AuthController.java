@@ -11,15 +11,13 @@ import dejay.rnd.billyG.jwt.TokenProvider;
 import dejay.rnd.billyG.repository.UserRepository;
 import dejay.rnd.billyG.service.TownService;
 import dejay.rnd.billyG.service.UserService;
+import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Base64;
 import java.util.List;
 
 @RestController
@@ -51,12 +49,10 @@ public class AuthController {
         String email = loginDto.getEmail();
         String snsType = loginDto.getSnsType();
 
-        List<User> userOne =userService.findById(email);
-
-        System.out.println("userOne.size() = " + userOne.size());
+        User findUser = userRepository.findByEmail(email);
 
         // 신규유저라면 회원가입 하고 바로 로그인
-        if (userOne.size() != 1) {
+        if (findUser == null) {
             UserDto userDto = new UserDto();
             userDto.setEmail(loginDto.getEmail());
             userDto.setSnsType(loginDto.getSnsType());
@@ -69,26 +65,26 @@ public class AuthController {
         data.addProperty("accessToken",tokenDto.getAccessToken());
         data.addProperty("refreshToken", tokenDto.getRefreshToken());
 
-        List<User> user =userService.findById(email);
+        User userOne = userRepository.findByEmail(email);
 
         // user 테이블에 Refreshtoken update
-        userService.setRefreshToken(user.get(0).getUserIdx(), tokenDto.getRefreshToken());
+        userService.setRefreshToken(userOne.getUserIdx(), tokenDto.getRefreshToken());
 
         // user profile is empty check
-        if (user.get(0).getProfileImageUrl() == null) {
+        if (userOne.getProfileImageUrl() == null) {
             data.addProperty("isProfileImageEmpty", "Y");
         } else {
             data.addProperty("isProfileImageEmpty", "N");
         }
 
-        if (user.get(0).getNickName() == null) {
+        if (userOne.getNickName() == null) {
             data.addProperty("isNicknameEmpty", "Y");
         } else {
             data.addProperty("isNicknameEmpty", "N");
         }
 
         //user town's Information empty check
-        List<Town> townList = townService.findAllN(user.get(0).getUserIdx());
+        List<Town> townList = townService.findAllN(userOne.getUserIdx());
 
         if (townList.size() != 0) {
             data.addProperty("isTownInfoEmpty", "N");
@@ -112,41 +108,24 @@ public class AuthController {
 
         if (tokenFlag == false) {
             // TODO 잘못된 토큰인지, 만료된 토큰인지 구분할 수 있어야 함
-            data.addProperty("isExpired", "Y");
+            data.addProperty("message", "잘못된 토큰 정보");
             RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
         }
+        String userEmail = UserMiningUtil.getUserInfo(refreshToken);
+        User findUser = userRepository.findByEmail(userEmail);
 
-        //tokenFlag true 일 때
-        //refreshToken decode --> payload json parsing
-        //userId 추출해서 회원정보 검색
-        //refresh Token 검사해서 update.
-        String[] chunks = refreshToken.split("\\.");
-        Base64.Decoder decoder = Base64.getUrlDecoder();
-
-        String header = new String(decoder.decode(chunks[0]));
-        String payload = new String(decoder.decode(chunks[1]));
-
-        JSONParser parser = new JSONParser();
-        Object obj = parser.parse( payload );
-        JSONObject jsonObj = (JSONObject) obj;
-
-        String email = (String) jsonObj.get("sub");
-
-        List<User> findUser = userService.findByEmail(email);
-
-        System.out.println("findUser.size() = " + findUser.size());
-        if (findUser.size() > 0) {
-            if (findUser.get(0).getRefreshToken().equals(refreshToken)) {
+        if (findUser != null) {
+            if (findUser.getRefreshToken().equals(refreshToken)) {
                 System.out.println("AuthController.refreshTokenValidation");
-                TokenDto tokenDto = userService.login(findUser.get(0).getEmail(), findUser.get(0).getSnsName());
+                TokenDto tokenDto = userService.login(findUser.getEmail(), findUser.getSnsName());
                 data.addProperty("grantType", tokenDto.getGrantType());
                 data.addProperty("accessToken",tokenDto.getAccessToken());
                 data.addProperty("refreshToken", tokenDto.getRefreshToken());
 
-                userService.setRefreshToken(findUser.get(0).getUserIdx(), tokenDto.getRefreshToken());
+                userService.setRefreshToken(findUser.getUserIdx(), tokenDto.getRefreshToken());
             } else {
-                data.addProperty("InvalidRefreshToken", "잘못된 리프레시 토큰 정보");
+                data.addProperty("message", "잘못된 토큰 정보");
             }
         }
 
