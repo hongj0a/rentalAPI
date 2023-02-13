@@ -29,7 +29,7 @@ public class Admin {
     @NotNull(message = " admin id는 Null 일 수 없습니다.")
     private String id;
 
-    @Column
+    @Column (length = 1000)
     @NotNull(message = " admin password는 Null 일 수 없습니다. ")
     private String password;
 
@@ -88,5 +88,14 @@ public class Admin {
     @Lob
     @Column (name = "access_token")
     private String accessToken;
+
+    @Column (name = "approval_date")
+    private Date approvalDate;
+
+    @Column (name = "team_name")
+    private String teamName;
+
+    @Column (name = "phone_num")
+    private String phoneNum;
 
 }

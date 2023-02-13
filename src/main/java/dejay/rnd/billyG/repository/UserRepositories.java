@@ -24,4 +24,9 @@ public class UserRepositories {
         return em.find(User.class, userIdx);
     }
 
+    public List<User> findByNickName(String nickName){
+        return em.createQuery("select u from User u where u.nickName LIKE:nickName and u.deleteYn=false and u.activeYn=true", User.class)
+                .setParameter("nickName","%"+nickName+"%")
+                .getResultList();
+    }
 }

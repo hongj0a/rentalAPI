@@ -97,7 +97,7 @@ public class UserService {
         return userRepositories.findById(email);
     }
 
-
+    public List<User> findByNickName(String nickName) { return userRepositories.findByNickName(nickName); }
 
     @Transactional
     public void setRefreshToken(Long userIdx, String refreshToken) {
@@ -122,5 +122,7 @@ public class UserService {
         findUser.setNickName(nickname);
         findUser.setUpdateAt(now_date);
     }
+
+
 
 }

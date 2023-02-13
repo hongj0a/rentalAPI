@@ -7,6 +7,7 @@ import dejay.rnd.billyG.domain.User;
 import dejay.rnd.billyG.dto.LoginDto;
 import dejay.rnd.billyG.dto.TokenDto;
 import dejay.rnd.billyG.dto.UserDto;
+import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.jwt.TokenProvider;
 import dejay.rnd.billyG.repository.UserRepository;
 import dejay.rnd.billyG.service.TownService;
@@ -97,19 +98,19 @@ public class AuthController {
     }
 
     @PostMapping("/refreshTokenValidation")
-    public ResponseEntity<JsonObject> refreshTokenValidation(@RequestParam (value = "refreshToken") String refreshToken, HttpServletRequest req) throws ParseException {
+    public ResponseEntity<JsonObject> refreshTokenValidation(@RequestBody TokenDto token, String refreshToken, HttpServletRequest req) throws ParseException {
         
         JsonObject data = new JsonObject();
 
         //유효한 토큰인지 확인
         //유효하다면 true. 만료됐거나 유효하지 않은 토큰이면 false.
-        boolean tokenFlag = tokenProvider.validateToken(refreshToken);
+        boolean tokenFlag = tokenProvider.validateToken(token.getRefreshToken());
         System.out.println("tokenFlag = " + tokenFlag);
 
         if (tokenFlag == false) {
-            // TODO 잘못된 토큰인지, 만료된 토큰인지 구분할 수 있어야 함
-            data.addProperty("message", "잘못된 토큰 정보");
             RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+            apiRes.setError(ErrCode.err_api_not_found_token.code());
+            apiRes.setMessage(ErrCode.err_api_not_found_token.msg());
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
         }
         String userEmail = UserMiningUtil.getUserInfo(refreshToken);

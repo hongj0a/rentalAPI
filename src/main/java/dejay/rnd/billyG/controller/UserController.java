@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.domain.User;
 import dejay.rnd.billyG.dto.UserDto;
+import dejay.rnd.billyG.except.AppException;
+import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.jwt.TokenProvider;
 import dejay.rnd.billyG.repository.UserRepository;
 import dejay.rnd.billyG.service.TownService;
@@ -11,10 +13,14 @@ import dejay.rnd.billyG.service.UserService;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.hamcrest.core.IsEqual;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 
 @RestController
@@ -45,7 +51,7 @@ public class UserController {
 
     //TODO - fileService 추가 될때 이미지 업로드 구현
     @PostMapping("/editProfile")
-    public ResponseEntity<JsonObject> editProfile( //@RequestPart (value = "image" , required = false) MultipartFile multipartFile,
+    public ResponseEntity<JsonObject> editProfile( @RequestPart (value = "image" , required = false) MultipartFile multipartFile,
                                                   @RequestParam (value = "profile_image_name", required = false) String profile_image_name,
                                                   @RequestParam (value = "nickname") String nickname,
                                                   HttpServletRequest req) throws ParseException {
@@ -80,6 +86,30 @@ public class UserController {
             }
         }
 
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+    @GetMapping("/doubleCheck")
+    public ResponseEntity<JsonObject> doubleCheck(@RequestParam (value = "nickName") String nickName,
+                                                      HttpServletRequest req) throws AppException {
+        JsonObject data = new JsonObject();
+
+        List<User> findUser = userService.findByNickName(nickName);
+
+        System.out.println("nickName = " + nickName);
+        System.out.println("findUser.size() = " + findUser.size());
+
+        for (int i = 0; i < findUser.size(); i++) {
+            System.out.println("findUser.get(i).getNickName() = " + findUser.get(i).getNickName());
+        }
+        if (findUser.size() > 0) {
+            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+            apiRes.setError(ErrCode.err_api_duplicate_nickname.code());
+            apiRes.setMessage(ErrCode.err_api_duplicate_nickname.msg());
+            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+        }
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
