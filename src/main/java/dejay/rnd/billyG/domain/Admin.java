@@ -38,11 +38,10 @@ public class Admin {
     private boolean activeYn;
 
     @Column
-    @NotNull(message = " admin 이름은 Null 일 수 없습니다.")
+    @NotNull
     private String name;
 
     @Column (name = "nick_name")
-    @NotNull(message = " admin 닉네임은 Null 일 수 없습니다.")
     private String nickName;
 
     @ColumnDefault("0")
@@ -58,7 +57,6 @@ public class Admin {
     @Column (name = "update_at")
     private Date updateAt;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name ="last_login_date")
@@ -76,7 +74,6 @@ public class Admin {
     private String updator;
 
     @Column (name = "certification_number")
-    @NotNull(message = "인증번호 값은 Null 일 수 없습니다.")
     private String certificationNumber;
 
     @Column (name = "certification_yn")
