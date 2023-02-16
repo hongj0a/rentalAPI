@@ -154,6 +154,9 @@ public class User {
     @Column (name = "out_reason", length = 1000)
     private String outReason;
 
+    @Column (name = "name")
+    private String name;
+
     @ManyToMany
     @JoinTable(
             name = "user_grade",

@@ -69,7 +69,7 @@ public class SecurityConfig {
 
                 .and()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/refreshTokenValidation", "/api/authenticate").permitAll()
+                .requestMatchers("/api/authenticate","/api/refreshTokenValidation").permitAll()
                 .anyRequest().authenticated()
 
                 .and()

@@ -19,7 +19,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+
+import static dejay.rnd.billyG.jwt.JwtFilter.AUTHORIZATION_HEADER;
 
 @RestController
 @RequestMapping("/api")
@@ -43,7 +49,7 @@ public class AuthController {
      *  2. 신규회원 회원가입 후, access_token, refresh_token 발급 및 refresh_token db 저장
      */
     @PostMapping("/authenticate")
-    public ResponseEntity<JsonObject> authorize(@RequestBody LoginDto loginDto, HttpServletRequest req) {
+    public ResponseEntity<JsonObject> authorize(@RequestBody LoginDto loginDto, HttpServletRequest req) throws ParseException, java.text.ParseException {
         JsonObject data = new JsonObject();
 
         // plus. outMember check
@@ -60,28 +66,52 @@ public class AuthController {
             userService.signup(userDto);
         }
 
+
+        User userOne = userRepository.findByEmail(email);
+
+        //1년이상 장기 미이용 고객 return 커스텀
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        
+        cal.add(Calendar.YEAR, -1);
+
+        Date date1 = dateFormat.parse(dateFormat.format(cal.getTime()));
+        Date date2 = userOne.getLastLoginDate();
+
+        if (date2.before(date1)) {
+            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+            apiRes.setError(ErrCode.err_long_time_no_use_user.code());
+            apiRes.setMessage(ErrCode.err_long_time_no_use_user.msg());
+            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+        }
+        
         //로그인
         TokenDto tokenDto = userService.login(email, snsType);
         data.addProperty("grantType", tokenDto.getGrantType());
         data.addProperty("accessToken",tokenDto.getAccessToken());
         data.addProperty("refreshToken", tokenDto.getRefreshToken());
 
-        User userOne = userRepository.findByEmail(email);
 
         // user 테이블에 Refreshtoken update
         userService.setRefreshToken(userOne.getUserIdx(), tokenDto.getRefreshToken());
 
         // user profile is empty check
-        if (userOne.getProfileImageUrl() == null) {
+        if (userOne.getProfileImageUrl() == null || ("").equals(userOne.getProfileImageUrl())) {
             data.addProperty("isProfileImageEmpty", "Y");
         } else {
             data.addProperty("isProfileImageEmpty", "N");
         }
 
-        if (userOne.getNickName() == null) {
+        if (userOne.getNickName() == null || ("").equals(userOne.getNickName())) {
             data.addProperty("isNicknameEmpty", "Y");
         } else {
             data.addProperty("isNicknameEmpty", "N");
+        }
+
+        if (userOne.getCiValue() == null || ("").equals(userOne.getCiValue())) {
+            data.addProperty("isCiValueEmpty", "Y");
+        } else {
+            data.addProperty("isCiValueEmpty", "N");
         }
 
         //user town's Information empty check
@@ -98,14 +128,12 @@ public class AuthController {
     }
 
     @PostMapping("/refreshTokenValidation")
-    public ResponseEntity<JsonObject> refreshTokenValidation(@RequestBody TokenDto token, String refreshToken, HttpServletRequest req) throws ParseException {
-        
+    public ResponseEntity<JsonObject> refreshTokenValidation(HttpServletRequest req, @RequestBody TokenDto token) throws ParseException {
         JsonObject data = new JsonObject();
 
         //유효한 토큰인지 확인
         //유효하다면 true. 만료됐거나 유효하지 않은 토큰이면 false.
         boolean tokenFlag = tokenProvider.validateToken(token.getRefreshToken());
-        System.out.println("tokenFlag = " + tokenFlag);
 
         if (tokenFlag == false) {
             RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
@@ -113,11 +141,11 @@ public class AuthController {
             apiRes.setMessage(ErrCode.err_api_not_found_token.msg());
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
         }
-        String userEmail = UserMiningUtil.getUserInfo(refreshToken);
+        String userEmail = UserMiningUtil.getUserInfo(token.getRefreshToken());
         User findUser = userRepository.findByEmail(userEmail);
 
         if (findUser != null) {
-            if (findUser.getRefreshToken().equals(refreshToken)) {
+            if (findUser.getRefreshToken().equals(token.getRefreshToken())) {
                 System.out.println("AuthController.refreshTokenValidation");
                 TokenDto tokenDto = userService.login(findUser.getEmail(), findUser.getSnsName());
                 data.addProperty("grantType", tokenDto.getGrantType());
@@ -125,6 +153,34 @@ public class AuthController {
                 data.addProperty("refreshToken", tokenDto.getRefreshToken());
 
                 userService.setRefreshToken(findUser.getUserIdx(), tokenDto.getRefreshToken());
+
+                System.out.println("findUser = " + findUser.getNickName());
+                if (findUser.getProfileImageUrl() == null || ("").equals(findUser.getProfileImageUrl())) {
+                    data.addProperty("isProfileImageEmpty", "Y");
+                } else {
+                    data.addProperty("isProfileImageEmpty", "N");
+                }
+
+                if (findUser.getNickName() == null || ("").equals(findUser.getNickName())) {
+                    data.addProperty("isNicknameEmpty", "Y");
+                } else {
+                    data.addProperty("isNicknameEmpty", "N");
+                }
+
+                if (findUser.getCiValue() == null || ("").equals(findUser.getCiValue())) {
+                    data.addProperty("isCiValueEmpty", "Y");
+                } else {
+                    data.addProperty("isCiValueEmpty", "N");
+                }
+
+                //user town's Information empty check
+                List<Town> townList = townService.findAllN(findUser.getUserIdx());
+
+                if (townList.size() != 0) {
+                    data.addProperty("isTownInfoEmpty", "N");
+                } else {
+                    data.addProperty("isTownInfoEmpty", "Y");
+                }
             } else {
                 data.addProperty("message", "잘못된 토큰 정보");
             }
@@ -133,4 +189,18 @@ public class AuthController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
+
+    @PostMapping("/editUserCiValueAndName")
+    public ResponseEntity<JsonObject> userCiValueUpdate(HttpServletRequest req, @RequestBody UserDto userDto) throws ParseException {
+        JsonObject data = new JsonObject();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+        userService.updateCiValue(userDto.getCiValue(), userDto.getName(), findUser.getUserIdx());
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+    }
+
 }

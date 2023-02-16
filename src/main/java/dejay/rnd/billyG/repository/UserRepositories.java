@@ -1,6 +1,7 @@
 package dejay.rnd.billyG.repository;
 
 import dejay.rnd.billyG.domain.User;
+import dejay.rnd.billyG.domain.UserCount;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -29,4 +30,5 @@ public class UserRepositories {
                 .setParameter("nickName","%"+nickName+"%")
                 .getResultList();
     }
+
 }

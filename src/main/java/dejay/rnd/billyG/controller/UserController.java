@@ -1,19 +1,21 @@
 package dejay.rnd.billyG.controller;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
+import dejay.rnd.billyG.domain.Town;
 import dejay.rnd.billyG.domain.User;
 import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.jwt.TokenProvider;
 import dejay.rnd.billyG.repository.UserRepository;
+import dejay.rnd.billyG.service.FileUploadService;
 import dejay.rnd.billyG.service.TownService;
 import dejay.rnd.billyG.service.UserService;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.hamcrest.core.IsEqual;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -30,13 +32,15 @@ public class UserController {
     private final TokenProvider tokenProvider;
     private final UserRepository userRepository;
     private final TownService townService;
+    private final FileUploadService uploadService;
 
 
-    public UserController(UserService userService, TokenProvider tokenProvider, UserRepository userRepository, TownService townService) {
+    public UserController(UserService userService, TokenProvider tokenProvider, UserRepository userRepository, TownService townService, FileUploadService uploadService) {
         this.userService = userService;
         this.tokenProvider = tokenProvider;
         this.userRepository = userRepository;
         this.townService = townService;
+        this.uploadService = uploadService;
     }
 
     @PostMapping("/signup")
@@ -49,39 +53,51 @@ public class UserController {
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
 
-    //TODO - fileService 추가 될때 이미지 업로드 구현
     @PostMapping("/editProfile")
-    public ResponseEntity<JsonObject> editProfile( @RequestPart (value = "image" , required = false) MultipartFile multipartFile,
-                                                  @RequestParam (value = "profile_image_name", required = false) String profile_image_name,
-                                                  @RequestParam (value = "nickname") String nickname,
+    public ResponseEntity<JsonObject> editProfile(@RequestPart(value="image", required = false) MultipartFile multipartFile,
+            @RequestParam(value="nickName", required = false) String nickName,
                                                   HttpServletRequest req) throws ParseException {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
+        String imageUrl = "";
+        String userNickName = "";
 
-        userService.setUserProfile(findUser.getUserIdx(), nickname, profile_image_name);
+        if (multipartFile != null) {
+            System.out.println("UserController.editProfile");
+            //imageUrl = multipartFile.getOriginalFilename();
+            uploadService.upload(multipartFile);
+            imageUrl = multipartFile.getOriginalFilename();
+        }
+
+        if (nickName != null) {
+            userNickName = nickName;
+        }
+        userService.setUserProfile(findUser.getUserIdx(), userNickName, imageUrl);
+
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
+
     }
     @PostMapping("/editMyTownInfo")
-    public ResponseEntity<JsonObject> editMyTownInfo(@RequestParam (value = "lead_town_name") String lead_town_name,
-                                                     @RequestParam (value = "town_name[]") String[] town_name, HttpServletRequest req) throws ParseException {
+    public ResponseEntity<JsonObject> editMyTownInfo(@RequestBody UserDto userTown,
+                                                     HttpServletRequest req) throws ParseException {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
-        townService.setUserTownInfo(findUser.getUserIdx(), lead_town_name, true);
+        townService.setUserTownInfo(findUser.getUserIdx(), userTown.getLeadTownName(), true);
 
-        if (town_name.length > 0) {
-            for (int i = 0; i < town_name.length; i++) {
-                if(!town_name[i].isEmpty()) {
-                    townService.setUserTownInfo(findUser.getUserIdx(), town_name[i], false);
+        if (userTown.getTowns().length > 0) {
+            for (int i = 0; i < userTown.getTowns().length; i++) {
+                if(!userTown.getTowns()[i].isEmpty()) {
+                    townService.setUserTownInfo(findUser.getUserIdx(), userTown.getTowns()[i], false);
                 }
             }
         }
@@ -98,18 +114,43 @@ public class UserController {
 
         List<User> findUser = userService.findByNickName(nickName);
 
-        System.out.println("nickName = " + nickName);
-        System.out.println("findUser.size() = " + findUser.size());
-
-        for (int i = 0; i < findUser.size(); i++) {
-            System.out.println("findUser.get(i).getNickName() = " + findUser.get(i).getNickName());
-        }
         if (findUser.size() > 0) {
             RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
             apiRes.setError(ErrCode.err_api_duplicate_nickname.code());
             apiRes.setMessage(ErrCode.err_api_duplicate_nickname.msg());
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
         }
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+    @GetMapping("/getAdditionalInfo")
+    public ResponseEntity<JsonObject> getAdditionalInfo(HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+        JsonArray townNames = new JsonArray();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        data.addProperty("profileImage", findUser.getProfileImageUrl());
+        data.addProperty("nickName", findUser.getNickName());
+        data.addProperty("phoneNumber", findUser.getPhoneNum());
+
+        List<Town> towns = townService.findAllN(findUser.getUserIdx());
+        towns.forEach(
+                town -> {
+                    JsonObject townInfo = new JsonObject();
+                    if (town.isLeadTown()) {
+                        townInfo.addProperty("leadTown", town.getTownName());
+                    } else {
+                        townInfo.addProperty("townName", town.getTownName());
+                    }
+                    townNames.add(townInfo);
+                }
+        );
+        data.add("townList", townNames);
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 

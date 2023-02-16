@@ -5,6 +5,7 @@ import dejay.rnd.billyG.domain.User;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,10 +33,22 @@ public class UserDto {
    private String nickName;
 
    @Size (max = 1000)
-   private String access_token;
+   private String accessToken;
 
    @Size (max = 1000)
-   private String refresh_token;
+   private String refreshToken;
+
+   @Size(min = 3, max = 100)
+   private String leadTownName;
+
+   @Size(min = 3, max = 1000)
+   private String ciValue;
+
+   @Size(min = 3, max = 100)
+   private String name;
+
+   @Size(min = 3, max = 100)
+   private String towns[];
 
    private Set<GradeDto> authorityDtoSet;
 
