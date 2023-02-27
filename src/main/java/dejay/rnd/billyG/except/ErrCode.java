@@ -8,6 +8,8 @@ public enum ErrCode {
 
   err_file_not_found                ("1200", "File Not found 오류"),
   err_duplicate_file                ("1201", "중복된 파일이 있습니다."),
+  err_exist_lead_town               ("1202", "이미 등록된 대표지역이 있습니다"),
+  err_over_towns                    ("1203","이미 등록된 관심지역이 10개입니다."),
   err_not_an_positive_integer       ("1300", "양의정수 오류"),
   err_api_duplicate_nickname        ("1400", "중복 닉네임"),
   err_long_time_no_use_user         ("1401", "1년이상 장기 미이용 고객"),

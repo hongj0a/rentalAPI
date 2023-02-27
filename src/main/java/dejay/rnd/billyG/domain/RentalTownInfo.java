@@ -24,7 +24,7 @@ public class RentalTownInfo {
     @Column (name = "rental_town_info_idx")
     private Long rentalTownInfoIdx;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     @JoinColumn (name = "rentalIdx")
     private Rental rental;

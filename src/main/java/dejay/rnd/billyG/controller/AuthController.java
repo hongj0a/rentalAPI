@@ -20,12 +20,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
-import static dejay.rnd.billyG.jwt.JwtFilter.AUTHORIZATION_HEADER;
 
 @RestController
 @RequestMapping("/api")
@@ -47,12 +44,13 @@ public class AuthController {
      * ROLE
      *  1. 기존회원 로그인, access_token, refresh_token 발급 및 refresh_token db 업데이트
      *  2. 신규회원 회원가입 후, access_token, refresh_token 발급 및 refresh_token db 저장
+     *  3. 가입된 email이 있는데, 다른 snsType으로 로그인할 경우, snsType updqte 후 토큰 발급
      */
     @PostMapping("/authenticate")
     public ResponseEntity<JsonObject> authorize(@RequestBody LoginDto loginDto, HttpServletRequest req) throws ParseException, java.text.ParseException {
         JsonObject data = new JsonObject();
 
-        // plus. outMember check
+        // TODO - plus. outMember check
         String email = loginDto.getEmail();
         String snsType = loginDto.getSnsType();
 
@@ -65,7 +63,11 @@ public class AuthController {
             userDto.setSnsType(loginDto.getSnsType());
             userService.signup(userDto);
         }
-
+        //else if, userid 중복 , 그리고 snstype 다를때 user정보 update
+        if (!findUser.getSnsName().equals(loginDto.getSnsType())) {
+            System.out.println("AuthController.authorize");
+            userService.updateUserInfo(findUser.getUserIdx(), loginDto.getSnsType());
+        }
 
         User userOne = userRepository.findByEmail(email);
 
@@ -90,6 +92,7 @@ public class AuthController {
         data.addProperty("grantType", tokenDto.getGrantType());
         data.addProperty("accessToken",tokenDto.getAccessToken());
         data.addProperty("refreshToken", tokenDto.getRefreshToken());
+        data.addProperty("user_seq", findUser.getUserIdx());
 
 
         // user 테이블에 Refreshtoken update
@@ -115,7 +118,7 @@ public class AuthController {
         }
 
         //user town's Information empty check
-        List<Town> townList = townService.findAllN(userOne.getUserIdx());
+        List<Town> townList = townService.findAllList(userOne.getUserIdx());
 
         if (townList.size() != 0) {
             data.addProperty("isTownInfoEmpty", "N");
@@ -151,10 +154,10 @@ public class AuthController {
                 data.addProperty("grantType", tokenDto.getGrantType());
                 data.addProperty("accessToken",tokenDto.getAccessToken());
                 data.addProperty("refreshToken", tokenDto.getRefreshToken());
+                data.addProperty("user_seq", findUser.getUserIdx());
 
                 userService.setRefreshToken(findUser.getUserIdx(), tokenDto.getRefreshToken());
 
-                System.out.println("findUser = " + findUser.getNickName());
                 if (findUser.getProfileImageUrl() == null || ("").equals(findUser.getProfileImageUrl())) {
                     data.addProperty("isProfileImageEmpty", "Y");
                 } else {

@@ -7,7 +7,9 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 
 @Getter
@@ -24,6 +26,12 @@ public class Rental {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column (name = "rental_idx")
     private Long rentalIdx;
+
+    @OneToMany(mappedBy = "rental")
+    private List<RentalTownInfo> rentalTownInfos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "rental")
+    private List<RentalCategoryInfo> rentalCategoryInfos = new ArrayList<>();
 
     @ManyToOne
     @NotNull

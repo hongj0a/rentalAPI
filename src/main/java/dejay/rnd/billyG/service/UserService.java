@@ -71,6 +71,17 @@ public class UserService {
     }
 
     @Transactional
+    public void updateUserInfo(Long userIdx, String snsType) {
+        LocalDateTime date = LocalDateTime.now();
+        Date now_date = Timestamp.valueOf(date);
+
+        User findUser = userRepositories.findOne(userIdx);
+        findUser.setSnsName(snsType);
+        findUser.setSnsType(passwordEncoder.encode(snsType));
+        findUser.setUpdateAt(now_date);
+    }
+
+    @Transactional
     public TokenDto login(String memberId, String password) {
         LocalDateTime date = LocalDateTime.now();
         Date now_date = Timestamp.valueOf(date);

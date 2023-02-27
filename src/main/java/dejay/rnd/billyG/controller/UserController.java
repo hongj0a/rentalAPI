@@ -9,6 +9,7 @@ import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.jwt.TokenProvider;
+import dejay.rnd.billyG.repository.TownRepository;
 import dejay.rnd.billyG.repository.UserRepository;
 import dejay.rnd.billyG.service.FileUploadService;
 import dejay.rnd.billyG.service.TownService;
@@ -32,14 +33,16 @@ public class UserController {
     private final TokenProvider tokenProvider;
     private final UserRepository userRepository;
     private final TownService townService;
+    private final TownRepository townRepository;
     private final FileUploadService uploadService;
 
 
-    public UserController(UserService userService, TokenProvider tokenProvider, UserRepository userRepository, TownService townService, FileUploadService uploadService) {
+    public UserController(UserService userService, TokenProvider tokenProvider, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService) {
         this.userService = userService;
         this.tokenProvider = tokenProvider;
         this.userRepository = userRepository;
         this.townService = townService;
+        this.townRepository = townRepository;
         this.uploadService = uploadService;
     }
 
@@ -67,7 +70,6 @@ public class UserController {
 
         if (multipartFile != null) {
             System.out.println("UserController.editProfile");
-            //imageUrl = multipartFile.getOriginalFilename();
             uploadService.upload(multipartFile);
             imageUrl = multipartFile.getOriginalFilename();
         }
@@ -92,7 +94,22 @@ public class UserController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
-        townService.setUserTownInfo(findUser.getUserIdx(), userTown.getLeadTownName(), true);
+        Town leadTown = townRepository.findByLeadTownAndUser_userIdx(true,findUser.getUserIdx());
+        List<Town> townList = townService.findAllN(findUser.getUserIdx());
+
+        if (leadTown == null) {
+            townService.setUserTownInfo(findUser.getUserIdx(), userTown.getLeadTownName(), true);
+
+        } else {
+            townService.updateLeadTown(leadTown.getTownIdx(), userTown.getLeadTownName());
+        }
+
+        if ((townList.size() + userTown.getTowns().length) > 10 ) {
+            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+            apiRes.setError(ErrCode.err_over_towns.code());
+            apiRes.setMessage(ErrCode.err_over_towns.msg());
+            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+        }
 
         if (userTown.getTowns().length > 0) {
             for (int i = 0; i < userTown.getTowns().length; i++) {
@@ -128,7 +145,7 @@ public class UserController {
     @GetMapping("/getAdditionalInfo")
     public ResponseEntity<JsonObject> getAdditionalInfo(HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
-        JsonArray townNames = new JsonArray();
+        JsonArray townArr = new JsonArray();
 
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
@@ -139,18 +156,19 @@ public class UserController {
         data.addProperty("phoneNumber", findUser.getPhoneNum());
 
         List<Town> towns = townService.findAllN(findUser.getUserIdx());
-        towns.forEach(
-                town -> {
-                    JsonObject townInfo = new JsonObject();
-                    if (town.isLeadTown()) {
-                        townInfo.addProperty("leadTown", town.getTownName());
-                    } else {
-                        townInfo.addProperty("townName", town.getTownName());
-                    }
-                    townNames.add(townInfo);
-                }
-        );
-        data.add("townList", townNames);
+        Town lead = townRepository.findByLeadTownAndUser_userIdx(true,findUser.getUserIdx());
+        data.addProperty("leadTown", lead.getTownName());
+
+        for (int i = 0; i < towns.size(); i++) {
+            String[] townList = new String[towns.size()];
+            if (!towns.get(i).isLeadTown()) {
+                townList[i] = towns.get(i).getTownName();
+            }
+            townArr.add(townList[i]);
+        }
+
+        data.add("townList", townArr);
+
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 

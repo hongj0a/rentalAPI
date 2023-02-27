@@ -2,26 +2,18 @@ package dejay.rnd.billyG.repository;
 
 import dejay.rnd.billyG.domain.Town;
 import dejay.rnd.billyG.domain.User;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.util.List;
+import java.util.Optional;
 
-@Repository
-@RequiredArgsConstructor
-public class TownRepository {
-    @PersistenceContext
-    private final EntityManager em;
+@EnableJpaRepositories
+public interface TownRepository extends JpaRepository<Town, Long> {
 
-    public List<Town> findAllN(Long userIdx) {
-        return em.createQuery("select t from Town t where t.deleteYn = false and t.user.userIdx = :userIdx", Town.class)
-                .setParameter("userIdx", userIdx)
-                .getResultList();
-    }
+    Town findByLeadTownAndUser_userIdx(boolean leadTown, Long userIdx);
 
-    public void save(Town town) {
-        em.persist(town);
-    }
+    List<Town> findByUser_userIdx(Long userIdx);
+    Town getOne(Long townIdx);
 }
