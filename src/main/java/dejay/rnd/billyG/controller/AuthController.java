@@ -64,8 +64,7 @@ public class AuthController {
             userService.signup(userDto);
         }
         //else if, userid 중복 , 그리고 snstype 다를때 user정보 update
-        if (!findUser.getSnsName().equals(loginDto.getSnsType())) {
-            System.out.println("AuthController.authorize");
+        if (findUser != null && !findUser.getSnsName().equals(loginDto.getSnsType())) {
             userService.updateUserInfo(findUser.getUserIdx(), loginDto.getSnsType());
         }
 
