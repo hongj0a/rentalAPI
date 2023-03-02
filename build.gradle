@@ -12,6 +12,7 @@ configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
+	bootJar.archiveName = 'billyG.jar'
 }
 
 repositories {
