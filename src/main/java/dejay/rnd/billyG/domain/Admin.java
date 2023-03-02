@@ -80,7 +80,6 @@ public class Admin {
     @ColumnDefault("0")
     private boolean certificationYn;
 
-    @NotNull(message = "token 값은 Null 일 수 없습니다.")
     //long text
     @Lob
     @Column (name = "access_token")
