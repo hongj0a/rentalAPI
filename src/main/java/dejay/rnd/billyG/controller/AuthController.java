@@ -58,6 +58,7 @@ public class AuthController {
 
         // 신규유저라면 회원가입 하고 바로 로그인
         if (findUser == null) {
+            System.out.println("AuthController.authorize");
             UserDto userDto = new UserDto();
             userDto.setEmail(loginDto.getEmail());
             userDto.setSnsType(loginDto.getSnsType());
@@ -91,7 +92,7 @@ public class AuthController {
         data.addProperty("grantType", tokenDto.getGrantType());
         data.addProperty("accessToken",tokenDto.getAccessToken());
         data.addProperty("refreshToken", tokenDto.getRefreshToken());
-        data.addProperty("user_seq", findUser.getUserIdx());
+        data.addProperty("user_seq", userOne.getUserIdx());
 
 
         // user 테이블에 Refreshtoken update

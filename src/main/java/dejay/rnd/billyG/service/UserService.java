@@ -55,6 +55,7 @@ public class UserService {
         LocalDateTime date = LocalDateTime.now();
         Date now_date = Timestamp.valueOf(date);
 
+        System.out.println("UserService.signup");
         Grade grade = Grade.builder()
                 .gradeName("도톨씨앗")
                 .build();
@@ -64,7 +65,6 @@ public class UserService {
                 .snsType(passwordEncoder.encode(userDto.getSnsType()))
                 .snsName(userDto.getSnsType())
                 .grades(Collections.singleton(grade))
-                .activeYn(true)
                 .createAt(now_date)
                 .build();
         return UserDto.from(userRepository.save(user));

@@ -69,9 +69,9 @@ public class User {
     @Column (name = "push_token")
     private String pushToken;
 
-    @ColumnDefault("1")
+    @Builder.Default
     @Column (name = "active_yn")
-    private boolean activeYn;
+    private boolean activeYn = true;
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")

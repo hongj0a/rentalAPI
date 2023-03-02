@@ -3,22 +3,16 @@ package dejay.rnd.billyG.controller;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
-import dejay.rnd.billyG.domain.Category;
-import dejay.rnd.billyG.domain.Rental;
-import dejay.rnd.billyG.domain.Town;
-import dejay.rnd.billyG.domain.User;
+import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.MainDto;
 import dejay.rnd.billyG.except.AppException;
-import dejay.rnd.billyG.repository.RentalRepository;
-import dejay.rnd.billyG.repository.TownRepository;
-import dejay.rnd.billyG.repository.UserRepository;
+import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.service.CategoryService;
 import dejay.rnd.billyG.service.TownService;
 import dejay.rnd.billyG.service.UserService;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,14 +31,18 @@ public class MainController {
     private final TownRepository townRepository;
     private final CategoryService categoryService;
     private final RentalRepository rentalRepository;
+    private final RentalImageRepository rentalImageRepository;
+    private final TownInfoRepository townInfoRepository;
 
-    public MainController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, CategoryService categoryService, RentalRepository rentalRepository) {
+    public MainController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, CategoryService categoryService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, TownInfoRepository townInfoRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.townService = townService;
         this.townRepository = townRepository;
         this.categoryService = categoryService;
         this.rentalRepository = rentalRepository;
+        this.rentalImageRepository = rentalImageRepository;
+        this.townInfoRepository = townInfoRepository;
     }
 
     @GetMapping("/getMainList")
@@ -52,6 +50,7 @@ public class MainController {
         JsonObject data = new JsonObject();
         JsonArray categoryArr = new JsonArray();
         JsonArray townArr = new JsonArray();
+        JsonArray rentalArr = new JsonArray();
         List<Rental> rentals;
 
         String acToken = req.getHeader("Authorization").substring(7);
@@ -61,10 +60,18 @@ public class MainController {
         //전체 카테고리 리스트
         List<Category> categoryList = categoryService.findAllN();
 
-        if ( null == mainDto.getStatus() ) {
-            System.out.println("MainController.getMain");
-            mainDto.setStatus(2);
-            rentals = rentalRepository.findAllByStatusNotAndTitleContainingOrderByLikeCntDesc(mainDto.getStatus(), mainDto.getKeyword());
+        if (mainDto.getStatus() == 2) {
+            if (mainDto.getFilter() == 0) {
+                rentals = rentalRepository.findAllByTitleContainingOrderByCreateAtDesc(mainDto.getKeyword());
+            } else {
+                rentals = rentalRepository.findAllByTitleContainingOrderByLikeCntDesc(mainDto.getKeyword());
+            }
+        } else {
+            if (mainDto.getFilter() == 0) {
+                rentals = rentalRepository.findAllByStatusAndTitleContainingOrderByCreateAtDesc(mainDto.getStatus(), mainDto.getKeyword());
+            } else {
+                rentals = rentalRepository.findAllByStatusAndTitleContainingOrderByLikeCntDesc(mainDto.getStatus(), mainDto.getKeyword());
+            }
         }
 
         categoryList.forEach(
@@ -93,15 +100,36 @@ public class MainController {
         );
         data.add("town_list", townArr);
 
-        System.out.println("mainDto = " + mainDto.getKeyword());
+        rentals.forEach(
+                rental -> {
+                    JsonObject rentalList = new JsonObject();
+                    rentalList.addProperty("rental_seq", rental.getRentalIdx());
 
-        if (mainDto.getFilter() == 0) {
-            rentals = rentalRepository.findAllByStatusAndTitleContainingOrderByCreateAtDesc(mainDto.getStatus(), mainDto.getKeyword());
-        } else {
-            rentals = rentalRepository.findAllByStatusAndTitleContainingOrderByLikeCntDesc(mainDto.getStatus(), mainDto.getKeyword());
-        }
+                    //썸네일추출
+                    List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(rental.getRentalIdx());
+                    if (rentalImages.size() != 0) {
+                        rentalList.addProperty("image_url", rentalImages.get(0).getImageUrl());
+                    }
 
-        System.out.println("rentals = " + rentals.size());
+                    rentalList.addProperty("title", rental.getTitle());
+
+                    //대표지역추출
+                    List<RentalTownInfo> leadTown = townInfoRepository.findAllByRental_rentalIdx(rental.getRentalIdx());
+                    if (leadTown.size() != 0) {
+                        for (int i = 0; i < leadTown.size(); i++) {
+                            if (leadTown.get(i).isLeadTown()) {
+                                rentalList.addProperty("lead_town", leadTown.get(i).getTownName());
+                            }
+                        }
+                    }
+
+                    rentalList.addProperty("reg_date", rental.getCreateAt().getTime()/1000L);
+                    rentalList.addProperty("daily_rental_fee", rental.getRentalPrice());
+
+                    rentalArr.add(rentalList);
+                }
+        );
+        data.add("rentals", rentalArr);
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
