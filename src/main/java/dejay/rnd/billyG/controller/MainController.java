@@ -115,13 +115,13 @@ public class MainController {
 
                     //대표지역추출
                     List<RentalTownInfo> leadTown = townInfoRepository.findAllByRental_rentalIdx(rental.getRentalIdx());
-                    if (leadTown.size() != 0) {
+                    /*if (leadTown.size() != 0) {
                         for (int i = 0; i < leadTown.size(); i++) {
                             if (leadTown.get(i).isLeadTown()) {
                                 rentalList.addProperty("lead_town", leadTown.get(i).getTownName());
                             }
                         }
-                    }
+                    }*/
 
                     rentalList.addProperty("reg_date", rental.getCreateAt().getTime()/1000L);
                     rentalList.addProperty("daily_rental_fee", rental.getRentalPrice());

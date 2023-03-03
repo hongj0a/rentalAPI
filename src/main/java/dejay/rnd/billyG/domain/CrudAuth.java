@@ -30,15 +30,12 @@ public class CrudAuth {
     @JoinColumn (name = "menuIdx")
     private Menu menu;
 
-    @NotNull
     @Column (name = "menu_url")
     private String menuUrl;
 
     @Column
-    @NotNull
     private Integer auth;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "createAt")

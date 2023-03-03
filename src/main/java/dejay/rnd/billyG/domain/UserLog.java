@@ -35,7 +35,6 @@ public class UserLog {
     @Column
     private String content;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

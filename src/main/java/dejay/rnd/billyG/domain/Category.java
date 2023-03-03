@@ -31,17 +31,14 @@ public class Category {
     private Admin admin;
 
     @Column
-    @NotNull(message = "카테고리명은 Null일 수 없습니다.")
     private String name;
 
     @Column (name = "order_num")
     private Integer orderNum;
 
-    @ColumnDefault("1")
     @Column (name = "active_yn")
-    private boolean activeYn;
+    private boolean activeYn = true;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

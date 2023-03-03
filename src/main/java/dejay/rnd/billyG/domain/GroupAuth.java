@@ -35,7 +35,6 @@ public class GroupAuth {
     @JoinColumn (name = "crudIdx")
     private CrudAuth crudAuth;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "createAt")

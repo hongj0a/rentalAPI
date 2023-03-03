@@ -36,18 +36,15 @@ public class BlockPost {
     private BlockType blockType;
 
     @Column
-    @NotNull(message = " 차단하는 사유가 Null 일 수 없습니다. ")
     private String reason;
 
     @Column (name = "reporter_idx")
-    @NotNull(message = " 차단하는 사용자의 값이 Null일 수 없습니다. ")
     private Integer reporterIdx;
 
     @ColumnDefault("0")
     @Column (name = "processing_status")
     private Integer processingStatus;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

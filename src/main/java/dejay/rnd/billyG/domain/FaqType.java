@@ -31,14 +31,12 @@ public class FaqType {
     private Admin admin;
 
     @Column (name = "type_name")
-    @NotNull (message = "타입명은 Null일 수 없습니다.")
     private String typeName;
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")
     private boolean deleteYn;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

@@ -51,7 +51,6 @@ public class PaymentsInfo {
     @Lob
     private String reason;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

@@ -39,7 +39,6 @@ public class UserMemo {
     @Lob
     private String memo;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

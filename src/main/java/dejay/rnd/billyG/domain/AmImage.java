@@ -36,7 +36,6 @@ public class AmImage {
     @Column
     private String updator;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

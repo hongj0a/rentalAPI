@@ -40,7 +40,6 @@ public class Transaction {
     @Column (name = "cancel_yn")
     private boolean cancelYn;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
@@ -66,7 +65,6 @@ public class Transaction {
      *      * 3 : 반납완료...
      */
     @Column (name = "owner_status")
-    @NotNull
     @ColumnDefault("0")
     private Integer ownerStatus;
 
@@ -78,7 +76,6 @@ public class Transaction {
      *      * 3 : 반납완료...
      */
     @Column (name = "renter_status")
-    @NotNull
     @ColumnDefault("0")
     private Integer renterStatus;
 

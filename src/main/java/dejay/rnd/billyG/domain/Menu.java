@@ -30,7 +30,6 @@ public class Menu {
     @Column (name = "menu_num")
     private Integer menuNum;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

@@ -46,18 +46,15 @@ public class ChatRoom {
     private boolean buyerStatus;
 
     @Column (name = "seller_idx")
-    @NotNull
     private Integer sellerIdx;
 
     @Column (name = "buyer_idx")
-    @NotNull
     private Integer buyerIdx;
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")
     private boolean deleteYn;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

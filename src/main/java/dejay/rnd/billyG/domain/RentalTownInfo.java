@@ -30,14 +30,24 @@ public class RentalTownInfo {
     @JoinColumn (name = "rentalIdx")
     private Rental rental;
 
-    @ColumnDefault("0")
-    @Column (name = "lead_town" )
-    private boolean leadTown;
+    @Column (name = "town_idx_0")
+    private String townIdx0;
 
-    @Column (name = "town_name")
-    private String townName;
+    @Column (name = "town_idx_1")
+    private String townIdx1;
 
-    @NotNull
+    @Column (name = "town_idx_2")
+    private String townIdx2;
+
+    @Column (name = "town_idx_3")
+    private String townIdx3;
+
+    @Column (name = "town_idx_4")
+    private String townIdx4;
+
+    @Column (name = "active_yn")
+    private boolean activeYn = true;
+
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
