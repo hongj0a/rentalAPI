@@ -25,6 +25,11 @@ public class Admin {
     @Column(name = "admin_idx")
     private Long adminIdx;
 
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "teamIdx")
+    private AffiliatedTeam affiliatedTeam;
+
     @Column
     @NotNull(message = " admin id는 Null 일 수 없습니다.")
     private String id;
@@ -87,9 +92,6 @@ public class Admin {
 
     @Column (name = "approval_date")
     private Date approvalDate;
-
-    @Column (name = "team_name")
-    private String teamName;
 
     @Column (name = "phone_num")
     private String phoneNum;
