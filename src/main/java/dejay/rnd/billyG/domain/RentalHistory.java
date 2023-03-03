@@ -38,7 +38,6 @@ public class RentalHistory {
     @Column
     private String renter;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

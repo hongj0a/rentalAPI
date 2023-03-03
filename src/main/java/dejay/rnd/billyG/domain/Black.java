@@ -38,14 +38,12 @@ public class Black {
     @Column
     private String reason;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
     private Date createAt;
 
     @Column (name = "sign_at")
-    @NotNull(message = " 가입일자는 Null일 수 없습니다.")
     private Date signAt;
 
     @Column (name = "update_at")

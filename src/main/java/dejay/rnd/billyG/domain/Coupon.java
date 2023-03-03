@@ -31,7 +31,6 @@ public class Coupon {
     private Admin admin;
 
     @Column(length = 100, name = "coupon_name")
-    @NotNull(message = "쿠폰 이름은 Null일 수 없습니다.")
     private String couponName;
 
     @Column(length = 1000, name = "coupon_desc")
@@ -53,7 +52,6 @@ public class Coupon {
     @Column (name = "delete_yn")
     private boolean deleteYn;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

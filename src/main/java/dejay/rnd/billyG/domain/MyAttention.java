@@ -35,7 +35,6 @@ public class MyAttention {
     @JoinColumn (name = "categoryIdx")
     private Category category;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

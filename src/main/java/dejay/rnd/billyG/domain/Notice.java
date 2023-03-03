@@ -36,7 +36,6 @@ public class Notice {
      * 1. 이벤트
      * 2. 채용
      */
-    @NotNull
     @Column (name = "notice_type")
     private Integer noticeType;
 
@@ -51,15 +50,13 @@ public class Notice {
     @Column (name = "delete_yn")
     private boolean deleteYn;
 
-    @ColumnDefault("1")
     @Column (name = "active_yn")
-    private boolean activeYn;
+    private boolean activeYn = true;
 
     @ColumnDefault("0")
     @Column (name = "main_yn")
     private boolean mainYn;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

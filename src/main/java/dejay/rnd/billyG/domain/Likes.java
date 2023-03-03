@@ -35,7 +35,6 @@ public class Likes {
     @JoinColumn (name = "rentalIdx")
     private Rental rental;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

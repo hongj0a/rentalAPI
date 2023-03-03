@@ -38,7 +38,6 @@ public class Rental {
     @JoinColumn (name = "userIdx")
     private User user;
 
-    @NotNull
     @Column (name = "owner_name")
     private String ownerName;
 
@@ -50,19 +49,15 @@ public class Rental {
     private Integer status;
 
     @Column
-    @NotNull(message = "제목은 Null일 수 없습니다.")
     private String title;
 
-    @NotNull(message = " 보증금은 Null일 수 없습니다. ")
     @ColumnDefault("0")
     private Integer deposit;
 
-    @NotNull(message = " 렌탈료는 Null일 수 없습니다. ")
     @ColumnDefault("0")
     @Column (name = "rental_price")
     private Integer rentalPrice;
 
-    @NotNull(message = "상품설명은 Null일 수 없습니다.")
     @Lob
     private String content;
 
@@ -78,7 +73,6 @@ public class Rental {
     @Column (name = "view_cnt")
     private Integer viewCnt;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
@@ -90,9 +84,8 @@ public class Rental {
     @Column (name = "complete_at")
     private Date completeAt;
 
-    @ColumnDefault("1")
     @Column (name = "active_yn")
-    private boolean activeYn;
+    private boolean activeYn = true;
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")
@@ -104,7 +97,6 @@ public class Rental {
     @Column
     private String updator;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column(name ="pull_up_at")

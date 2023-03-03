@@ -41,7 +41,6 @@ public class MemberOutType {
     @Column
     private String updator;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
@@ -53,8 +52,7 @@ public class MemberOutType {
     @Column (name = "delete_at")
     private Date deleteAt;
 
-    @ColumnDefault("0")
     @Column (name = "active_yn")
-    private boolean activeYn;
+    private boolean activeYn = true;
 
 }

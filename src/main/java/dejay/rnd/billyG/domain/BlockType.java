@@ -31,18 +31,15 @@ public class BlockType {
     private Admin admin;
 
     @Column (name = "type_name")
-    @NotNull (message = "타입명은 Null일 수 없습니다.")
     private String typeName;
 
     @Column (name = "type_flag")
-    @NotNull (message = "타입유형은 Null일 수 없습니다.")
     private Integer typeFlag;
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")
     private boolean deleteYn;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
@@ -54,8 +51,7 @@ public class BlockType {
     @Column (name = "delete_at")
     private Date deleteAt;
 
-    @ColumnDefault("0")
     @Column (name = "active_yn")
-    private boolean activeYn;
+    private boolean activeYn = true;
 
 }

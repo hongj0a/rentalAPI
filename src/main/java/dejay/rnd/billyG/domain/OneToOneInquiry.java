@@ -46,11 +46,9 @@ public class OneToOneInquiry {
     @Column (name = "delete_yn")
     private boolean deleteYn;
 
-    @ColumnDefault("1")
     @Column (name = "active_yn")
-    private boolean activeYn;
+    private boolean activeYn = true;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

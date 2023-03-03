@@ -34,7 +34,6 @@ public class UserItem {
     @JoinColumn (name = "itemIdx")
     private EvaluationItems evaluationItems;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

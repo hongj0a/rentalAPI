@@ -40,7 +40,6 @@ public class Charge {
     @Column (name = "bank_number")
     private String bankNumber;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

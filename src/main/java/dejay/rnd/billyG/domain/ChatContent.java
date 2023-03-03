@@ -31,12 +31,10 @@ public class ChatContent {
     private ChatRoom chatRoom;
 
     @Column (name = "user_idx")
-    @NotNull (message = "userIdx 값은 Null일 수 없습니다.")
     private Integer userIdx;
 
     @Column
     @Lob
-    @NotNull (message = "채팅 내용을 입력해 주세요.")
     private String content;
 
     @ColumnDefault("0")
@@ -47,7 +45,6 @@ public class ChatContent {
     @Lob
     private String imageUrl;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
