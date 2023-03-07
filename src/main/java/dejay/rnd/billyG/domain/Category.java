@@ -33,6 +33,9 @@ public class Category {
     @Column
     private String name;
 
+    @Column (length = 1000 , name = "image_url")
+    private String imageUrl;
+
     @Column (name = "order_num")
     private Integer orderNum;
 

@@ -15,12 +15,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -46,59 +45,29 @@ public class MainController {
     }
 
     @GetMapping("/getMainList")
-    public ResponseEntity<JsonObject> getMain(@RequestBody MainDto mainDto, HttpServletRequest req) throws AppException, ParseException {
+    public ResponseEntity<JsonObject> getMain(@RequestParam(value="status") Integer status,
+                                              @RequestParam(value="filter") Integer filter,
+                                              @RequestParam(value="keyword") String keyword,
+                                              @RequestParam(value="categories[]") String[] categories,
+                                              @RequestParam(value="towns[]") String[] towns,
+                                              HttpServletRequest req) throws AppException {
         JsonObject data = new JsonObject();
-        JsonArray categoryArr = new JsonArray();
-        JsonArray townArr = new JsonArray();
         JsonArray rentalArr = new JsonArray();
         List<Rental> rentals;
 
-        String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
-
-        //전체 카테고리 리스트
-        List<Category> categoryList = categoryService.findAllN();
-
-        if (mainDto.getStatus() == 2) {
-            if (mainDto.getFilter() == 0) {
-                rentals = rentalRepository.findAllByTitleContainingOrderByCreateAtDesc(mainDto.getKeyword());
+        if (status == 2) {
+            if (filter == 0) {
+                rentals = rentalRepository.findAllByTitleContainingOrderByCreateAtDesc(keyword);
             } else {
-                rentals = rentalRepository.findAllByTitleContainingOrderByLikeCntDesc(mainDto.getKeyword());
+                rentals = rentalRepository.findAllByTitleContainingOrderByLikeCntDesc(keyword);
             }
         } else {
-            if (mainDto.getFilter() == 0) {
-                rentals = rentalRepository.findAllByStatusAndTitleContainingOrderByCreateAtDesc(mainDto.getStatus(), mainDto.getKeyword());
+            if (filter == 0) {
+                rentals = rentalRepository.findAllByStatusAndTitleContainingOrderByCreateAtDesc(status, keyword);
             } else {
-                rentals = rentalRepository.findAllByStatusAndTitleContainingOrderByLikeCntDesc(mainDto.getStatus(), mainDto.getKeyword());
+                rentals = rentalRepository.findAllByStatusAndTitleContainingOrderByLikeCntDesc(status, keyword);
             }
         }
-
-        categoryList.forEach(
-                category -> {
-                    JsonObject categories = new JsonObject();
-                    categories.addProperty("category_seq", category.getCategoryIdx());
-                    categories.addProperty("category_name", category.getName());
-                    categoryArr.add(categories);
-                }
-        );
-        data.add("category_list", categoryArr);
-
-        //유저별 타운 리스트
-        List<Town> townList = townRepository.findByUser_userIdx(findUser.getUserIdx());
-
-        townList.forEach(
-                town -> {
-                    JsonObject towns = new JsonObject();
-                    towns.addProperty("town_seq", town.getTownIdx());
-                    towns.addProperty("town_name", town.getTownName());
-                    if(town.isLeadTown()) {
-                        towns.addProperty("lead_town", "Y");
-                    }
-                    townArr.add(towns);
-                }
-        );
-        data.add("town_list", townArr);
 
         rentals.forEach(
                 rental -> {
@@ -130,6 +99,83 @@ public class MainController {
                 }
         );
         data.add("rentals", rentalArr);
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+    @GetMapping("/getStatus")
+    public ResponseEntity<JsonObject> getStatus(HttpServletRequest req) throws AppException {
+        JsonObject data = new JsonObject();
+        JsonArray statusArr = new JsonArray();
+
+        Map<Integer, String> statusMap = new HashMap<>();
+        statusMap.put(0, "렌탈가능");
+        statusMap.put(1, "렌탈완료");
+        statusMap.put(2, "전체");
+
+        for (Map.Entry<Integer, String> pair : statusMap.entrySet()) {
+            JsonObject status = new JsonObject();
+
+            status.addProperty("status_key", pair.getKey());
+            status.addProperty("status", pair.getValue());
+
+            statusArr.add(status);
+        }
+
+        data.add("status_list", statusArr);
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+    @GetMapping("/getCategory")
+    public ResponseEntity<JsonObject> getCategory(HttpServletRequest req) throws AppException {
+        JsonObject data = new JsonObject();
+        JsonArray categoryArr = new JsonArray();
+
+        List<Category> categoryList = categoryService.findAllN();
+
+        categoryList.forEach(
+                category -> {
+                    JsonObject categories = new JsonObject();
+                    categories.addProperty("category_seq", category.getCategoryIdx());
+                    categories.addProperty("category_name", category.getName());
+                    categories.addProperty("category_image", category.getImageUrl());
+                    categoryArr.add(categories);
+                }
+        );
+        data.add("category_list", categoryArr);
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+    @GetMapping("/getTowns")
+    public ResponseEntity<JsonObject> getTowns(HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+        JsonArray townArr = new JsonArray();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        List<Town> townList = townRepository.findByUser_userIdx(findUser.getUserIdx());
+
+        townList.forEach(
+                town -> {
+                    JsonObject towns = new JsonObject();
+                    towns.addProperty("town_seq", town.getTownIdx());
+                    towns.addProperty("town_name", town.getTownName());
+                    if(town.isLeadTown()) {
+                        towns.addProperty("lead_town", "Y");
+                    }
+                    townArr.add(towns);
+                }
+        );
+        data.add("town_list", townArr);
+
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
