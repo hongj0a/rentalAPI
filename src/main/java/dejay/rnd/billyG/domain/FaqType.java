@@ -25,11 +25,6 @@ public class FaqType {
     @Column (name = "faq_type_idx")
     private Long faqTypeIdx;
 
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "adminIdx")
-    private Admin admin;
-
     @Column (name = "type_name")
     @NotNull (message = "타입명은 Null일 수 없습니다.")
     private String typeName;

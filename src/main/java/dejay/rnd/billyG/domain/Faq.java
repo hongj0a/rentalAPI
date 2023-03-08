@@ -27,11 +27,6 @@ public class Faq {
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "adminIdx")
-    private Admin admin;
-
-    @ManyToOne
-    @NotNull
     @JoinColumn (name = "faqTypeIdx")
     private FaqType faqType;
 

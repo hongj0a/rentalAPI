@@ -12,9 +12,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FaqTypeDto {
-
     private Long faqTypeIdx;
-    private Admin admin;
     private String typeName;
     private Integer orderNum;
     private boolean deleteYn;
@@ -24,7 +22,6 @@ public class FaqTypeDto {
 
     public FaqTypeDto(FaqType faqType){
         faqTypeIdx = faqType.getFaqTypeIdx();
-        admin = faqType.getAdmin();
         typeName = faqType.getTypeName();
         orderNum = faqType.getOrderNum();
         createAt = faqType.getCreateAt();
@@ -34,7 +31,6 @@ public class FaqTypeDto {
     public FaqType toEntity(){
         return FaqType.builder()
                 .faqTypeIdx(faqTypeIdx)
-                .admin(admin)
                 .typeName(typeName)
                 .orderNum(orderNum)
                 .deleteYn(deleteYn)

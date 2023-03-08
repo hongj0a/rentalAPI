@@ -53,6 +53,7 @@ public class FaqController {
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
     }
+
     @GetMapping("/getFaqType")
     public ResponseEntity<JsonObject> getFaqType(HttpServletRequest req,
                                                  @PageableDefault(size=10, sort="faqTypeIdx", direction = Sort.Direction.DESC)Pageable pageable) throws AppException, ParseException {

@@ -14,7 +14,6 @@ import java.util.Date;
 public class FaqDto {
 
     private Long faqIdx;
-    private Admin admin;
     private FaqType faqType;
     private String title;
     private String content;
@@ -26,7 +25,6 @@ public class FaqDto {
 
     public FaqDto(Faq faq){
         faqIdx = faq.getFaqIdx();
-        admin = faq.getAdmin();
         faqType = faq.getFaqType();
         title = faq.getTitle();
         content = faq.getContent();
@@ -37,7 +35,6 @@ public class FaqDto {
     public Faq toEntity(){
         return Faq.builder()
                 .faqIdx(faqIdx)
-                .admin(admin)
                 .faqType(faqType)
                 .title(title)
                 .content(content)
