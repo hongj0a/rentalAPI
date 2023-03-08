@@ -48,11 +48,12 @@ public class FaqType {
     private Date updateAt;
 
     @Column (name = "deleteAt")
-    private Date delete_at;
+    private Date deleteAt;
 
     @Column
     private String updator;
 
     @Column (name = "order_num")
     private Integer orderNum;
+
 }

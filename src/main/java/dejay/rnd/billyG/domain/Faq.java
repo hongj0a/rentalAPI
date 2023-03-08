@@ -65,4 +65,5 @@ public class Faq {
     @Column
     private String updator;
 
+
 }
