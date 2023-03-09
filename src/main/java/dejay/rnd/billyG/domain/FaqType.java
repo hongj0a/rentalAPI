@@ -31,7 +31,7 @@ public class FaqType {
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")
-    private boolean deleteYn;
+    private Boolean deleteYn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)

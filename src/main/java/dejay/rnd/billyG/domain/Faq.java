@@ -39,11 +39,11 @@ public class Faq {
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")
-    private boolean deleteYn;
+    private Boolean deleteYn;
 
     @ColumnDefault("1")
     @Column (name = "active_yn")
-    private boolean activeYn;
+    private Boolean activeYn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)

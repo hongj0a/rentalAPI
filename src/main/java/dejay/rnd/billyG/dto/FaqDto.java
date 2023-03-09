@@ -1,6 +1,5 @@
 package dejay.rnd.billyG.dto;
 
-import dejay.rnd.billyG.domain.Admin;
 import dejay.rnd.billyG.domain.Faq;
 import dejay.rnd.billyG.domain.FaqType;
 import lombok.*;
@@ -17,8 +16,8 @@ public class FaqDto {
     private FaqType faqType;
     private String title;
     private String content;
-    private boolean deleteYn;
-    private boolean activeYn;
+    private Boolean deleteYn;
+    private Boolean activeYn;
     private Date createAt;
     private Date updateAt;
     private String updator;
@@ -28,21 +27,10 @@ public class FaqDto {
         faqType = faq.getFaqType();
         title = faq.getTitle();
         content = faq.getContent();
+        deleteYn = faq.getDeleteYn();
+        activeYn = faq.getActiveYn();
         createAt = faq.getCreateAt();
         updateAt = faq.getUpdateAt();
         updator = faq.getUpdator();
-    }
-    public Faq toEntity(){
-        return Faq.builder()
-                .faqIdx(faqIdx)
-                .faqType(faqType)
-                .title(title)
-                .content(content)
-                .deleteYn(deleteYn)
-                .activeYn(activeYn)
-                .createAt(createAt)
-                .updateAt(updateAt)
-                .updator(updator)
-                .build();
     }
 }

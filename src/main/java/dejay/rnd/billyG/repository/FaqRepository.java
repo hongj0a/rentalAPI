@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FaqRepository extends JpaRepository<Faq, Long> {
-
-  Page<Faq> findByFaqType(FaqType faqTypeIdx, Pageable pageable);
+  Page<Faq> findByFaqTypeAndDeleteYnAndActiveYn(FaqType faqTypeIdx, Boolean deleteYn, Boolean activeYn, Pageable pageable);
 
 }

@@ -23,11 +23,11 @@ public class FaqService {
     public List<FaqDto> findByFaqType(Long faqType, Pageable pageable) {
         FaqType id = new FaqType();
         id.setFaqTypeIdx(faqType);
-        return faqRepository.findByFaqType(id, pageable).stream().map(FaqDto::new).collect(Collectors.toList());
+        return faqRepository.findByFaqTypeAndDeleteYnAndActiveYn(id,false,true,pageable).stream().map(FaqDto::new).collect(Collectors.toList());
 
     }
 
     public List<FaqTypeDto> findAll(Pageable pageable) {
-        return faqTypeRepository.findAll(pageable).stream().map(FaqTypeDto::new).collect(Collectors.toList());
+        return faqTypeRepository.findByDeleteYn(false,pageable).stream().map(FaqTypeDto::new).collect(Collectors.toList());
     }
 }
