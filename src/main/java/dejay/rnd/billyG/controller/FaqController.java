@@ -8,7 +8,6 @@ import dejay.rnd.billyG.dto.FaqDto;
 import dejay.rnd.billyG.dto.FaqTypeDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.service.FaqService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +32,6 @@ public class FaqController {
 
     private final FaqService faqService;
 
-    @Operation(summary = "FAQ 리스트 조회", description = "FAQ 리스트 조회")
     @GetMapping("/getFaqList")
     public ResponseEntity<JsonObject> getFaqList(HttpServletRequest req,
                                        @RequestParam(name = "faqType", required = false) Long faqType,
