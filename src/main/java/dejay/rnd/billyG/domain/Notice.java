@@ -49,15 +49,15 @@ public class Notice {
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")
-    private boolean deleteYn;
+    private Boolean deleteYn;
 
     @ColumnDefault("1")
     @Column (name = "active_yn")
-    private boolean activeYn;
+    private Boolean activeYn;
 
     @ColumnDefault("0")
     @Column (name = "main_yn")
-    private boolean mainYn;
+    private Boolean mainYn;
 
     @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)

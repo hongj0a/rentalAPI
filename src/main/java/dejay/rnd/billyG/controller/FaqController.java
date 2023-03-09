@@ -8,7 +8,6 @@ import dejay.rnd.billyG.dto.FaqDto;
 import dejay.rnd.billyG.dto.FaqTypeDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.service.FaqService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.parser.ParseException;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Tag(name = "FAQ", description = "FAQ조회")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
