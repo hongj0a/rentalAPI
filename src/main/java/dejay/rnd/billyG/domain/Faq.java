@@ -27,11 +27,6 @@ public class Faq {
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "adminIdx")
-    private Admin admin;
-
-    @ManyToOne
-    @NotNull
     @JoinColumn (name = "faqTypeIdx")
     private FaqType faqType;
 
@@ -44,7 +39,7 @@ public class Faq {
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")
-    private boolean deleteYn;
+    private Boolean deleteYn;
 
     @Column (name = "active_yn")
     private boolean activeYn = true;
@@ -62,5 +57,6 @@ public class Faq {
 
     @Column
     private String updator;
+
 
 }
