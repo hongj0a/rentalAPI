@@ -33,7 +33,7 @@ public class AdminGroup {
     @Column
     private String updator;
 
-    @Column (name = "group_name")
+    @Column (name = "group_name", unique = true)
     @NotNull(message = " group name은 Null 일 수 없습니다. ")
     private String groupName;
 

@@ -9,6 +9,7 @@ import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.jwt.TokenProvider;
+import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.repository.TownRepository;
 import dejay.rnd.billyG.repository.UserRepository;
 import dejay.rnd.billyG.service.FileUploadService;
@@ -69,9 +70,8 @@ public class UserController {
         String userNickName = "";
 
         if (multipartFile != null) {
-            System.out.println("UserController.editProfile");
-            uploadService.upload(multipartFile);
-            imageUrl = multipartFile.getOriginalFilename();
+            ImageFile file = uploadService.upload(multipartFile);
+            imageUrl = file.getFileName();
         }
 
         if (nickName != null) {

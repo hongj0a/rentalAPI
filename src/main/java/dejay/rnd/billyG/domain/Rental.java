@@ -7,9 +7,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 @Getter
@@ -28,10 +26,10 @@ public class Rental {
     private Long rentalIdx;
 
     @OneToMany(mappedBy = "rental")
-    private List<RentalTownInfo> rentalTownInfos = new ArrayList<>();
+    private Set<RentalTownInfo> rentalTownInfos = new HashSet<>();
 
     @OneToMany(mappedBy = "rental")
-    private List<RentalCategoryInfo> rentalCategoryInfos = new ArrayList<>();
+    private Set<RentalCategoryInfo> rentalCategoryInfos = new HashSet<>();
 
     @ManyToOne
     @NotNull
@@ -46,7 +44,7 @@ public class Rental {
     private String renterName;
 
     @ColumnDefault("0")
-    private Integer status;
+    private int status;
 
     @Column
     private String title;
@@ -105,4 +103,19 @@ public class Rental {
     @Column(name ="pull_up_cnt")
     @ColumnDefault("0")
     private Integer pullUpCnt;
+
+    @Column(name = "lead_town")
+    private Integer leadTown;
+
+    @Column(name = "town_1")
+    private Integer town1;
+
+    @Column(name = "town_2")
+    private Integer town2;
+
+    @Column(name = "town_3")
+    private Integer town3;
+
+    @Column(name = "town_4")
+    private Integer town4;
 }

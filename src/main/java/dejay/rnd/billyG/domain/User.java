@@ -164,4 +164,19 @@ public class User {
             inverseJoinColumns = {@JoinColumn(name = "grade_name", referencedColumnName = "grade_name")})
     private Set<Grade> grades;
 
+    @Column(name = "lead_town")
+    private Integer leadTown;
+
+    @Column(name = "town_1")
+    private Integer town1;
+
+    @Column(name = "town_2")
+    private Integer town2;
+
+    @Column(name = "town_3")
+    private Integer town3;
+
+    @Column(name = "town_4")
+    private Integer town4;
+
 }
