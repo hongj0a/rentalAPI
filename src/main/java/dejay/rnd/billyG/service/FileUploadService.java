@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.except.AppException;
@@ -19,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Slf4j
@@ -36,27 +38,25 @@ public class FileUploadService {
         this.fileWriter = fileWriter;
     }
 
-    public ImageFile upload(MultipartFile sourceFile ) {
+
+    public ImageFile upload(MultipartFile sourceFile) {
+
+        LocalDateTime now = LocalDateTime.now();
 
         String fileId = UUID.randomUUID().toString();
-        String fileName = sourceFile.getOriginalFilename(); // 영수증2
-        String filePath = fileWriter.getFilePath(fileName, sourceFile); // home/image/영수증2.jpg
-        log.info("fileName : {}, filePath : {}", fileName, filePath);
-       /* File file = new File(filePath);
-        boolean isExists = file.exists();
-        log.info("fileName :: {}", fileName);
-        log.info("filePath:: {}", filePath );
-        log.info("sourceFile:: {}", sourceFile.getOriginalFilename() );
+        String fileName = sourceFile.getOriginalFilename();
+        String ext = fileName.substring(fileName.lastIndexOf(".") + 1);
 
-        if(isExists) {
-           throw new AppException(ErrCode.err_duplicate_file, "파일이름을 수정해주세요.");
-        }*/
+        fileName = now + "_" + fileId + "." + ext;
+        System.out.println("fileName = " + fileName);
+
+        String filePath = fileWriter.getFilePath(fileName, sourceFile);
+
         fileWriter.writeFile(sourceFile, filePath);
-        log.info("###########################");
         return ImageFile.builder()
-                .fileName(sourceFile.getOriginalFilename())
+                .fileName(fileName)
                 .filePath(filePath)
-                .fileId(sourceFile.getOriginalFilename())
+                .fileId(fileId)
                 .fileSize(sourceFile.getSize())
                 .build();
     }

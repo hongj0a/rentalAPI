@@ -33,8 +33,11 @@ public class Category {
     @Column
     private String name;
 
-    @Column (length = 1000 , name = "image_url")
-    private String imageUrl;
+    @Column (length = 1000 , name = "on_image_url")
+    private String onImageUrl;
+
+    @Column (length = 1000 , name = "off_image_url")
+    private String offImageUrl;
 
     @Column (name = "order_num")
     private Integer orderNum;
