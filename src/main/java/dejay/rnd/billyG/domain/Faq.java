@@ -41,11 +41,9 @@ public class Faq {
     @Column (name = "delete_yn")
     private Boolean deleteYn;
 
-    @ColumnDefault("1")
     @Column (name = "active_yn")
-    private Boolean activeYn;
+    private boolean activeYn = true;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

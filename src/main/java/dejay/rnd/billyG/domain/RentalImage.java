@@ -32,7 +32,6 @@ public class RentalImage {
     @Column (length = 1000, name = "image_url")
     private String imageUrl;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

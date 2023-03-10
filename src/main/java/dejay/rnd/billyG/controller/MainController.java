@@ -13,14 +13,16 @@ import dejay.rnd.billyG.service.UserService;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -45,46 +47,136 @@ public class MainController {
         this.townInfoRepository = townInfoRepository;
     }
 
+    @GetMapping("/string")
+    public String test() {
+        return "hello";
+    }
+
     @GetMapping("/getMainList")
-    public ResponseEntity<JsonObject> getMain(@RequestBody MainDto mainDto, HttpServletRequest req) throws AppException, ParseException {
+    public ResponseEntity<JsonObject> getMain(@RequestParam(value="status") Integer status,
+                                              @RequestParam(value="filter") Integer filter,
+                                              @RequestParam(value="keyword") String keyword,
+                                              @RequestParam(value="categories[]") Long[] categories,
+                                              @RequestParam(value="towns[]") Long[] towns,
+                                              @PageableDefault(size = 10)
+                                                  Pageable pageable,
+                                              HttpServletRequest req) throws AppException {
         JsonObject data = new JsonObject();
-        JsonArray categoryArr = new JsonArray();
-        JsonArray townArr = new JsonArray();
         JsonArray rentalArr = new JsonArray();
-        List<Rental> rentals;
+        Page<Rental> rentals;
 
-        String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
-
-        //전체 카테고리 리스트
-        List<Category> categoryList = categoryService.findAllN();
-
-        if (mainDto.getStatus() == 2) {
-            if (mainDto.getFilter() == 0) {
-                rentals = rentalRepository.findAllByTitleContainingOrderByCreateAtDesc(mainDto.getKeyword());
+        if (status == 0) {
+            if (filter == 0) {
+                System.out.println("MainController.getMain1");
+                rentals = rentalRepository.findAllByRentalCategoryInfos_Category_CategoryIdxInAndRentalTownInfos_Town_TownIdxInAndTitleContainingOrderByCreateAtDesc(categories, towns, keyword, pageable);
             } else {
-                rentals = rentalRepository.findAllByTitleContainingOrderByLikeCntDesc(mainDto.getKeyword());
+                System.out.println("MainController.getMain2");
+                rentals = rentalRepository.findAllByRentalCategoryInfos_Category_CategoryIdxInAndRentalTownInfos_Town_TownIdxInAndTitleContainingOrderByLikeCntDesc(categories, towns, keyword, pageable);
             }
         } else {
-            if (mainDto.getFilter() == 0) {
-                rentals = rentalRepository.findAllByStatusAndTitleContainingOrderByCreateAtDesc(mainDto.getStatus(), mainDto.getKeyword());
+            if (filter == 0) {
+                System.out.println("MainController.getMain3");
+                rentals = rentalRepository.findAllByRentalCategoryInfos_Category_CategoryIdxInAndRentalTownInfos_Town_TownIdxInAndStatusAndTitleContainingOrderByCreateAtDesc(categories, towns, status, keyword, pageable);
             } else {
-                rentals = rentalRepository.findAllByStatusAndTitleContainingOrderByLikeCntDesc(mainDto.getStatus(), mainDto.getKeyword());
+                System.out.println("MainController.getMain4");
+                rentals = rentalRepository.findAllByRentalCategoryInfos_Category_CategoryIdxInAndRentalTownInfos_Town_TownIdxInAndStatusAndTitleContainingOrderByLikeCntDesc(categories, towns, status, keyword, pageable);
             }
         }
+
+        rentals.forEach(
+                rental -> {
+                    JsonObject rentalList = new JsonObject();
+                    rentalList.addProperty("rental_seq", rental.getRentalIdx());
+
+                    //썸네일추출
+                    List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(rental.getRentalIdx());
+                    if (rentalImages.size() != 0) {
+                        rentalList.addProperty("image_url", rentalImages.get(0).getImageUrl());
+                    }
+
+                    rentalList.addProperty("title", rental.getTitle());
+                    rentalList.addProperty("reg_date", rental.getCreateAt().getTime()/1000L);
+                    rentalList.addProperty("daily_rental_fee", rental.getRentalPrice());
+
+                    //town 리스트 추출
+
+                    rentalArr.add(rentalList);
+                }
+        );
+        data.add("rentals", rentalArr);
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+    @GetMapping("/getStatus")
+    public ResponseEntity<JsonObject> getStatus(HttpServletRequest req) throws AppException {
+        JsonObject data = new JsonObject();
+        JsonArray statusArr = new JsonArray();
+
+        Map<Integer, String> statusMap = new HashMap<>();
+        statusMap.put(0, "전체");
+        statusMap.put(1, "렌탈가능");
+        statusMap.put(2, "렌탈완료");
+
+        for (Map.Entry<Integer, String> pair : statusMap.entrySet()) {
+            JsonObject status = new JsonObject();
+
+            status.addProperty("status_key", pair.getKey());
+            status.addProperty("status", pair.getValue());
+
+            statusArr.add(status);
+        }
+
+        data.add("status_list", statusArr);
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+    @GetMapping("/getCategory")
+    public ResponseEntity<JsonObject> getCategory(HttpServletRequest req) throws AppException {
+        JsonObject data = new JsonObject();
+        JsonArray categoryArr = new JsonArray();
+
+        List<Category> categoryList = categoryService.findAllN();
 
         categoryList.forEach(
                 category -> {
                     JsonObject categories = new JsonObject();
                     categories.addProperty("category_seq", category.getCategoryIdx());
                     categories.addProperty("category_name", category.getName());
+                    if (category.getOnImageUrl() == null) {
+                        categories.addProperty("category_on_image", "");
+                    } else {
+                        categories.addProperty("category_on_image", category.getOnImageUrl());
+                    }
+
+                    if (category.getOffImageUrl() == null) {
+                        categories.addProperty("category_off_image", "");
+                    } else {
+                        categories.addProperty("category_off_image", category.getOffImageUrl());
+                    }
+
                     categoryArr.add(categories);
                 }
         );
         data.add("category_list", categoryArr);
 
-        //유저별 타운 리스트
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+    @GetMapping("/getTowns")
+    public ResponseEntity<JsonObject> getTowns(HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+        JsonArray townArr = new JsonArray();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
         List<Town> townList = townRepository.findByUser_userIdx(findUser.getUserIdx());
 
         townList.forEach(
@@ -100,36 +192,6 @@ public class MainController {
         );
         data.add("town_list", townArr);
 
-        rentals.forEach(
-                rental -> {
-                    JsonObject rentalList = new JsonObject();
-                    rentalList.addProperty("rental_seq", rental.getRentalIdx());
-
-                    //썸네일추출
-                    List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(rental.getRentalIdx());
-                    if (rentalImages.size() != 0) {
-                        rentalList.addProperty("image_url", rentalImages.get(0).getImageUrl());
-                    }
-
-                    rentalList.addProperty("title", rental.getTitle());
-
-                    //대표지역추출
-                    List<RentalTownInfo> leadTown = townInfoRepository.findAllByRental_rentalIdx(rental.getRentalIdx());
-                    if (leadTown.size() != 0) {
-                        for (int i = 0; i < leadTown.size(); i++) {
-                            if (leadTown.get(i).isLeadTown()) {
-                                rentalList.addProperty("lead_town", leadTown.get(i).getTownName());
-                            }
-                        }
-                    }
-
-                    rentalList.addProperty("reg_date", rental.getCreateAt().getTime()/1000L);
-                    rentalList.addProperty("daily_rental_fee", rental.getRentalPrice());
-
-                    rentalArr.add(rentalList);
-                }
-        );
-        data.add("rentals", rentalArr);
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 

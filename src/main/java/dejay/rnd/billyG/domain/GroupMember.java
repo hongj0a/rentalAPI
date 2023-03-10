@@ -32,7 +32,6 @@ public class GroupMember {
     @Column (name = "member_idx")
     private Integer memberIdx;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

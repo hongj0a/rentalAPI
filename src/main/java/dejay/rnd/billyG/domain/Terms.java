@@ -40,17 +40,16 @@ public class Terms {
      * ...
      */
     @Column
-    @NotNull
     private Integer type;
 
-    @NotNull (message = "제목은 Null일 수 없습니다.")
+    @Column
     private String title;
 
-    @NotNull (message = "내용은 Null일 수 없습니다.")
     @Lob
+    @Column
     private String content;
 
-    @NotNull (message = "version은 Null일 수 없습니다.")
+    @Column
     private String version;
 
     @ColumnDefault("0")
@@ -67,7 +66,6 @@ public class Terms {
     @Column (name = "reservation_date")
     private Date reservationDate;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

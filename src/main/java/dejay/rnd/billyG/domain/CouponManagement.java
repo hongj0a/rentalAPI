@@ -43,7 +43,6 @@ public class CouponManagement {
     @Column (name = "use_yn")
     private boolean useYn;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

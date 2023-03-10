@@ -7,9 +7,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 @Getter
@@ -28,17 +26,16 @@ public class Rental {
     private Long rentalIdx;
 
     @OneToMany(mappedBy = "rental")
-    private List<RentalTownInfo> rentalTownInfos = new ArrayList<>();
+    private Set<RentalTownInfo> rentalTownInfos = new HashSet<>();
 
     @OneToMany(mappedBy = "rental")
-    private List<RentalCategoryInfo> rentalCategoryInfos = new ArrayList<>();
+    private Set<RentalCategoryInfo> rentalCategoryInfos = new HashSet<>();
 
     @ManyToOne
     @NotNull
     @JoinColumn (name = "userIdx")
     private User user;
 
-    @NotNull
     @Column (name = "owner_name")
     private String ownerName;
 
@@ -47,22 +44,18 @@ public class Rental {
     private String renterName;
 
     @ColumnDefault("0")
-    private Integer status;
+    private int status;
 
     @Column
-    @NotNull(message = "제목은 Null일 수 없습니다.")
     private String title;
 
-    @NotNull(message = " 보증금은 Null일 수 없습니다. ")
     @ColumnDefault("0")
     private Integer deposit;
 
-    @NotNull(message = " 렌탈료는 Null일 수 없습니다. ")
     @ColumnDefault("0")
     @Column (name = "rental_price")
     private Integer rentalPrice;
 
-    @NotNull(message = "상품설명은 Null일 수 없습니다.")
     @Lob
     private String content;
 
@@ -78,7 +71,6 @@ public class Rental {
     @Column (name = "view_cnt")
     private Integer viewCnt;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
@@ -90,9 +82,8 @@ public class Rental {
     @Column (name = "complete_at")
     private Date completeAt;
 
-    @ColumnDefault("1")
     @Column (name = "active_yn")
-    private boolean activeYn;
+    private boolean activeYn = true;
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")
@@ -104,7 +95,6 @@ public class Rental {
     @Column
     private String updator;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column(name ="pull_up_at")
@@ -113,4 +103,19 @@ public class Rental {
     @Column(name ="pull_up_cnt")
     @ColumnDefault("0")
     private Integer pullUpCnt;
+
+    @Column(name = "lead_town")
+    private Integer leadTown;
+
+    @Column(name = "town_1")
+    private Integer town1;
+
+    @Column(name = "town_2")
+    private Integer town2;
+
+    @Column(name = "town_3")
+    private Integer town3;
+
+    @Column(name = "town_4")
+    private Integer town4;
 }

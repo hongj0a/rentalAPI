@@ -32,7 +32,6 @@ public class SearchKeyword {
     @Column
     private String keyword;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

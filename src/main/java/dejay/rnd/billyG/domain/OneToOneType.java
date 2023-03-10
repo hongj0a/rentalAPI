@@ -37,7 +37,6 @@ public class OneToOneType {
     @Column (name = "delete_yn")
     private boolean deleteYn;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

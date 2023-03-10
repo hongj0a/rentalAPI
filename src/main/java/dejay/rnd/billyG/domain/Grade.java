@@ -31,7 +31,6 @@ public class Grade {
     @Column(name = "grade_score")
     private String gradeScore;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column(name = "createAt")
@@ -43,9 +42,8 @@ public class Grade {
     @Column
     private String updator;
 
-    @ColumnDefault("0")
-    @Column(name = "active_yn")
-    private boolean activeYn;
+    @Column (name = "active_yn")
+    private boolean activeYn = true;
 
     @Column (name = "admin_idx")
     private Integer adminIdx;

@@ -57,7 +57,6 @@ public class Town {
     @Column( precision = 18, scale = 10 , name = "region_longitude")
     private BigDecimal regionLongitude;
 
-    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
