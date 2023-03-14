@@ -1,7 +1,8 @@
 package dejay.rnd.billyG.repository;
 
 import dejay.rnd.billyG.domain.Rental;
-import dejay.rnd.billyG.domain.RentalImage;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -13,16 +14,16 @@ import java.util.List;
 @Repository
 public interface RentalRepository extends JpaRepository<Rental, Long> {
 
-    @EntityGraph(attributePaths = {"rentalTownInfos"})
-    List<Rental> findAllByStatusAndTitleContainingOrderByCreateAtDesc(Integer Status, String title);
+    @EntityGraph(attributePaths = {"rentalTownInfos", "rentalCategoryInfos"})
+    Page<Rental> findAllByRentalCategoryInfos_Category_CategoryIdxInAndRentalTownInfos_Town_TownIdxInAndStatusAndTitleContainingOrderByCreateAtDesc(Long[] categories, Long[] towns, Integer Status, String title, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"rentalTownInfos"})
-    List<Rental> findAllByStatusAndTitleContainingOrderByLikeCntDesc(Integer Status, String title);
+    @EntityGraph(attributePaths = {"rentalTownInfos", "rentalCategoryInfos"})
+    Page<Rental> findAllByRentalCategoryInfos_Category_CategoryIdxInAndRentalTownInfos_Town_TownIdxInAndStatusAndTitleContainingOrderByLikeCntDesc(Long[] categories, Long[] towns, Integer Status, String title, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"rentalTownInfos"})
-    List<Rental> findAllByTitleContainingOrderByCreateAtDesc(String keyword);
+    @EntityGraph(attributePaths = {"rentalTownInfos", "rentalCategoryInfos"})
+    Page<Rental> findAllByRentalCategoryInfos_Category_CategoryIdxInAndRentalTownInfos_Town_TownIdxInAndTitleContainingOrderByCreateAtDesc(Long[] categories, Long[] towns, String title, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"rentalTownInfos"})
-    List<Rental> findAllByTitleContainingOrderByLikeCntDesc(String keyword);
+    @EntityGraph(attributePaths = {"rentalTownInfos", "rentalCategoryInfos"})
+    Page<Rental> findAllByRentalCategoryInfos_Category_CategoryIdxInAndRentalTownInfos_Town_TownIdxInAndTitleContainingOrderByLikeCntDesc(Long[] categories, Long[] towns, String title, Pageable pageable);
 
 }

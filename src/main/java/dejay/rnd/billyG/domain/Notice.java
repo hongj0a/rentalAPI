@@ -48,14 +48,14 @@ public class Notice {
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")
-    private boolean deleteYn;
+    private Boolean deleteYn;
 
     @Column (name = "active_yn")
     private boolean activeYn = true;
-
+    
     @ColumnDefault("0")
     @Column (name = "main_yn")
-    private boolean mainYn;
+    private Boolean mainYn;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp

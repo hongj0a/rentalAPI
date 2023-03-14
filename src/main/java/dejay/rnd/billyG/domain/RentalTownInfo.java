@@ -30,20 +30,10 @@ public class RentalTownInfo {
     @JoinColumn (name = "rentalIdx")
     private Rental rental;
 
-    @Column (name = "town_idx_0")
-    private String townIdx0;
-
-    @Column (name = "town_idx_1")
-    private String townIdx1;
-
-    @Column (name = "town_idx_2")
-    private String townIdx2;
-
-    @Column (name = "town_idx_3")
-    private String townIdx3;
-
-    @Column (name = "town_idx_4")
-    private String townIdx4;
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "townIdx")
+    private Town town;
 
     @Column (name = "active_yn")
     private boolean activeYn = true;

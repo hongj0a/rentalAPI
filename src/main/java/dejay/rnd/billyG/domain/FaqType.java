@@ -25,17 +25,12 @@ public class FaqType {
     @Column (name = "faq_type_idx")
     private Long faqTypeIdx;
 
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "adminIdx")
-    private Admin admin;
-
     @Column (name = "type_name")
     private String typeName;
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")
-    private boolean deleteYn;
+    private Boolean deleteYn;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
@@ -46,11 +41,12 @@ public class FaqType {
     private Date updateAt;
 
     @Column (name = "deleteAt")
-    private Date delete_at;
+    private Date deleteAt;
 
     @Column
     private String updator;
 
     @Column (name = "order_num")
     private Integer orderNum;
+
 }

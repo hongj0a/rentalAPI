@@ -13,6 +13,9 @@ import dejay.rnd.billyG.service.UserService;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,28 +47,39 @@ public class MainController {
         this.townInfoRepository = townInfoRepository;
     }
 
+    @GetMapping("/string")
+    public String test() {
+        return "hello";
+    }
+
     @GetMapping("/getMainList")
     public ResponseEntity<JsonObject> getMain(@RequestParam(value="status") Integer status,
                                               @RequestParam(value="filter") Integer filter,
                                               @RequestParam(value="keyword") String keyword,
-                                              @RequestParam(value="categories[]") String[] categories,
-                                              @RequestParam(value="towns[]") String[] towns,
+                                              @RequestParam(value="categories[]") Long[] categories,
+                                              @RequestParam(value="towns[]") Long[] towns,
+                                              @PageableDefault(size = 10)
+                                                  Pageable pageable,
                                               HttpServletRequest req) throws AppException {
         JsonObject data = new JsonObject();
         JsonArray rentalArr = new JsonArray();
-        List<Rental> rentals;
+        Page<Rental> rentals;
 
-        if (status == 2) {
+        if (status == 0) {
             if (filter == 0) {
-                rentals = rentalRepository.findAllByTitleContainingOrderByCreateAtDesc(keyword);
+                System.out.println("MainController.getMain1");
+                rentals = rentalRepository.findAllByRentalCategoryInfos_Category_CategoryIdxInAndRentalTownInfos_Town_TownIdxInAndTitleContainingOrderByCreateAtDesc(categories, towns, keyword, pageable);
             } else {
-                rentals = rentalRepository.findAllByTitleContainingOrderByLikeCntDesc(keyword);
+                System.out.println("MainController.getMain2");
+                rentals = rentalRepository.findAllByRentalCategoryInfos_Category_CategoryIdxInAndRentalTownInfos_Town_TownIdxInAndTitleContainingOrderByLikeCntDesc(categories, towns, keyword, pageable);
             }
         } else {
             if (filter == 0) {
-                rentals = rentalRepository.findAllByStatusAndTitleContainingOrderByCreateAtDesc(status, keyword);
+                System.out.println("MainController.getMain3");
+                rentals = rentalRepository.findAllByRentalCategoryInfos_Category_CategoryIdxInAndRentalTownInfos_Town_TownIdxInAndStatusAndTitleContainingOrderByCreateAtDesc(categories, towns, status, keyword, pageable);
             } else {
-                rentals = rentalRepository.findAllByStatusAndTitleContainingOrderByLikeCntDesc(status, keyword);
+                System.out.println("MainController.getMain4");
+                rentals = rentalRepository.findAllByRentalCategoryInfos_Category_CategoryIdxInAndRentalTownInfos_Town_TownIdxInAndStatusAndTitleContainingOrderByLikeCntDesc(categories, towns, status, keyword, pageable);
             }
         }
 
@@ -81,19 +95,10 @@ public class MainController {
                     }
 
                     rentalList.addProperty("title", rental.getTitle());
-
-                    //대표지역추출
-                    List<RentalTownInfo> leadTown = townInfoRepository.findAllByRental_rentalIdx(rental.getRentalIdx());
-                    /*if (leadTown.size() != 0) {
-                        for (int i = 0; i < leadTown.size(); i++) {
-                            if (leadTown.get(i).isLeadTown()) {
-                                rentalList.addProperty("lead_town", leadTown.get(i).getTownName());
-                            }
-                        }
-                    }*/
-
                     rentalList.addProperty("reg_date", rental.getCreateAt().getTime()/1000L);
                     rentalList.addProperty("daily_rental_fee", rental.getRentalPrice());
+
+                    //town 리스트 추출
 
                     rentalArr.add(rentalList);
                 }
@@ -110,9 +115,9 @@ public class MainController {
         JsonArray statusArr = new JsonArray();
 
         Map<Integer, String> statusMap = new HashMap<>();
-        statusMap.put(0, "렌탈가능");
-        statusMap.put(1, "렌탈완료");
-        statusMap.put(2, "전체");
+        statusMap.put(0, "전체");
+        statusMap.put(1, "렌탈가능");
+        statusMap.put(2, "렌탈완료");
 
         for (Map.Entry<Integer, String> pair : statusMap.entrySet()) {
             JsonObject status = new JsonObject();
@@ -141,7 +146,18 @@ public class MainController {
                     JsonObject categories = new JsonObject();
                     categories.addProperty("category_seq", category.getCategoryIdx());
                     categories.addProperty("category_name", category.getName());
-                    categories.addProperty("category_image", category.getImageUrl());
+                    if (category.getOnImageUrl() == null) {
+                        categories.addProperty("category_on_image", "");
+                    } else {
+                        categories.addProperty("category_on_image", category.getOnImageUrl());
+                    }
+
+                    if (category.getOffImageUrl() == null) {
+                        categories.addProperty("category_off_image", "");
+                    } else {
+                        categories.addProperty("category_off_image", category.getOffImageUrl());
+                    }
+
                     categoryArr.add(categories);
                 }
         );
