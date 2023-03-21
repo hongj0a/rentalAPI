@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface RentalRepository extends JpaRepository<Rental, Long> {
 
-    @EntityGraph(attributePaths = {"rentalTownInfos", "rentalCategoryInfos"})
+    /*@EntityGraph(attributePaths = {"rentalTownInfos", "rentalCategoryInfos"})
     Page<Rental> findAllByRentalCategoryInfos_Category_CategoryIdxInAndRentalTownInfos_Town_TownIdxInAndStatusAndTitleContainingOrderByCreateAtDesc(Long[] categories, Long[] towns, Integer Status, String title, Pageable pageable);
 
     @EntityGraph(attributePaths = {"rentalTownInfos", "rentalCategoryInfos"})
@@ -26,4 +26,5 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     @EntityGraph(attributePaths = {"rentalTownInfos", "rentalCategoryInfos"})
     Page<Rental> findAllByRentalCategoryInfos_Category_CategoryIdxInAndRentalTownInfos_Town_TownIdxInAndTitleContainingOrderByLikeCntDesc(Long[] categories, Long[] towns, String title, Pageable pageable);
 
+*/
 }

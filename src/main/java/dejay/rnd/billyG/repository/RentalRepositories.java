@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class TownRepositories {
+public class RentalRepositories {
     @PersistenceContext
     private final EntityManager em;
 

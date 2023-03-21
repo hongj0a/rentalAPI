@@ -26,11 +26,6 @@ public class Town {
     @Column (name = "town_idx")
     private Long townIdx;
 
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "userIdx")
-    private User user;
-
     @Column (name = "town_name")
     private String townName;
 
@@ -45,11 +40,6 @@ public class Town {
     @ColumnDefault("0")
     @Column (name = "auth_count")
     private Integer authCount;
-
-    //0 관심지역 1 대표지역
-    @ColumnDefault("0")
-    @Column (name = "lead_town" )
-    private boolean leadTown;
 
     @Column( precision = 18, scale = 10 , name = "region_latitue")
     private BigDecimal regionLatitue;

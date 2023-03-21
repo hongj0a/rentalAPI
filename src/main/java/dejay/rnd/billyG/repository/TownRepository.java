@@ -12,8 +12,10 @@ import java.util.Optional;
 @EnableJpaRepositories
 public interface TownRepository extends JpaRepository<Town, Long> {
 
-    Town findByLeadTownAndUser_userIdx(boolean leadTown, Long userIdx);
+    //Town findByLeadTownAndUser_userIdx(boolean leadTown, Long userIdx);
 
-    List<Town> findByUser_userIdx(Long userIdx);
+    //List<Town> findByUser_userIdx(Long userIdx);
     Town getOne(Long townIdx);
+
+    Town findByTownName(String town_name);
 }
