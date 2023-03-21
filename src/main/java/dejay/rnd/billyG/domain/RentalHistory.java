@@ -30,8 +30,8 @@ public class RentalHistory {
     @Column (name = "user_idx")
     private Long userIdx;
 
-    @Column (name = "owner_name")
-    private String ownerName;
+    @Column (name = "rental_idx")
+    private Long rentalIdx;
 
     @Column (name = "renter_name")
     private String renterName;

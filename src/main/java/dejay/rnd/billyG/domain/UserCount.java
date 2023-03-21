@@ -62,6 +62,10 @@ public class UserCount {
     @Column (name = "block_review_cnt")
     private Long blockReviewCnt;
 
+    @ColumnDefault("0")
+    @Column (name = "view_cnt")
+    private Long viewCnt;
+
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

@@ -30,9 +30,6 @@ public class Rental {
     @JoinColumn (name = "userIdx")
     private User user;
 
-    @Column (name = "owner_name")
-    private String ownerName;
-
     @Column (name = "renter_name")
     @ColumnDefault("'-'")
     private String renterName;

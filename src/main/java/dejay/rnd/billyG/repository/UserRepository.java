@@ -13,6 +13,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     User findByEmail(String email);
 
+    User findByEmailAndSnsName(String email, String snsName);
+
     User findByCiValue(String ciValue);
 
     List<User> findAllByNickNameContainingAndDeleteYnAndActiveYn(String nickName, boolean deleteYn, boolean activeYn);
