@@ -25,9 +25,11 @@ public class TownService {
     LocalDateTime date = LocalDateTime.now();
     Date now_date = Timestamp.valueOf(date);
 
-    public List<Town> findAllN(Long userIdx) {
-        return townRepositories.findAllN(userIdx);
-    }
+
+   /* public List<Town> findTownInfo(User user) {
+        return townRepositories.findTownInfo(user);
+    }*/
+
 
     @Transactional
     public void setUserTownInfo(Long userIdx, String town_name, boolean lead) {
@@ -37,11 +39,24 @@ public class TownService {
 
         Town town = new Town();
         town.setCreateAt(now_date);
-        town.setLeadTown(lead);
         town.setTownName(town_name);
-        town.setUser(findUser);
 
         townRepository.save(town);
+    }
+
+    @Transactional
+    public Town setTowns(String town_name) {
+
+        if (townRepository.findByTownName(town_name) == null) {
+            Town town = new Town();
+            town.setCreateAt(now_date);
+            town.setUpdateAt(now_date);
+            town.setTownName(town_name);
+
+            townRepository.save(town);
+        }
+
+        return townRepository.findByTownName(town_name);
     }
 
     @Transactional
@@ -52,7 +67,39 @@ public class TownService {
         findTown.setUpdateAt(now_date);
     }
 
-    public List<Town> findAllList(Long userIdx) {
-        return townRepositories.findAllList(userIdx);
-    }
+
+    /*@Transactional
+    public void insertTestTownInfo() {
+
+        for (int i=1; i < 10001; i++) {
+
+            TestTownInfo ti = new TestTownInfo();
+
+            if (i % 2000 == 0) {
+                ti.setTestRentalIdx(2000);
+            } else {
+                ti.setTestRentalIdx(i % 2000);
+            }
+
+            if ((i < 2001) && (i % 2 == 0)) {
+                ti.setTownIdx(1);
+            } else if ((i < 4001) && (i % 2 == 0)) {
+                ti.setTownIdx(2);
+            } else if ((i < 6001) && (i % 2 == 0)) {
+                ti.setTownIdx(3);
+            } else if ((i < 8001) && (i % 2 == 0)) {
+                ti.setTownIdx(4);
+            } else if ((i < 10001) && (i % 2 == 0)) {
+                ti.setTownIdx(5);
+            } else {
+                ti.setTownIdx((int) (Math.random() * 13) + 12);
+            }
+
+            ti.setActiveYn(true);
+            ti.setCreateAt(now_date);
+
+            townRepositories.save(ti);
+        }
+
+    }*/
 }

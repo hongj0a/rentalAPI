@@ -44,6 +44,9 @@ public class UserDto {
    @Size(min = 3, max = 1000)
    private String ciValue;
 
+   @Size(min = 3, max = 1000)
+   private String phoneNumber;
+
    @Size(min = 3, max = 100)
    private String name;
 

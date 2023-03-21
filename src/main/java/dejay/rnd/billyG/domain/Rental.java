@@ -25,12 +25,6 @@ public class Rental {
     @Column (name = "rental_idx")
     private Long rentalIdx;
 
-    @OneToMany(mappedBy = "rental")
-    private Set<RentalTownInfo> rentalTownInfos = new HashSet<>();
-
-    @OneToMany(mappedBy = "rental")
-    private Set<RentalCategoryInfo> rentalCategoryInfos = new HashSet<>();
-
     @ManyToOne
     @NotNull
     @JoinColumn (name = "userIdx")
@@ -43,7 +37,13 @@ public class Rental {
     @ColumnDefault("'-'")
     private String renterName;
 
-    @ColumnDefault("0")
+    @ColumnDefault("1")
+    /**
+     * 1 : 렌탈가능
+     * 2 : 렌탈중
+     * 3 : 렌탈완료
+     * 4 : 렌탈숨기기
+     */
     private int status;
 
     @Column

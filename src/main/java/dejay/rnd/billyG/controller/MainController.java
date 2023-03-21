@@ -4,10 +4,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.domain.*;
-import dejay.rnd.billyG.dto.MainDto;
+import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.service.CategoryService;
+import dejay.rnd.billyG.service.RentalService;
 import dejay.rnd.billyG.service.TownService;
 import dejay.rnd.billyG.service.UserService;
 import dejay.rnd.billyG.util.UserMiningUtil;
@@ -35,8 +36,9 @@ public class MainController {
     private final RentalRepository rentalRepository;
     private final RentalImageRepository rentalImageRepository;
     private final TownInfoRepository townInfoRepository;
+    private final RentalService rentalService;
 
-    public MainController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, CategoryService categoryService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, TownInfoRepository townInfoRepository) {
+    public MainController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, CategoryService categoryService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, TownInfoRepository townInfoRepository, RentalService rentalService) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.townService = townService;
@@ -45,6 +47,7 @@ public class MainController {
         this.rentalRepository = rentalRepository;
         this.rentalImageRepository = rentalImageRepository;
         this.townInfoRepository = townInfoRepository;
+        this.rentalService = rentalService;
     }
 
     @GetMapping("/string")
@@ -63,7 +66,7 @@ public class MainController {
                                               HttpServletRequest req) throws AppException {
         JsonObject data = new JsonObject();
         JsonArray rentalArr = new JsonArray();
-        Page<Rental> rentals;
+        /*Page<Rental> rentals;
 
         if (status == 0) {
             if (filter == 0) {
@@ -103,7 +106,7 @@ public class MainController {
                     rentalArr.add(rentalList);
                 }
         );
-        data.add("rentals", rentalArr);
+        data.add("rentals", rentalArr);*/
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
@@ -177,7 +180,7 @@ public class MainController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
-        List<Town> townList = townRepository.findByUser_userIdx(findUser.getUserIdx());
+        /*List<Town> townList = townRepository.findByUser_userIdx(findUser.getUserIdx());
 
         townList.forEach(
                 town -> {
@@ -189,11 +192,12 @@ public class MainController {
                     }
                     townArr.add(towns);
                 }
-        );
+        );*/
         data.add("town_list", townArr);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
     }
+
 }

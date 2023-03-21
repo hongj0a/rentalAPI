@@ -1,6 +1,6 @@
 package dejay.rnd.billyG.repository;
 
-import com.querydsl.core.QueryFactory;
+
 import dejay.rnd.billyG.domain.Rental;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.query.JpaQueryMethodFactory;

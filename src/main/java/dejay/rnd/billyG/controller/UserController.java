@@ -24,7 +24,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -94,30 +96,25 @@ public class UserController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
-        Town leadTown = townRepository.findByLeadTownAndUser_userIdx(true,findUser.getUserIdx());
-        List<Town> townList = townService.findAllN(findUser.getUserIdx());
 
-        if (leadTown == null) {
-            townService.setUserTownInfo(findUser.getUserIdx(), userTown.getLeadTownName(), true);
-
-        } else {
-            townService.updateLeadTown(leadTown.getTownIdx(), userTown.getLeadTownName());
-        }
-
-        if ((townList.size() + userTown.getTowns().length) > 10 ) {
-            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
-            apiRes.setError(ErrCode.err_over_towns.code());
-            apiRes.setMessage(ErrCode.err_over_towns.msg());
-            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
-        }
+        Map<Integer, Long> userTowns = new HashMap<>();
+        Town userTownIdx = townService.setTowns(userTown.getLeadTownName());
+        userTowns.put(0, userTownIdx.getTownIdx());
 
         if (userTown.getTowns().length > 0) {
             for (int i = 0; i < userTown.getTowns().length; i++) {
                 if(!userTown.getTowns()[i].isEmpty()) {
-                    townService.setUserTownInfo(findUser.getUserIdx(), userTown.getTowns()[i], false);
+                    //townService.setUserTownInfo(findUser.getUserIdx(), userTown.getTowns()[i], false);
+                    //town테이블에 있는 타운인지 조회해서 인덱스 리턴받고 배열에 저장
+                    userTownIdx = townService.setTowns(userTown.getTowns()[i]);
+                    userTowns.put(i+1, userTownIdx.getTownIdx());
                 }
             }
         }
+        System.out.println("userTowns = " + userTowns);
+
+
+        userService.updateUserTownInfo(userTowns, findUser);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
@@ -155,17 +152,18 @@ public class UserController {
         data.addProperty("nickName", findUser.getNickName());
         data.addProperty("phoneNumber", findUser.getPhoneNum());
 
-        List<Town> towns = townService.findAllN(findUser.getUserIdx());
-        Town lead = townRepository.findByLeadTownAndUser_userIdx(true,findUser.getUserIdx());
-        data.addProperty("leadTown", lead.getTownName());
+        //List<Town> towns = townService.findAllN(findUser.getUserIdx());
+        /*Town lead = townRepository.findByLeadTownAndUser_userIdx(true,findUser.getUserIdx());
+        data.addProperty("leadTown", lead.getTownName());*/
 
-        for (int i = 0; i < towns.size(); i++) {
-            String[] townList = new String[towns.size()];
-            if (!towns.get(i).isLeadTown()) {
-                townList[i] = towns.get(i).getTownName();
-            }
-            townArr.add(townList[i]);
-        }
+        data.addProperty("leadTown", findUser.getLeadTown());
+
+        //List<Town> personal_towns = townService.findTownInfo(findUser);
+        townArr.add(findUser.getTown1());
+        townArr.add(findUser.getTown2());
+        townArr.add(findUser.getTown3());
+        townArr.add(findUser.getTown4());
+
 
         data.add("townList", townArr);
 

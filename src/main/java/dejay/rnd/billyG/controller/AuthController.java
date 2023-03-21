@@ -53,23 +53,25 @@ public class AuthController {
         // TODO - plus. outMember check
         String email = loginDto.getEmail();
         String snsType = loginDto.getSnsType();
+        String ciValue = loginDto.getCiValue();
+        String name = loginDto.getName();
+        String phoneNum = loginDto.getPhoneNumber();
 
-        User findUser = userRepository.findByEmail(email);
+        User findUser = userRepository.findByCiValue(ciValue);
 
         // 신규유저라면 회원가입 하고 바로 로그인
         if (findUser == null) {
             System.out.println("AuthController.authorize");
             UserDto userDto = new UserDto();
-            userDto.setEmail(loginDto.getEmail());
-            userDto.setSnsType(loginDto.getSnsType());
+            userDto.setEmail(email);
+            userDto.setSnsType(snsType);
+            userDto.setCiValue(ciValue);
+            userDto.setName(name);
+            userDto.setPhoneNumber(phoneNum);
             userService.signup(userDto);
         }
-        //else if, userid 중복 , 그리고 snstype 다를때 user정보 update
-        if (findUser != null && !findUser.getSnsName().equals(loginDto.getSnsType())) {
-            userService.updateUserInfo(findUser.getUserIdx(), loginDto.getSnsType());
-        }
 
-        User userOne = userRepository.findByEmail(email);
+        User userOne = userRepository.findByCiValue(ciValue);
 
         //1년이상 장기 미이용 고객 return 커스텀
         Calendar cal = Calendar.getInstance();
@@ -118,13 +120,13 @@ public class AuthController {
         }
 
         //user town's Information empty check
-        List<Town> townList = townService.findAllList(userOne.getUserIdx());
+        //List<Town> townList = townService.findAllList(userOne.getUserIdx());
 
-        if (townList.size() != 0) {
-            data.addProperty("isTownInfoEmpty", "N");
-        } else {
-            data.addProperty("isTownInfoEmpty", "Y");
-        }
+        /*if (townList.size() != 0) {
+                data.addProperty("isTownInfoEmpty", "N");
+            } else {
+                data.addProperty("isTownInfoEmpty", "Y");
+        }*/
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
@@ -177,13 +179,13 @@ public class AuthController {
                 }
 
                 //user town's Information empty check
-                List<Town> townList = townService.findAllN(findUser.getUserIdx());
+               /* List<Town> townList = townService.findAllN(findUser.getUserIdx());
 
                 if (townList.size() != 0) {
                     data.addProperty("isTownInfoEmpty", "N");
                 } else {
                     data.addProperty("isTownInfoEmpty", "Y");
-                }
+                }*/
             } else {
                 data.addProperty("message", "잘못된 토큰 정보");
             }
@@ -193,14 +195,34 @@ public class AuthController {
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
 
-    @PostMapping("/editUserCiValueAndName")
+    @PostMapping("/ciValueCheck")
+    public ResponseEntity<JsonObject> civalueCheck(HttpServletRequest req, @RequestBody UserDto userDto) {
+        JsonObject data = new JsonObject();
+
+        User isUser = userRepository.findByCiValue(userDto.getCiValue());
+
+        if (isUser != null) {
+            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+            apiRes.setError(ErrCode.err_api_is_exist_user.code());
+            apiRes.setMessage(ErrCode.err_api_is_exist_user.msg());
+            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+        } else {
+            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+            apiRes.setError(ErrCode.err_api_is_new_user.code());
+            apiRes.setMessage(ErrCode.err_api_is_new_user.msg());
+            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+        }
+    }
+
+    @PostMapping("/editPhoneNumber")
     public ResponseEntity<JsonObject> userCiValueUpdate(HttpServletRequest req, @RequestBody UserDto userDto) throws ParseException {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
-        userService.updateCiValue(userDto.getCiValue(), userDto.getName(), findUser.getUserIdx());
+
+        userService.updateCiValue(userDto.getPhoneNumber(), findUser);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
