@@ -15,33 +15,28 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "transaction")
+@Table(name = "transaction_history")
 @Entity
 @DynamicInsert
-public class Transaction {
+public class TransactionHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column (name = "history_idx")
+    private Long historyIdx;
+
     @Column (name = "transaction_idx")
     private Long transactionIdx;
 
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "rentalIdx")
-    private Rental rental;
+    @Column (name = "user_idx")
+    private Long userIdx;
 
-    //빌려간 사람의 idx
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "userIdx")
-    private User user;
+    @Column (name = "rental_idx")
+    private Long rentalIdx;
 
-    @ColumnDefault("0")
     @Column (name = "cancel_yn")
     private boolean cancelYn;
 
-    @Temporal(value = TemporalType.TIMESTAMP)
-    @CreationTimestamp
     @Column (name = "create_at")
     private Date createAt;
 
@@ -65,7 +60,6 @@ public class Transaction {
      *      * 3 : 반납완료...
      */
     @Column (name = "owner_status")
-    @ColumnDefault("0")
     private Integer ownerStatus;
 
     /**
@@ -76,13 +70,11 @@ public class Transaction {
      *      * 3 : 반납완료...
      */
     @Column (name = "renter_status")
-    @ColumnDefault("0")
     private Integer renterStatus;
 
     @Column
     private String updator;
 
-    @ColumnDefault("0")
     @Column (name = "return_yn")
     private boolean returnYn;
 

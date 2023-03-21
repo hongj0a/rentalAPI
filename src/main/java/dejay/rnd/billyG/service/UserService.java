@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -48,10 +49,6 @@ public class UserService {
 
     @Transactional
     public UserDto signup(UserDto userDto) {
-        if (userRepository.findOneWithGradesByEmail(userDto.getEmail()).orElse(null) != null) {
-            throw new DuplicateMemberException("이미 가입되어 있는 유저입니다.");
-        }
-
         LocalDateTime date = LocalDateTime.now();
         Date now_date = Timestamp.valueOf(date);
 
@@ -64,6 +61,9 @@ public class UserService {
                 .email(userDto.getEmail())
                 .snsType(passwordEncoder.encode(userDto.getSnsType()))
                 .snsName(userDto.getSnsType())
+                .name(userDto.getName())
+                .phoneNum(userDto.getPhoneNumber())
+                .ciValue(userDto.getCiValue())
                 .grades(Collections.singleton(grade))
                 .createAt(now_date)
                 .build();
@@ -79,6 +79,35 @@ public class UserService {
         findUser.setSnsName(snsType);
         findUser.setSnsType(passwordEncoder.encode(snsType));
         findUser.setUpdateAt(now_date);
+    }
+
+    @Transactional
+    public void updateUserTownInfo(Map<Integer, Long> userTowns, User findUser) {
+
+        if (userTowns.size() != 0) {
+            for (Map.Entry<Integer, Long> pair : userTowns.entrySet()) {
+                switch (pair.getKey()) {
+                    case 0 :
+                        findUser.setLeadTown(pair.getValue());
+                        break;
+                    case 1 :
+                        findUser.setTown1(pair.getValue());
+                        break;
+                    case 2 :
+                        findUser.setTown2(pair.getValue());
+                        break;
+                    case 3 :
+                        findUser.setTown3(pair.getValue());
+                        break;
+                    case 4 :
+                        findUser.setTown4(pair.getValue());
+                        break;
+                    default :
+                        System.out.println("4이상은 안 됨");
+                        throw new ArrayIndexOutOfBoundsException();
+                }
+            }
+        }
     }
 
     @Transactional
@@ -104,11 +133,9 @@ public class UserService {
         //usercount에 있는지 조회, 있으면 update, 없으면 insert if문으로
         UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
         if (userCount != null) {
-            System.out.println("userCount.getCountIdx() = " + userCount.getCountIdx());
             userCount.setLoginCnt(userCount.getLoginCnt()+1);
 
         } else {
-            System.out.println("UserService.login");
             UserCount newCount = new UserCount();
             newCount.setUser(findUser);
             newCount.setLoginCnt(1L);
@@ -167,15 +194,20 @@ public class UserService {
 
 
     @Transactional
-    public void updateCiValue(String ciValue, String name, Long userIdx) {
+    public void updateCiValue(String phoneNum, User user) {
 
         LocalDateTime date = LocalDateTime.now();
         Date now_date = Timestamp.valueOf(date);
 
-        User findUser = userRepositories.findOne(userIdx);
-        findUser.setCiValue(ciValue);
-        findUser.setName(name);
-        findUser.setUpdateAt(now_date);
+        user.setPhoneNum(phoneNum);
+        user.setUpdateAt(now_date);
+    }
+
+    @Transactional
+    public void setUserTownInfo(User user, UserDto userDto) {
+        LocalDateTime date = LocalDateTime.now();
+        Date now_date = Timestamp.valueOf(date);
+
     }
 
 }
