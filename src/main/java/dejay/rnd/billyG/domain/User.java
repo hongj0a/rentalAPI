@@ -57,11 +57,6 @@ public class User {
 
     //long text
     @Lob
-    @Column (name = "access_token")
-    private String accessToken;
-
-    //long text
-    @Lob
     @Column (name = "refresh_token")
     private String refreshToken;
 
@@ -165,18 +160,18 @@ public class User {
     private Set<Grade> grades;
 
     @Column(name = "lead_town")
-    private Integer leadTown;
+    private Long leadTown;
 
     @Column(name = "town_1")
-    private Integer town1;
+    private Long town1;
 
     @Column(name = "town_2")
-    private Integer town2;
+    private Long town2;
 
     @Column(name = "town_3")
-    private Integer town3;
+    private Long town3;
 
     @Column(name = "town_4")
-    private Integer town4;
+    private Long town4;
 
 }

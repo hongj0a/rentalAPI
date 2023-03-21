@@ -45,8 +45,7 @@ public class Terms {
     @Column
     private String title;
 
-    @Lob
-    @Column
+    @Column (columnDefinition = "TEXT")
     private String content;
 
     @Column

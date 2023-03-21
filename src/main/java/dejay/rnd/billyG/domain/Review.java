@@ -27,8 +27,8 @@ public class Review {
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "rentalIdx")
-    private Rental rental;
+    @JoinColumn (name = "transactionIdx")
+    private Transaction transaction;
 
     @ColumnDefault("0")
     @Column (name = "review_score")
