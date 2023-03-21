@@ -47,17 +47,14 @@ public class AuthController {
      *  3. 가입된 email이 있는데, 다른 snsType으로 로그인할 경우, snsType updqte 후 토큰 발급
      */
     @PostMapping("/authenticate")
-    public ResponseEntity<JsonObject> authorize(@RequestBody LoginDto loginDto, HttpServletRequest req) throws ParseException, java.text.ParseException {
+    public ResponseEntity<JsonObject> authorize(@RequestBody LoginDto loginDto, HttpServletRequest req) throws java.text.ParseException {
         JsonObject data = new JsonObject();
 
         // TODO - plus. outMember check
         String email = loginDto.getEmail();
         String snsType = loginDto.getSnsType();
-        String ciValue = loginDto.getCiValue();
-        String name = loginDto.getName();
-        String phoneNum = loginDto.getPhoneNumber();
 
-        User findUser = userRepository.findByCiValue(ciValue);
+        User findUser = userRepository.findByEmail(email);
 
         // 신규유저라면 회원가입 하고 바로 로그인
         if (findUser == null) {
@@ -65,13 +62,13 @@ public class AuthController {
             UserDto userDto = new UserDto();
             userDto.setEmail(email);
             userDto.setSnsType(snsType);
-            userDto.setCiValue(ciValue);
-            userDto.setName(name);
-            userDto.setPhoneNumber(phoneNum);
+            userDto.setCiValue(loginDto.getCiValue());
+            userDto.setName(loginDto.getName());
+            userDto.setPhoneNumber(loginDto.getPhoneNumber());
             userService.signup(userDto);
         }
 
-        User userOne = userRepository.findByCiValue(ciValue);
+        User userOne = userRepository.findByEmail(email);
 
         //1년이상 장기 미이용 고객 return 커스텀
         Calendar cal = Calendar.getInstance();
@@ -120,18 +117,36 @@ public class AuthController {
         }
 
         //user town's Information empty check
-        //List<Town> townList = townService.findAllList(userOne.getUserIdx());
-
-        /*if (townList.size() != 0) {
-                data.addProperty("isTownInfoEmpty", "N");
-            } else {
-                data.addProperty("isTownInfoEmpty", "Y");
-        }*/
+        //lead_town값 필수, 관심동네 선택
+        if (userOne.getLeadTown() == null || ("").equals(userOne.getLeadTown())) {
+            data.addProperty("isLeadTownEmpty", "Y");
+        } else {
+            data.addProperty("isLeadTownEmpty", "N");
+        }
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
 
+    @PostMapping("/isExistCheck")
+    public ResponseEntity<JsonObject> isExistCheck(HttpServletRequest req, @RequestBody LoginDto loginDto) {
+        JsonObject data = new JsonObject();
+
+        User findUser = userRepository.findByEmailAndSnsName(loginDto.getEmail(), loginDto.getSnsType());
+        if (findUser != null) {
+            //y
+            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+            apiRes.setError(ErrCode.err_api_is_exist_user.code());
+            apiRes.setMessage(ErrCode.err_api_is_exist_user.msg());
+            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+        } else {
+            //n
+            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+            apiRes.setError(ErrCode.err_api_is_new_user.code());
+            apiRes.setMessage(ErrCode.err_api_is_new_user.msg());
+            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+        }
+    }
     @PostMapping("/refreshTokenValidation")
     public ResponseEntity<JsonObject> refreshTokenValidation(HttpServletRequest req, @RequestBody TokenDto token) throws ParseException {
         JsonObject data = new JsonObject();
@@ -222,10 +237,17 @@ public class AuthController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
-        userService.updateCiValue(userDto.getPhoneNumber(), findUser);
+        if (findUser.getCiValue().equals(userDto.getCiValue())) {
+            userService.updateCiValue(userDto.getPhoneNumber(), findUser);
 
-        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
-        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+        } else {
+            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+            apiRes.setError(ErrCode.err_api_is_inconsistency.code());
+            apiRes.setMessage(ErrCode.err_api_is_inconsistency.msg());
+            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+        }
     }
 
 }

@@ -152,18 +152,29 @@ public class UserController {
         data.addProperty("nickName", findUser.getNickName());
         data.addProperty("phoneNumber", findUser.getPhoneNum());
 
-        //List<Town> towns = townService.findAllN(findUser.getUserIdx());
-        /*Town lead = townRepository.findByLeadTownAndUser_userIdx(true,findUser.getUserIdx());
-        data.addProperty("leadTown", lead.getTownName());*/
+        //필수니깐 없을수가 없음
+        Town findLeadTown = townRepository.getOne(findUser.getLeadTown());
+        data.addProperty("leadTown", findLeadTown.getTownName());
 
-        data.addProperty("leadTown", findUser.getLeadTown());
+        if (findUser.getTown1() != null) {
+            Town findTown1 = townRepository.getOne(findUser.getTown1());
+            townArr.add(findTown1.getTownName());
+        }
 
-        //List<Town> personal_towns = townService.findTownInfo(findUser);
-        townArr.add(findUser.getTown1());
-        townArr.add(findUser.getTown2());
-        townArr.add(findUser.getTown3());
-        townArr.add(findUser.getTown4());
+        if (findUser.getTown2() != null) {
+            Town findTown2 = townRepository.getOne(findUser.getTown2());
+            townArr.add(findTown2.getTownName());
+        }
 
+        if (findUser.getTown3() != null) {
+            Town findTown3 = townRepository.getOne(findUser.getTown3());
+            townArr.add(findTown3.getTownName());
+        }
+
+        if (findUser.getTown4() != null) {
+            Town findTown4 = townRepository.getOne(findUser.getTown4());
+            townArr.add(findTown4.getTownName());
+        }
 
         data.add("townList", townArr);
 
