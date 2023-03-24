@@ -121,6 +121,27 @@ public class UserController {
 
     }
 
+    @PostMapping("/editPhoneNumber")
+    public ResponseEntity<JsonObject> userCiValueUpdate(HttpServletRequest req, @RequestBody UserDto userDto) throws ParseException {
+        JsonObject data = new JsonObject();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        if (findUser.getCiValue().equals(userDto.getCiValue())) {
+            userService.updateCiValue(userDto.getPhoneNumber(), findUser);
+
+            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+        } else {
+            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+            apiRes.setError(ErrCode.err_api_is_inconsistency.code());
+            apiRes.setMessage(ErrCode.err_api_is_inconsistency.msg());
+            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+        }
+    }
+
     @GetMapping("/doubleCheck")
     public ResponseEntity<JsonObject> doubleCheck(@RequestParam (value = "nickName") String nickName,
                                                       HttpServletRequest req) throws AppException {

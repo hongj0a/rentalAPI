@@ -28,7 +28,6 @@ public class FaqDto {
         title = faq.getTitle();
         content = faq.getContent();
         deleteYn = faq.getDeleteYn();
-        activeYn = faq.getActiveYn();
         createAt = faq.getCreateAt();
         updateAt = faq.getUpdateAt();
         updator = faq.getUpdator();

@@ -126,7 +126,7 @@ public class User {
     @Column (name = "last_login_date")
     private Date lastLoginDate;
 
-    @Column(length = 1000, name = "ci_value")
+    @Column(length = 1000, name = "ci_value", unique = true)
     private String ciValue;
 
     @Column (name = "invitation_code")
