@@ -2,6 +2,7 @@ package dejay.rnd.billyG.repository;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
+import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dejay.rnd.billyG.domain.QRental;
 import dejay.rnd.billyG.domain.QRentalCategoryInfo;
@@ -92,7 +93,7 @@ public class RentalRepositories implements RentalRepositoryCustom{
 
         //최신순
         if (filter == 0) {
-            QueryResults<Rental> results = queryFactory.selectFrom(rental)
+            List<Rental> results = queryFactory.selectFrom(rental)
                     .join(rental.rentalCategoryInfos, rentalCategoryInfo).fetchJoin()
                     .where((rental.status.in(status)).and(rental.title.contains(title))
                             .and(builder)
@@ -101,17 +102,14 @@ public class RentalRepositories implements RentalRepositoryCustom{
                     .orderBy(rental.createAt.desc())
                     .offset(pageable.getPageNumber())
                     .limit(pageable.getPageSize())
-                    .fetchResults();
-            List<Rental> content = results.getResults();
-            long total = results.getTotal();
-
-            System.out.println("total = " + total);
+                    .fetch();
+            List<Rental> content = results.stream().toList();
 
             return new PageImpl<>(content, pageable, content.size());
         }
         //인기순
         if (filter == 1) {
-            QueryResults<Rental> results = queryFactory.selectFrom(rental)
+            List<Rental> results = queryFactory.selectFrom(rental)
                     .join(rental.rentalCategoryInfos, rentalCategoryInfo).fetchJoin()
                     .where((rental.status.in(status)).and(rental.title.contains(title))
                             .and(builder)
@@ -120,12 +118,39 @@ public class RentalRepositories implements RentalRepositoryCustom{
                     .orderBy(rental.likeCnt.desc())
                     .offset(pageable.getPageNumber())
                     .limit(pageable.getPageSize())
-                    .fetchResults();
-            List<Rental> content = results.getResults();
-            long total = results.getTotal();
-            System.out.println("total = " + total);
+                    .fetch();
+            List<Rental> content = results.stream().toList();
             return new PageImpl<>(content, pageable, content.size());
         }
         return null;
     }
+
+    public long getTotalCount(ArrayList<Integer> status, String title, Long[] towns, Long[] categories) {
+
+        QRental rental = QRental.rental;
+        QRentalCategoryInfo rentalCategoryInfo = QRentalCategoryInfo.rentalCategoryInfo;
+
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (categories.length != 0) {
+            builder.and(rentalCategoryInfo.category.categoryIdx.in(categories));
+        }
+
+        if (towns.length != 0) {
+            builder.and(rental.leadTown.in(towns))
+                    .or(rental.town1.in(towns))
+                    .or(rental.town2.in(towns))
+                    .or(rental.town3.in(towns))
+                    .or(rental.town4.in(towns));
+        }
+        return queryFactory.select(Wildcard.count).from(rental)
+                .join(rental.rentalCategoryInfos, rentalCategoryInfo)
+                .where((rental.status.in(status)).and(rental.title.contains(title))
+                        .and(builder)
+                        .and(rental.activeYn.eq(true))
+                        .and(rental.deleteYn.eq(false)))
+                .fetch().get(0);
+    }
+
 }
+

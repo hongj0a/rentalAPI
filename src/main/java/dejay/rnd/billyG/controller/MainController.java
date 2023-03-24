@@ -73,6 +73,7 @@ public class MainController {
         System.out.println("pageable page number = " + pageable.getPageNumber());
         System.out.println("pageable page size = " + pageable.getPageSize());
 
+
         /**
          * [렌탈 상태]
          * 렌탈가능 [Enable(1)]
@@ -98,14 +99,10 @@ public class MainController {
             p_status.add(2);
             p_status.add(3);
         }
-
+        long totalCount = rentalRepositories.getTotalCount(p_status, keyword, towns, categories);
         Page<Rental> mains = rentalRepositories.findAll(p_status, filter, keyword, towns, categories, pageable);
 
-        System.out.println("mains.getTotalElements() = " + mains.getTotalElements());
-        System.out.println("mains.getTotalPages() = " + mains.getTotalPages());
-        System.out.println("mains.getContent().size() = " + mains.getContent().size());
-
-        mains.getContent().forEach(
+        mains.forEach(
                 rental -> {
                     JsonObject rentalList = new JsonObject();
                     rentalList.addProperty("rental_seq", rental.getRentalIdx());
@@ -156,7 +153,7 @@ public class MainController {
                 }
         );
         data.add("rentals", rentalArr);
-        data.addProperty("totalCount", mains.getContent().size());
+        data.addProperty("totalCount", totalCount);
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
