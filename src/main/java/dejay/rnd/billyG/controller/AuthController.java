@@ -44,7 +44,11 @@ public class AuthController {
      * ROLE
      *  1. 기존회원 로그인, access_token, refresh_token 발급 및 refresh_token db 업데이트
      *  2. 신규회원 회원가입 후, access_token, refresh_token 발급 및 refresh_token db 저장
-     *  3. 가입된 email이 있는데, 다른 snsType으로 로그인할 경우, snsType updqte 후 토큰 발급
+     *  3. 가입된 email이 있는데, 다른 snsType으로 로그인할 경우 fail
+     *  4. ci_value (주민번호기반) 검사 -> 한 사람이 한 계정만 만들 수 있음
+     *  5. access_token 5 hour, refresh_token 30 days
+     *  6. refresh_token expired 시 재 로그인 요청
+     *  7. access_token expired 시 refresh_token 으로 검증해서 access_token 재발급, 이 때 AT, RT 모두 갱신
      */
     @PostMapping("/authenticate")
     public ResponseEntity<JsonObject> authorize(@RequestBody LoginDto loginDto, HttpServletRequest req) throws java.text.ParseException {
@@ -53,7 +57,7 @@ public class AuthController {
         // TODO - plus. outMember check
         String email = loginDto.getEmail();
         String snsType = loginDto.getSnsType();
-
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         User findUser = userRepository.findByEmail(email);
 
         // 신규유저라면 회원가입 하고 바로 로그인
@@ -80,7 +84,7 @@ public class AuthController {
         Date date2 = userOne.getLastLoginDate();
 
         if (date2.before(date1)) {
-            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
             apiRes.setError(ErrCode.err_long_time_no_use_user.code());
             apiRes.setMessage(ErrCode.err_long_time_no_use_user.msg());
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
@@ -93,27 +97,13 @@ public class AuthController {
         data.addProperty("refreshToken", tokenDto.getRefreshToken());
         data.addProperty("user_seq", userOne.getUserIdx());
 
-
         // user 테이블에 Refreshtoken update
         userService.setRefreshToken(userOne.getUserIdx(), tokenDto.getRefreshToken());
-
-        // user profile is empty check
-        if (userOne.getProfileImageUrl() == null || ("").equals(userOne.getProfileImageUrl())) {
-            data.addProperty("isProfileImageEmpty", "Y");
-        } else {
-            data.addProperty("isProfileImageEmpty", "N");
-        }
 
         if (userOne.getNickName() == null || ("").equals(userOne.getNickName())) {
             data.addProperty("isNicknameEmpty", "Y");
         } else {
             data.addProperty("isNicknameEmpty", "N");
-        }
-
-        if (userOne.getCiValue() == null || ("").equals(userOne.getCiValue())) {
-            data.addProperty("isCiValueEmpty", "Y");
-        } else {
-            data.addProperty("isCiValueEmpty", "N");
         }
 
         //user town's Information empty check
@@ -124,39 +114,45 @@ public class AuthController {
             data.addProperty("isLeadTownEmpty", "N");
         }
 
-        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        data.addProperty("image_url", "http://192.168.1.242:8080/image/");
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
 
     @PostMapping("/isExistCheck")
     public ResponseEntity<JsonObject> isExistCheck(HttpServletRequest req, @RequestBody LoginDto loginDto) {
         JsonObject data = new JsonObject();
-
         User findUser = userRepository.findByEmailAndSnsName(loginDto.getEmail(), loginDto.getSnsType());
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         if (findUser != null) {
             //y
-            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
-            apiRes.setError(ErrCode.err_api_is_exist_user.code());
-            apiRes.setMessage(ErrCode.err_api_is_exist_user.msg());
-            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+            if (findUser.isDeleteYn() == true) {
+                apiRes.setError(ErrCode.err_api_is_delete_user.code());
+                apiRes.setMessage(ErrCode.err_api_is_delete_user.msg());
+                return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+            } else {
+                apiRes.setError(ErrCode.err_api_is_exist_user.code());
+                apiRes.setMessage(ErrCode.err_api_is_exist_user.msg());
+                return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+            }
+
         } else {
             //n
-            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
             apiRes.setError(ErrCode.err_api_is_new_user.code());
             apiRes.setMessage(ErrCode.err_api_is_new_user.msg());
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
         }
     }
+
     @PostMapping("/refreshTokenValidation")
     public ResponseEntity<JsonObject> refreshTokenValidation(HttpServletRequest req, @RequestBody TokenDto token) throws ParseException {
         JsonObject data = new JsonObject();
 
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         //유효한 토큰인지 확인
         //유효하다면 true. 만료됐거나 유효하지 않은 토큰이면 false.
         boolean tokenFlag = tokenProvider.validateToken(token.getRefreshToken());
 
         if (tokenFlag == false) {
-            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
             apiRes.setError(ErrCode.err_api_not_found_token.code());
             apiRes.setMessage(ErrCode.err_api_not_found_token.msg());
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
@@ -175,38 +171,23 @@ public class AuthController {
 
                 userService.setRefreshToken(findUser.getUserIdx(), tokenDto.getRefreshToken());
 
-                if (findUser.getProfileImageUrl() == null || ("").equals(findUser.getProfileImageUrl())) {
-                    data.addProperty("isProfileImageEmpty", "Y");
-                } else {
-                    data.addProperty("isProfileImageEmpty", "N");
-                }
-
                 if (findUser.getNickName() == null || ("").equals(findUser.getNickName())) {
                     data.addProperty("isNicknameEmpty", "Y");
                 } else {
                     data.addProperty("isNicknameEmpty", "N");
                 }
 
-                if (findUser.getCiValue() == null || ("").equals(findUser.getCiValue())) {
-                    data.addProperty("isCiValueEmpty", "Y");
+                if (findUser.getLeadTown() == null || ("").equals(findUser.getLeadTown())) {
+                    data.addProperty("isLeadTownEmpty", "Y");
                 } else {
-                    data.addProperty("isCiValueEmpty", "N");
+                    data.addProperty("isLeadTownEmpty", "N");
                 }
-
-                //user town's Information empty check
-               /* List<Town> townList = townService.findAllN(findUser.getUserIdx());
-
-                if (townList.size() != 0) {
-                    data.addProperty("isTownInfoEmpty", "N");
-                } else {
-                    data.addProperty("isTownInfoEmpty", "Y");
-                }*/
             } else {
                 data.addProperty("message", "잘못된 토큰 정보");
             }
         }
 
-        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
 
@@ -215,37 +196,21 @@ public class AuthController {
         JsonObject data = new JsonObject();
 
         User isUser = userRepository.findByCiValue(userDto.getCiValue());
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         if (isUser != null) {
-            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
-            apiRes.setError(ErrCode.err_api_is_exist_user.code());
-            apiRes.setMessage(ErrCode.err_api_is_exist_user.msg());
-            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+            if(isUser.isDeleteYn() == true) {
+                apiRes.setError(ErrCode.err_api_is_delete_user.code());
+                apiRes.setMessage(ErrCode.err_api_is_delete_user.msg());
+                return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+            } else {
+                apiRes.setError(ErrCode.err_api_is_exist_user.code());
+                apiRes.setMessage(ErrCode.err_api_is_exist_user.msg());
+                return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+            }
         } else {
-            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
             apiRes.setError(ErrCode.err_api_is_new_user.code());
             apiRes.setMessage(ErrCode.err_api_is_new_user.msg());
-            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
-        }
-    }
-
-    @PostMapping("/editPhoneNumber")
-    public ResponseEntity<JsonObject> userCiValueUpdate(HttpServletRequest req, @RequestBody UserDto userDto) throws ParseException {
-        JsonObject data = new JsonObject();
-
-        String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
-
-        if (findUser.getCiValue().equals(userDto.getCiValue())) {
-            userService.updateCiValue(userDto.getPhoneNumber(), findUser);
-
-            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
-            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
-        } else {
-            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
-            apiRes.setError(ErrCode.err_api_is_inconsistency.code());
-            apiRes.setMessage(ErrCode.err_api_is_inconsistency.msg());
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
         }
     }

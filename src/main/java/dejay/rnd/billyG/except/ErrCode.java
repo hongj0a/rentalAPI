@@ -13,6 +13,7 @@ public enum ErrCode {
   err_not_an_positive_integer       ("1300", "양의정수 오류"),
   err_api_duplicate_nickname        ("1400", "중복 닉네임"),
   err_api_is_exist_user              ("1402", "존재하는 회원"),
+  err_api_is_delete_user             ("1405", "탈퇴한 회원"),
   err_api_is_new_user              ("1403", "신규 회원"),
   err_api_is_inconsistency         ("1404", "로그인 한 user가 아님"),
   err_long_time_no_use_user         ("1401", "1년이상 장기 미이용 고객"),
