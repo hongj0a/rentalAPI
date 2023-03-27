@@ -1,6 +1,7 @@
 package dejay.rnd.billyG.dto;
 
 import lombok.*;
+import org.springframework.data.domain.Pageable;
 
 @Getter
 @Setter
@@ -9,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 public class MainDto {
 
-   private String towns[];
+   private Long towns[];
 
    private Integer status;
 
@@ -17,6 +18,7 @@ public class MainDto {
 
    private String keyword;
 
-   private String categories[];
+   private Long categories[];
+
 
 }

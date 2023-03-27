@@ -62,6 +62,8 @@ public class UserService {
                 .snsType(passwordEncoder.encode(userDto.getSnsType()))
                 .snsName(userDto.getSnsType())
                 .name(userDto.getName())
+                .activityScore(0)
+                .userLevel(1)
                 .phoneNum(userDto.getPhoneNumber())
                 .ciValue(userDto.getCiValue())
                 .grades(Collections.singleton(grade))

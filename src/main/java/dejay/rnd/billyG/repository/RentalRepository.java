@@ -28,4 +28,8 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     Page<Rental> findAllByRentalCategoryInfos_Category_CategoryIdxInAndRentalTownInfos_Town_TownIdxInAndTitleContainingOrderByLikeCntDesc(Long[] categories, Long[] towns, String title, Pageable pageable);
 
 */
+
+    Rental getOne(Long rentalIdx);
+
+    List<Rental> findByUser_userIdx(Long user_idx);
 }
