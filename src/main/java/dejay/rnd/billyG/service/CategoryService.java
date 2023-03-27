@@ -1,7 +1,7 @@
 package dejay.rnd.billyG.service;
 
 import dejay.rnd.billyG.domain.Category;
-import dejay.rnd.billyG.repository.*;
+import dejay.rnd.billyG.repositoryImpl.CategoryRepositories;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

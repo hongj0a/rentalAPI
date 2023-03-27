@@ -33,16 +33,14 @@ import java.util.Map;
 @RequestMapping("/api")
 public class UserController {
     private final UserService userService;
-    private final TokenProvider tokenProvider;
     private final UserRepository userRepository;
     private final TownService townService;
     private final TownRepository townRepository;
     private final FileUploadService uploadService;
 
 
-    public UserController(UserService userService, TokenProvider tokenProvider, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService) {
+    public UserController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService) {
         this.userService = userService;
-        this.tokenProvider = tokenProvider;
         this.userRepository = userRepository;
         this.townService = townService;
         this.townRepository = townRepository;
@@ -111,8 +109,6 @@ public class UserController {
                 }
             }
         }
-        System.out.println("userTowns = " + userTowns);
-
 
         userService.updateUserTownInfo(userTowns, findUser);
 

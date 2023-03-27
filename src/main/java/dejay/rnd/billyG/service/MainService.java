@@ -1,10 +1,7 @@
 package dejay.rnd.billyG.service;
 
-import dejay.rnd.billyG.domain.Rental;
-import dejay.rnd.billyG.repository.*;
+import dejay.rnd.billyG.repositoryImpl.MainRepositories;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class MainService {

@@ -1,4 +1,4 @@
-package dejay.rnd.billyG.repository;
+package dejay.rnd.billyG.repositoryImpl;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
@@ -7,6 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import dejay.rnd.billyG.domain.QRental;
 import dejay.rnd.billyG.domain.QRentalCategoryInfo;
 import dejay.rnd.billyG.domain.Rental;
+import dejay.rnd.billyG.repository.RentalRepositoryCustom;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class RentalRepositories implements RentalRepositoryCustom{
+public class RentalRepositories implements RentalRepositoryCustom {
     @PersistenceContext
     private final EntityManager em;
     private final JPAQueryFactory queryFactory;
@@ -79,11 +80,11 @@ public class RentalRepositories implements RentalRepositoryCustom{
 
         BooleanBuilder builder = new BooleanBuilder();
 
-        if (categories.length != 0) {
+        if (categories != null && categories.length != 0) {
             builder.and(rentalCategoryInfo.category.categoryIdx.in(categories));
         }
 
-        if (towns.length != 0) {
+        if (towns != null && towns.length != 0) {
             builder.and(rental.leadTown.in(towns))
                     .or(rental.town1.in(towns))
                     .or(rental.town2.in(towns))
@@ -91,37 +92,39 @@ public class RentalRepositories implements RentalRepositoryCustom{
                     .or(rental.town4.in(towns));
         }
 
-        //최신순
-        if (filter == 0) {
-            List<Rental> results = queryFactory.selectFrom(rental)
-                    .join(rental.rentalCategoryInfos, rentalCategoryInfo).fetchJoin()
-                    .where((rental.status.in(status)).and(rental.title.contains(title))
-                            .and(builder)
-                            .and(rental.activeYn.eq(true))
-                            .and(rental.deleteYn.eq(false)))
-                    .orderBy(rental.createAt.desc())
-                    .offset(pageable.getPageNumber())
-                    .limit(pageable.getPageSize())
-                    .fetch();
-            List<Rental> content = results.stream().toList();
 
-            return new PageImpl<>(content, pageable, content.size());
-        }
         //인기순
         if (filter == 1) {
-            List<Rental> results = queryFactory.selectFrom(rental)
+            List<Rental> results = queryFactory.select(rental).distinct().from(rental)
                     .join(rental.rentalCategoryInfos, rentalCategoryInfo).fetchJoin()
                     .where((rental.status.in(status)).and(rental.title.contains(title))
                             .and(builder)
                             .and(rental.activeYn.eq(true))
                             .and(rental.deleteYn.eq(false)))
                     .orderBy(rental.likeCnt.desc())
-                    .offset(pageable.getPageNumber())
+                    .offset(pageable.getOffset())
                     .limit(pageable.getPageSize())
                     .fetch();
             List<Rental> content = results.stream().toList();
             return new PageImpl<>(content, pageable, content.size());
         }
+
+        //최신순
+        if (filter == 0) {
+            List<Rental> results = queryFactory.select(rental).distinct().from(rental)
+                    .join(rental.rentalCategoryInfos, rentalCategoryInfo).fetchJoin()
+                    .where((rental.status.in(status)).and(rental.title.contains(title))
+                    .and(builder)
+                    .and(rental.activeYn.eq(true))
+                    .and(rental.deleteYn.eq(false)))
+                    .orderBy(rental.createAt.desc())
+                    .offset(pageable.getOffset())
+                    .limit(pageable.getPageSize())
+                    .fetch();
+            List<Rental> content = results.stream().toList();
+            return new PageImpl<>(content, pageable, content.size());
+        }
+
         return null;
     }
 
@@ -132,18 +135,18 @@ public class RentalRepositories implements RentalRepositoryCustom{
 
         BooleanBuilder builder = new BooleanBuilder();
 
-        if (categories.length != 0) {
+        if (categories != null && categories.length != 0) {
             builder.and(rentalCategoryInfo.category.categoryIdx.in(categories));
         }
 
-        if (towns.length != 0) {
+        if (towns != null && towns.length != 0) {
             builder.and(rental.leadTown.in(towns))
                     .or(rental.town1.in(towns))
                     .or(rental.town2.in(towns))
                     .or(rental.town3.in(towns))
                     .or(rental.town4.in(towns));
         }
-        return queryFactory.select(Wildcard.count).from(rental)
+        return queryFactory.select(rental.rentalIdx).distinct().from(rental)
                 .join(rental.rentalCategoryInfos, rentalCategoryInfo)
                 .where((rental.status.in(status)).and(rental.title.contains(title))
                         .and(builder)

@@ -2,7 +2,6 @@ package dejay.rnd.billyG.controller;
 
 import com.google.gson.*;
 import dejay.rnd.billyG.api.RestApiRes;
-import dejay.rnd.billyG.domain.Town;
 import dejay.rnd.billyG.domain.User;
 import dejay.rnd.billyG.dto.LoginDto;
 import dejay.rnd.billyG.dto.TokenDto;
@@ -10,7 +9,6 @@ import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.jwt.TokenProvider;
 import dejay.rnd.billyG.repository.UserRepository;
-import dejay.rnd.billyG.service.TownService;
 import dejay.rnd.billyG.service.UserService;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,19 +20,16 @@ import org.springframework.web.bind.annotation.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
 public class AuthController {
     private final UserService userService;
-    private final TownService townService;
     private final TokenProvider tokenProvider;
     private final UserRepository userRepository;
 
-    public AuthController(UserService userService, TownService townService, TokenProvider tokenProvider, UserRepository userRepository) {
+    public AuthController(UserService userService, TokenProvider tokenProvider, UserRepository userRepository) {
         this.userService = userService;
-        this.townService = townService;
         this.tokenProvider = tokenProvider;
         this.userRepository = userRepository;
     }
@@ -62,7 +57,6 @@ public class AuthController {
 
         // 신규유저라면 회원가입 하고 바로 로그인
         if (findUser == null) {
-            System.out.println("AuthController.authorize");
             UserDto userDto = new UserDto();
             userDto.setEmail(email);
             userDto.setSnsType(snsType);
@@ -84,7 +78,6 @@ public class AuthController {
         Date date2 = userOne.getLastLoginDate();
 
         if (date2.before(date1)) {
-
             apiRes.setError(ErrCode.err_long_time_no_use_user.code());
             apiRes.setMessage(ErrCode.err_long_time_no_use_user.msg());
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
@@ -95,7 +88,7 @@ public class AuthController {
         data.addProperty("grantType", tokenDto.getGrantType());
         data.addProperty("accessToken",tokenDto.getAccessToken());
         data.addProperty("refreshToken", tokenDto.getRefreshToken());
-        data.addProperty("user_seq", userOne.getUserIdx());
+        data.addProperty("userSeq", userOne.getUserIdx());
 
         // user 테이블에 Refreshtoken update
         userService.setRefreshToken(userOne.getUserIdx(), tokenDto.getRefreshToken());
@@ -114,7 +107,7 @@ public class AuthController {
             data.addProperty("isLeadTownEmpty", "N");
         }
 
-        data.addProperty("image_url", "http://192.168.1.242:8080/image/");
+        data.addProperty("imageUrl", "http://192.168.1.242:8080/image/");
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
 
@@ -167,7 +160,7 @@ public class AuthController {
                 data.addProperty("grantType", tokenDto.getGrantType());
                 data.addProperty("accessToken",tokenDto.getAccessToken());
                 data.addProperty("refreshToken", tokenDto.getRefreshToken());
-                data.addProperty("user_seq", findUser.getUserIdx());
+                data.addProperty("userSeq", findUser.getUserIdx());
 
                 userService.setRefreshToken(findUser.getUserIdx(), tokenDto.getRefreshToken());
 

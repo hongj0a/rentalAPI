@@ -7,16 +7,15 @@ import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.repository.*;
+import dejay.rnd.billyG.repositoryImpl.RentalRepositories;
+import dejay.rnd.billyG.repositoryImpl.TownRepositories;
 import dejay.rnd.billyG.service.CategoryService;
 import dejay.rnd.billyG.service.RentalService;
-import dejay.rnd.billyG.service.TownService;
-import dejay.rnd.billyG.service.UserService;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,29 +28,25 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api")
 public class MainController {
-    private final UserService userService;
     private final UserRepository userRepository;
-    private final TownService townService;
     private final TownRepository townRepository;
     private final TownRepositories townRepositories;
     private final CategoryService categoryService;
     private final RentalRepository rentalRepository;
     private final RentalRepositories rentalRepositories;
     private final RentalImageRepository rentalImageRepository;
-    private final TownInfoRepository townInfoRepository;
+    private final RentalCategoryInfoRepository rentalCategoryInfoRepository;
     private final RentalService rentalService;
 
-    public MainController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, TownInfoRepository townInfoRepository, RentalService rentalService) {
-        this.userService = userService;
+    public MainController(UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService) {
         this.userRepository = userRepository;
-        this.townService = townService;
         this.townRepository = townRepository;
         this.townRepositories = townRepositories;
         this.categoryService = categoryService;
         this.rentalRepository = rentalRepository;
         this.rentalRepositories = rentalRepositories;
         this.rentalImageRepository = rentalImageRepository;
-        this.townInfoRepository = townInfoRepository;
+        this.rentalCategoryInfoRepository = rentalCategoryInfoRepository;
         this.rentalService = rentalService;
     }
 
@@ -62,17 +57,13 @@ public class MainController {
 
     @GetMapping("/getMainList")
     public ResponseEntity<JsonObject> getMain(@RequestParam(value="status") Integer status,
-                                              @RequestParam(value="filter") Integer filter,
-                                              @RequestParam(value="keyword") String keyword,
-                                              @RequestParam(value="categories[]") Long[] categories,
-                                              @RequestParam(value="towns[]") Long[] towns, Pageable pageable,
+                                              @RequestParam(required = false, value="filter") Integer filter,
+                                              @RequestParam(required = false, value="keyword") String keyword,
+                                              @RequestParam(required = false, value="categories") Long[] categories,
+                                              @RequestParam(required = false, value="towns") Long[] towns, Pageable pageable,
                                               HttpServletRequest req) throws AppException {
         JsonObject data = new JsonObject();
         JsonArray rentalArr = new JsonArray();
-        System.out.println("pageable = " + pageable);
-        System.out.println("pageable page number = " + pageable.getPageNumber());
-        System.out.println("pageable page size = " + pageable.getPageSize());
-
 
         /**
          * [렌탈 상태]
@@ -99,11 +90,13 @@ public class MainController {
             p_status.add(2);
             p_status.add(3);
         }
+
+
         long totalCount = rentalRepositories.getTotalCount(p_status, keyword, towns, categories);
         Page<Rental> mains = rentalRepositories.findAll(p_status, filter, keyword, towns, categories, pageable);
-
         mains.forEach(
                 rental -> {
+                    System.out.println(" rental!!!!" + rental.getRentalIdx());
                     JsonObject rentalList = new JsonObject();
                     rentalList.addProperty("rental_seq", rental.getRentalIdx());
 
@@ -172,13 +165,13 @@ public class MainController {
         for (Map.Entry<Integer, String> pair : statusMap.entrySet()) {
             JsonObject status = new JsonObject();
 
-            status.addProperty("status_key", pair.getKey());
+            status.addProperty("statusKey", pair.getKey());
             status.addProperty("status", pair.getValue());
 
             statusArr.add(status);
         }
 
-        data.add("status_list", statusArr);
+        data.add("statusList", statusArr);
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
@@ -194,24 +187,24 @@ public class MainController {
         categoryList.forEach(
                 category -> {
                     JsonObject categories = new JsonObject();
-                    categories.addProperty("category_seq", category.getCategoryIdx());
-                    categories.addProperty("category_name", category.getName());
+                    categories.addProperty("categorySeq", category.getCategoryIdx());
+                    categories.addProperty("categoryName", category.getName());
                     if (category.getOnImageUrl() == null) {
-                        categories.addProperty("category_on_image", "");
+                        categories.addProperty("categoryOnImage", "");
                     } else {
-                        categories.addProperty("category_on_image", category.getOnImageUrl());
+                        categories.addProperty("categoryOnImage", category.getOnImageUrl());
                     }
 
                     if (category.getOffImageUrl() == null) {
-                        categories.addProperty("category_off_image", "");
+                        categories.addProperty("categoryOffImage", "");
                     } else {
-                        categories.addProperty("category_off_image", category.getOffImageUrl());
+                        categories.addProperty("categoryOffImage", category.getOffImageUrl());
                     }
 
                     categoryArr.add(categories);
                 }
         );
-        data.add("category_list", categoryArr);
+        data.add("categoryList", categoryArr);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
@@ -240,17 +233,133 @@ public class MainController {
         town.forEach(
                 tn -> {
                     JsonObject tns = new JsonObject();
-                    tns.addProperty("town_seq", tn.getTownIdx());
-                    tns.addProperty("town_name", tn.getTownName());
+                    tns.addProperty("townSeq", tn.getTownIdx());
+                    tns.addProperty("townName", tn.getTownName());
 
                     townArr.add(tns);
                 }
         );
-        data.add("town_list", townArr);
+        data.add("townList", townArr);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
     }
+
+    @GetMapping("/getRental")
+    public ResponseEntity<JsonObject> getRental(@RequestParam(value="rental_idx") Long rentalIdx,
+                                                HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+        JsonArray townArr = new JsonArray();
+        JsonArray imageArr = new JsonArray();
+        JsonArray cateArr = new JsonArray();
+        JsonArray renArr = new JsonArray();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        Rental findRental = rentalRepository.getOne(rentalIdx);
+
+        data.addProperty("userProfileImage", findRental.getUser().getProfileImageUrl());
+        data.addProperty("userNickName", findRental.getUser().getNickName());
+        data.addProperty("userStarPoint", findRental.getUser().getStarPoint());
+        data.addProperty("activityScore", findRental.getUser().getActivityScore());
+        data.addProperty("userGrade", findRental.getUser().getUserLevel());
+
+
+        if (findRental.getUser().getUserIdx() != findUser.getUserIdx()) {
+            //조회수 업데이트
+            rentalService.updateViewCnt(findRental);
+        }
+        String status;
+        if (findRental.getStatus() == 1) {
+            status = "렌틸가능";
+        } else if (findRental.getStatus() == 2) {
+            status = "렌탈중";
+        } else {
+            status = "렌탈완료";
+        }
+
+        data.addProperty("rentalIdx", findRental.getRentalIdx());
+        data.addProperty("rentalStatus", status);
+        data.addProperty("viewCount", findRental.getViewCnt());
+        data.addProperty("likeCount", findRental.getLikeCnt());
+        data.addProperty("title", findRental.getTitle());
+        data.addProperty("content", findRental.getContent());
+        data.addProperty("createAt", findRental.getCreateAt().getTime()/1000L);
+        data.addProperty("dailyFee", findRental.getRentalPrice());
+
+        ArrayList<Long> towns = new ArrayList<>();
+
+        towns.add(findRental.getLeadTown());
+        if (findRental.getTown1()!= null) towns.add(findRental.getTown1());
+        if (findRental.getTown2()!= null) towns.add(findRental.getTown2());
+        if (findRental.getTown3()!= null) towns.add(findRental.getTown3());
+        if (findRental.getTown4()!= null) towns.add(findRental.getTown4());
+
+        List<Town> town = townRepositories.findByTownInfo(towns);
+
+        town.forEach(
+                tn -> {
+                    JsonObject tns = new JsonObject();
+                    tns.addProperty("townSeq", tn.getTownIdx());
+                    tns.addProperty("townName", tn.getTownName());
+
+                    townArr.add(tns);
+                }
+        );
+
+        List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(rentalIdx);
+
+        rentalImages.forEach(
+                img -> {
+                    JsonObject images = new JsonObject();
+                    images.addProperty("imageSeq", img.getImageIdx());
+                    images.addProperty("imageUrl", img.getImageUrl());
+
+                    imageArr.add(images);
+                }
+        );
+
+        List<RentalCategoryInfo> categoryInfos = rentalCategoryInfoRepository.findByRental_rentalIdx(rentalIdx);
+
+        categoryInfos.forEach(
+                cate -> {
+                    JsonObject categories = new JsonObject();
+                    categories.addProperty("categoryIdx", cate.getCategory().getCategoryIdx());
+                    categories.addProperty("categoryName", cate.getCategory().getName());
+
+                    cateArr.add(categories);
+                }
+        );
+
+        List<Rental> etcRentals = rentalRepository.findByUser_userIdx(findRental.getUser().getUserIdx());
+
+        etcRentals.forEach(
+                etcs -> {
+                    JsonObject etcRental = new JsonObject();
+
+                    List<RentalImage> renImgs = rentalImageRepository.findByRental_rentalIdx(etcs.getRentalIdx());
+
+                    etcRental.addProperty("rentalIdx", etcs.getRentalIdx());
+                    etcRental.addProperty("rentalImage", renImgs.get(0).getImageUrl());
+                    etcRental.addProperty("title", etcs.getTitle());
+                    etcRental.addProperty("dailyFee", etcs.getRentalPrice());
+
+                    renArr.add(etcRental);
+                }
+        );
+
+
+        data.add("towns", townArr);
+        data.add("images", imageArr);
+        data.add("categoryInfo", cateArr);
+        data.add("etcRentals", renArr);
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
 
 }

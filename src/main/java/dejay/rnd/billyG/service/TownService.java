@@ -2,9 +2,9 @@ package dejay.rnd.billyG.service;
 
 import dejay.rnd.billyG.domain.Town;
 import dejay.rnd.billyG.domain.User;
-import dejay.rnd.billyG.repository.TownRepositories;
+import dejay.rnd.billyG.repositoryImpl.TownRepositories;
 import dejay.rnd.billyG.repository.TownRepository;
-import dejay.rnd.billyG.repository.UserRepositories;
+import dejay.rnd.billyG.repositoryImpl.UserRepositories;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)

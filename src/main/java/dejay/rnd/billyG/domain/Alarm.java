@@ -52,4 +52,13 @@ public class Alarm {
     @Column (name = "delete_at")
     private Date deleteAt;
 
+    @Column (name = "rental_idx")
+    private Long rentalIdx;
+
+    @Column (name = "review_idx")
+    private Long reviewIdx;
+
+    @Column (name = "chat_idx")
+    private Long chatIdx;
+
 }

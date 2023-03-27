@@ -5,12 +5,11 @@ import dejay.rnd.billyG.domain.User;
 import dejay.rnd.billyG.domain.UserCount;
 import dejay.rnd.billyG.dto.TokenDto;
 import dejay.rnd.billyG.dto.UserDto;
-import dejay.rnd.billyG.except.DuplicateMemberException;
 import dejay.rnd.billyG.except.NotFoundMemberException;
 import dejay.rnd.billyG.jwt.TokenProvider;
-import dejay.rnd.billyG.repository.UserCountRepositories;
+import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
 import dejay.rnd.billyG.repository.UserCountRepository;
-import dejay.rnd.billyG.repository.UserRepositories;
+import dejay.rnd.billyG.repositoryImpl.UserRepositories;
 import dejay.rnd.billyG.repository.UserRepository;
 import dejay.rnd.billyG.util.SecurityUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -62,6 +61,8 @@ public class UserService {
                 .snsType(passwordEncoder.encode(userDto.getSnsType()))
                 .snsName(userDto.getSnsType())
                 .name(userDto.getName())
+                .activityScore(0)
+                .userLevel(1)
                 .phoneNum(userDto.getPhoneNumber())
                 .ciValue(userDto.getCiValue())
                 .grades(Collections.singleton(grade))
