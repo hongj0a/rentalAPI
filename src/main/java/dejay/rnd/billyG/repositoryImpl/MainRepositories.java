@@ -1,4 +1,4 @@
-package dejay.rnd.billyG.repository;
+package dejay.rnd.billyG.repositoryImpl;
 
 
 import dejay.rnd.billyG.domain.Rental;

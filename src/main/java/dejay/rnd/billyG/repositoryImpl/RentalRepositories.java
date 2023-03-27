@@ -1,4 +1,4 @@
-package dejay.rnd.billyG.repository;
+package dejay.rnd.billyG.repositoryImpl;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
@@ -7,6 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import dejay.rnd.billyG.domain.QRental;
 import dejay.rnd.billyG.domain.QRentalCategoryInfo;
 import dejay.rnd.billyG.domain.Rental;
+import dejay.rnd.billyG.repository.RentalRepositoryCustom;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class RentalRepositories implements RentalRepositoryCustom{
+public class RentalRepositories implements RentalRepositoryCustom {
     @PersistenceContext
     private final EntityManager em;
     private final JPAQueryFactory queryFactory;

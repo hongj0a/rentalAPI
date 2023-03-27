@@ -41,7 +41,7 @@ public class NoticeController {
             noticeArr.add(gson.toJsonTree(noticeList));
         }
 
-        data.add("notice_list", noticeArr);
+        data.add("noticeList", noticeArr);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());

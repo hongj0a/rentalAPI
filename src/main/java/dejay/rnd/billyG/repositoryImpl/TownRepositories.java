@@ -1,4 +1,4 @@
-package dejay.rnd.billyG.repository;
+package dejay.rnd.billyG.repositoryImpl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dejay.rnd.billyG.domain.QTown;

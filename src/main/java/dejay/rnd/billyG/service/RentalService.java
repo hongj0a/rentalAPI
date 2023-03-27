@@ -1,8 +1,8 @@
 package dejay.rnd.billyG.service;
 
 import dejay.rnd.billyG.domain.Rental;
-import dejay.rnd.billyG.domain.User;
-import dejay.rnd.billyG.repository.*;
+import dejay.rnd.billyG.repositoryImpl.RentalRepositories;
+import dejay.rnd.billyG.repositoryImpl.UserRepositories;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

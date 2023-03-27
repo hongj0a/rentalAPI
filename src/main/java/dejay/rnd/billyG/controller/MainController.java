@@ -7,16 +7,15 @@ import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.repository.*;
+import dejay.rnd.billyG.repositoryImpl.RentalRepositories;
+import dejay.rnd.billyG.repositoryImpl.TownRepositories;
 import dejay.rnd.billyG.service.CategoryService;
 import dejay.rnd.billyG.service.RentalService;
-import dejay.rnd.billyG.service.TownService;
-import dejay.rnd.billyG.service.UserService;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,9 +28,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api")
 public class MainController {
-    private final UserService userService;
     private final UserRepository userRepository;
-    private final TownService townService;
     private final TownRepository townRepository;
     private final TownRepositories townRepositories;
     private final CategoryService categoryService;
@@ -39,13 +36,10 @@ public class MainController {
     private final RentalRepositories rentalRepositories;
     private final RentalImageRepository rentalImageRepository;
     private final RentalCategoryInfoRepository rentalCategoryInfoRepository;
-    private final TownInfoRepository townInfoRepository;
     private final RentalService rentalService;
 
-    public MainController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, TownInfoRepository townInfoRepository, RentalService rentalService) {
-        this.userService = userService;
+    public MainController(UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService) {
         this.userRepository = userRepository;
-        this.townService = townService;
         this.townRepository = townRepository;
         this.townRepositories = townRepositories;
         this.categoryService = categoryService;
@@ -53,7 +47,6 @@ public class MainController {
         this.rentalRepositories = rentalRepositories;
         this.rentalImageRepository = rentalImageRepository;
         this.rentalCategoryInfoRepository = rentalCategoryInfoRepository;
-        this.townInfoRepository = townInfoRepository;
         this.rentalService = rentalService;
     }
 
@@ -172,13 +165,13 @@ public class MainController {
         for (Map.Entry<Integer, String> pair : statusMap.entrySet()) {
             JsonObject status = new JsonObject();
 
-            status.addProperty("status_key", pair.getKey());
+            status.addProperty("statusKey", pair.getKey());
             status.addProperty("status", pair.getValue());
 
             statusArr.add(status);
         }
 
-        data.add("status_list", statusArr);
+        data.add("statusList", statusArr);
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
@@ -194,24 +187,24 @@ public class MainController {
         categoryList.forEach(
                 category -> {
                     JsonObject categories = new JsonObject();
-                    categories.addProperty("category_seq", category.getCategoryIdx());
-                    categories.addProperty("category_name", category.getName());
+                    categories.addProperty("categorySeq", category.getCategoryIdx());
+                    categories.addProperty("categoryName", category.getName());
                     if (category.getOnImageUrl() == null) {
-                        categories.addProperty("category_on_image", "");
+                        categories.addProperty("categoryOnImage", "");
                     } else {
-                        categories.addProperty("category_on_image", category.getOnImageUrl());
+                        categories.addProperty("categoryOnImage", category.getOnImageUrl());
                     }
 
                     if (category.getOffImageUrl() == null) {
-                        categories.addProperty("category_off_image", "");
+                        categories.addProperty("categoryOffImage", "");
                     } else {
-                        categories.addProperty("category_off_image", category.getOffImageUrl());
+                        categories.addProperty("categoryOffImage", category.getOffImageUrl());
                     }
 
                     categoryArr.add(categories);
                 }
         );
-        data.add("category_list", categoryArr);
+        data.add("categoryList", categoryArr);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
@@ -240,13 +233,13 @@ public class MainController {
         town.forEach(
                 tn -> {
                     JsonObject tns = new JsonObject();
-                    tns.addProperty("town_seq", tn.getTownIdx());
-                    tns.addProperty("town_name", tn.getTownName());
+                    tns.addProperty("townSeq", tn.getTownIdx());
+                    tns.addProperty("townName", tn.getTownName());
 
                     townArr.add(tns);
                 }
         );
-        data.add("town_list", townArr);
+        data.add("townList", townArr);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
