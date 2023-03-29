@@ -3,15 +3,12 @@ package dejay.rnd.billyG.controller;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
-import dejay.rnd.billyG.domain.Town;
-import dejay.rnd.billyG.domain.User;
+import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
-import dejay.rnd.billyG.jwt.TokenProvider;
 import dejay.rnd.billyG.model.ImageFile;
-import dejay.rnd.billyG.repository.TownRepository;
-import dejay.rnd.billyG.repository.UserRepository;
+import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.service.FileUploadService;
 import dejay.rnd.billyG.service.TownService;
 import dejay.rnd.billyG.service.UserService;
@@ -19,6 +16,8 @@ import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.json.simple.parser.ParseException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,14 +36,21 @@ public class UserController {
     private final TownService townService;
     private final TownRepository townRepository;
     private final FileUploadService uploadService;
+    private final RentalRepository rentalRepository;
+    private final RentalImageRepository rentalImageRepository;
+    private final ReviewRepository reviewRepository;
+    private final ReviewImageRepository reviewImageRepository;
 
-
-    public UserController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService) {
+    public UserController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.townService = townService;
         this.townRepository = townRepository;
         this.uploadService = uploadService;
+        this.rentalRepository = rentalRepository;
+        this.rentalImageRepository = rentalImageRepository;
+        this.reviewRepository = reviewRepository;
+        this.reviewImageRepository = reviewImageRepository;
     }
 
     @PostMapping("/signup")
@@ -120,6 +126,7 @@ public class UserController {
     @PostMapping("/editPhoneNumber")
     public ResponseEntity<JsonObject> userCiValueUpdate(HttpServletRequest req, @RequestBody UserDto userDto) throws ParseException {
         JsonObject data = new JsonObject();
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
@@ -128,10 +135,8 @@ public class UserController {
         if (findUser.getCiValue().equals(userDto.getCiValue())) {
             userService.updateCiValue(userDto.getPhoneNumber(), findUser);
 
-            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
         } else {
-            RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
             apiRes.setError(ErrCode.err_api_is_inconsistency.code());
             apiRes.setMessage(ErrCode.err_api_is_inconsistency.msg());
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
@@ -194,6 +199,137 @@ public class UserController {
         }
 
         data.add("townList", townArr);
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+    @GetMapping("/getOtherUserDetailPage")
+    public ResponseEntity<JsonObject> getOtherUserDetailPage(@RequestParam (value = "userIdx") Long userIdx,
+                                                            @RequestParam (value = "type") int type,
+                                                            Pageable pageable,
+                                                            HttpServletRequest req) throws AppException {
+        JsonObject data = new JsonObject();
+        JsonArray townArr = new JsonArray();
+        JsonArray renArr = new JsonArray();
+        JsonArray reviewArr = new JsonArray();
+
+        User otherUser = userRepository.getOne(userIdx);
+
+        //필수니깐 없을수가 없음
+        Town findLeadTown = townRepository.getOne(otherUser.getLeadTown());
+        data.addProperty("leadTown", findLeadTown.getTownName());
+
+        if (otherUser.getTown1() != null) {
+            Town findTown1 = townRepository.getOne(otherUser.getTown1());
+            townArr.add(findTown1.getTownName());
+        }
+
+        if (otherUser.getTown2() != null) {
+            Town findTown2 = townRepository.getOne(otherUser.getTown2());
+            townArr.add(findTown2.getTownName());
+        }
+
+        if (otherUser.getTown3() != null) {
+            Town findTown3 = townRepository.getOne(otherUser.getTown3());
+            townArr.add(findTown3.getTownName());
+        }
+
+        if (otherUser.getTown4() != null) {
+            Town findTown4 = townRepository.getOne(otherUser.getTown4());
+            townArr.add(findTown4.getTownName());
+        }
+
+        data.addProperty("profileImage", otherUser.getProfileImageUrl());
+        data.addProperty("nickName", otherUser.getNickName());
+        data.addProperty("grade", otherUser.getUserLevel());
+        data.addProperty("leadTown", otherUser.getLeadTown());
+        data.addProperty("starPoint", otherUser.getStarPoint());
+        data.add("townList", townArr);
+
+        if (type == 1) {
+            //렌탈중인 게시글
+            Page<Rental> etcRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotIn(otherUser.getUserIdx(), true, false, new int[]{4}, pageable);
+            List<Rental> etc = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotIn(otherUser.getUserIdx(), true, false, new int[]{4});
+            etcRentals.forEach(
+                    etcs -> {
+                        JsonObject etcRental = new JsonObject();
+
+                        List<RentalImage> renImgs = rentalImageRepository.findByRental_rentalIdx(etcs.getRentalIdx());
+
+                        etcRental.addProperty("rentalIdx", etcs.getRentalIdx());
+                        etcRental.addProperty("rentalImage", renImgs.get(0).getImageUrl());
+                        etcRental.addProperty("title", etcs.getTitle());
+                        etcRental.addProperty("dailyFee", etcs.getRentalPrice());
+
+                        renArr.add(etcRental);
+                    }
+            );
+            data.add("rentalList", renArr);
+            data.addProperty("rentalsTotalCount", etc.size());
+        } else if (type == 2){
+            //후기 전체 list
+            Page<Review> findReviews = reviewRepository.findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAt(userIdx, true, false, pageable);
+            List<Review> reviews = reviewRepository.findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAt(userIdx, true, false);
+
+            findReviews.forEach(
+                    review -> {
+                        JsonObject rvs = new JsonObject();
+
+                        rvs.addProperty("renterIdx", review.getTransaction().getUser().getUserIdx());
+                        rvs.addProperty("renterImage", review.getTransaction().getUser().getProfileImageUrl());
+                        rvs.addProperty("renterNickName", review.getTransaction().getUser().getName());
+                        rvs.addProperty("renterLeadTown", review.getTransaction().getUser().getLeadTown());
+                        rvs.addProperty("reviewRegDate", review.getCreateAt().getTime());
+                        rvs.addProperty("reviewIdx", review.getReviewIdx());
+                        rvs.addProperty("reviewContent", review.getReviewContent());
+                        rvs.addProperty("reviewStarPoint", review.getReviewScore());
+
+                        reviewArr.add(rvs);
+                    }
+            );
+            data.add("reviewList", reviewArr);
+            data.addProperty("reviewsTotalCount", reviews.size());
+
+        }
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+    @GetMapping("/getReview")
+    public ResponseEntity<JsonObject> getReview(@RequestParam (value = "reviewIdx") Long reviewIdx,
+                                                 HttpServletRequest req) throws AppException {
+        JsonObject data = new JsonObject();
+        JsonArray rvImg = new JsonArray();
+
+        //삭제검사 생략, 애초에 리뷰 리스트 가져올 때 delete_yn 필터링 됨.
+
+        Review review = reviewRepository.getOne(reviewIdx);
+
+        data.addProperty("userIdx", review.getTransaction().getUser().getUserIdx());
+        data.addProperty("userNickName", review.getTransaction().getUser().getNickName());
+        data.addProperty("starPoint", review.getReviewScore());
+        data.addProperty("rentalTitle", review.getTransaction().getRental().getTitle());
+        data.addProperty("reviewContent", review.getReviewContent());
+
+        List<ReviewImage> images = reviewImageRepository.findByReview_ReviewIdx(review.getReviewIdx());
+
+        if (images.size() != 0) {
+            images.forEach(
+                    ri -> {
+                        JsonObject rvs = new JsonObject();
+                        rvs.addProperty("imageIdx", ri.getImageIdx());
+                        rvs.addProperty("imageUrl", ri.getImageUrl());
+
+                        rvImg.add(rvs);
+                    }
+            );
+        }
+
+        data.add("reviewImageList", rvImg);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());

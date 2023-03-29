@@ -27,6 +27,11 @@ public class BlockUser {
 
     @ManyToOne
     @NotNull
+    @JoinColumn (name = "blockTypeIdx")
+    private BlockType blockType;
+
+    @ManyToOne
+    @NotNull
     @JoinColumn (name = "userIdx")
     private User user;
 
@@ -34,7 +39,7 @@ public class BlockUser {
     private String reason;
 
     @Column (name = "reporter_idx")
-    private Integer reporterIdx;
+    private Long reporterIdx;
 
     @ColumnDefault("0")
     @Column (name = "processing_status")

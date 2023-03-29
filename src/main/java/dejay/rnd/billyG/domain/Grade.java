@@ -42,9 +42,12 @@ public class Grade {
     @Column
     private String updator;
 
-    @Column (name = "active_yn")
+    @Column(name = "active_yn")
     private boolean activeYn = true;
 
-    @Column (name = "admin_idx")
+    @Column(name = "admin_idx")
     private Integer adminIdx;
+
+    @Column(length = 1000)
+    private String imageUrl;
 }

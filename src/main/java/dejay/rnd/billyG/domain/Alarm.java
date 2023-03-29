@@ -61,4 +61,6 @@ public class Alarm {
     @Column (name = "chat_idx")
     private Long chatIdx;
 
+    @Column (name = "host_idx")
+    private Long hostIdx;
 }

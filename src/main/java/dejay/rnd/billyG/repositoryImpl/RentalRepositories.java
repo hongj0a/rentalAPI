@@ -1,8 +1,6 @@
 package dejay.rnd.billyG.repositoryImpl;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.QueryResults;
-import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dejay.rnd.billyG.domain.QRental;
 import dejay.rnd.billyG.domain.QRentalCategoryInfo;
@@ -128,7 +126,7 @@ public class RentalRepositories implements RentalRepositoryCustom {
         return null;
     }
 
-    public long getTotalCount(ArrayList<Integer> status, String title, Long[] towns, Long[] categories) {
+    public Long getTotalCount(ArrayList<Integer> status, String title, Long[] towns, Long[] categories) {
 
         QRental rental = QRental.rental;
         QRentalCategoryInfo rentalCategoryInfo = QRentalCategoryInfo.rentalCategoryInfo;
@@ -146,13 +144,20 @@ public class RentalRepositories implements RentalRepositoryCustom {
                     .or(rental.town3.in(towns))
                     .or(rental.town4.in(towns));
         }
-        return queryFactory.select(rental.rentalIdx).distinct().from(rental)
+        //0 처리..
+        List<Long> totalInfo = queryFactory.select(rental.rentalIdx).distinct().from(rental)
                 .join(rental.rentalCategoryInfos, rentalCategoryInfo)
                 .where((rental.status.in(status)).and(rental.title.contains(title))
                         .and(builder)
                         .and(rental.activeYn.eq(true))
                         .and(rental.deleteYn.eq(false)))
-                .fetch().get(0);
+                .fetch();
+        Long total = 0L;
+        System.out.println("total = " + totalInfo);
+        if (totalInfo.size() != 0) {
+            total = totalInfo.get(0);
+        }
+        return total;
     }
 
 }
