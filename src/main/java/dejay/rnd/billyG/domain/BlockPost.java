@@ -39,7 +39,7 @@ public class BlockPost {
     private String reason;
 
     @Column (name = "reporter_idx")
-    private Integer reporterIdx;
+    private Long reporterIdx;
 
     @ColumnDefault("0")
     @Column (name = "processing_status")

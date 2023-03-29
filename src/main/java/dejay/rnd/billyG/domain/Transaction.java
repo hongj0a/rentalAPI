@@ -59,10 +59,10 @@ public class Transaction {
 
     /**
      *  * 렌탈오너 상태
-     *      * 0 : 매칭대기중
-     *      * 1 : 결제대기중
-     *      * 2 : 배송완료
-     *      * 3 : 반납완료...
+     *      * 10 : 매칭대기
+     *      * 30 : 렌탈중
+     *      * 60 : 이의신청
+     *      * 70 : 렌탈완료
      */
     @Column (name = "owner_status")
     @ColumnDefault("0")
@@ -70,10 +70,11 @@ public class Transaction {
 
     /**
      *  * 렌터 상태
-     *      * 0 : 매칭대기중
-     *      * 1 : 결제대기중
-     *      * 2 : 배송완료
-     *      * 3 : 반납완료...
+     *      * 10 : 매칭대기
+     *      * 20 : 매칭완료
+     *      * 40 : 물품인수
+     *      * 50 : 물품반납
+     *      * 70 : 렌탈완료
      */
     @Column (name = "renter_status")
     @ColumnDefault("0")

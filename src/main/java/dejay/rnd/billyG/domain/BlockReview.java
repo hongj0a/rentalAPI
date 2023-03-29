@@ -39,8 +39,7 @@ public class BlockReview {
     private String reason;
 
     @Column (name = "reporter_idx")
-    @NotNull(message = " 차단하는 사용자의 값이 Null일 수 없습니다. ")
-    private Integer reporterIdx;
+    private Long reporterIdx;
 
     @ColumnDefault("0")
     @Column (name = "processing_status")

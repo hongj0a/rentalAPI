@@ -180,7 +180,7 @@ public class AuthController {
             }
         }
 
-
+        data.addProperty("imageUrl", "http://192.168.1.242:8080/image/");
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
 

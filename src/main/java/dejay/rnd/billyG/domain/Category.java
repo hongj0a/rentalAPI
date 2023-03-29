@@ -63,4 +63,6 @@ public class Category {
     @Column
     private String updator;
 
+    @Column (name ="category_type")
+    private String categoryType;
 }

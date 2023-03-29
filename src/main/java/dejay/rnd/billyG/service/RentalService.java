@@ -26,4 +26,13 @@ public class RentalService {
         rental.setUpdateAt(now_date);
     }
 
+    @Transactional
+    public void updateLikeCnt(Rental rental, boolean likeFlag){
+        if (likeFlag == true) {
+            rental.setLikeCnt(rental.getLikeCnt()+1);
+        } else {
+            rental.setLikeCnt(rental.getLikeCnt()-1);
+        }
+        rental.setUpdateAt(now_date);
+    }
 }
