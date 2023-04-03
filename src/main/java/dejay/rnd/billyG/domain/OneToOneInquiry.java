@@ -47,6 +47,7 @@ public class OneToOneInquiry {
     private boolean deleteYn;
 
     @Column (name = "active_yn")
+    @Builder.Default
     private boolean activeYn = true;
 
     @Temporal(value = TemporalType.TIMESTAMP)

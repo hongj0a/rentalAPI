@@ -26,6 +26,7 @@ public class Rental {
     private Long rentalIdx;
 
     @OneToMany(mappedBy = "rental")
+    @Builder.Default
     private List<RentalCategoryInfo> rentalCategoryInfos = new ArrayList<>();
 
     @ManyToOne
@@ -83,6 +84,7 @@ public class Rental {
     private Date completeAt;
 
     @Column (name = "active_yn")
+    @Builder.Default
     private boolean activeYn = true;
 
     @ColumnDefault("0")

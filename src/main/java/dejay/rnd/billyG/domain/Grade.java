@@ -46,6 +46,7 @@ public class Grade {
     private String updator;
 
     @Column(name = "active_yn")
+    @Builder.Default
     private boolean activeYn = true;
 
     @Column(name = "admin_idx")

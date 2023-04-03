@@ -57,7 +57,7 @@ public class FunctionController {
             if (findLike != null ) {
                 if ( findLike.isDeleteYn() == true && findLike.getUser().getUserIdx() == findUser.getUserIdx()) {
                     likeService.updateLikeInfo(findLike, findUser);
-                    data.addProperty("likeFlag", "Y");
+                    data.addProperty("likeFlag", true);
                     //likeService.insertLikeInfo(findRental,findUser);
                 } else if ( findLike.isDeleteYn() == false && findLike.getUser().getUserIdx() == findUser.getUserIdx()){
                     apiRes.setStatus(9999);

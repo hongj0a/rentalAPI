@@ -17,7 +17,13 @@ public class CategoryRepositories {
 
 
     public List<Category> findAllN() {
-        return em.createQuery("select c from Category c where c.activeYn=true and c.deleteYn=false order by c.orderNum", Category.class)
+        return em.createQuery("select c from Category c where c.orderNum not in(9999) and c.categoryType='1' and c.deleteYn=false order by c.orderNum", Category.class)
+                .getResultList();
+    }
+    public List<Category> findBlockTypes(String blockType) {
+        return em.createQuery("select c from Category c where c.orderNum not in(9999) and c.categoryType=:blockType and c.deleteYn=false order by c.orderNum", Category.class)
+                .setParameter("blockType", blockType)
                 .getResultList();
     }
 }
+

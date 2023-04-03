@@ -53,6 +53,7 @@ public class MemberOutType {
     private Date deleteAt;
 
     @Column (name = "active_yn")
+    @Builder.Default
     private boolean activeYn = true;
 
 }

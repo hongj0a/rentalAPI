@@ -94,17 +94,17 @@ public class AuthController {
         userService.setRefreshToken(userOne.getUserIdx(), tokenDto.getRefreshToken());
 
         if (userOne.getNickName() == null || ("").equals(userOne.getNickName())) {
-            data.addProperty("isNicknameEmpty", "Y");
+            data.addProperty("isNicknameEmpty", true);
         } else {
-            data.addProperty("isNicknameEmpty", "N");
+            data.addProperty("isNicknameEmpty", false);
         }
 
         //user town's Information empty check
         //lead_town값 필수, 관심동네 선택
         if (userOne.getLeadTown() == null || ("").equals(userOne.getLeadTown())) {
-            data.addProperty("isLeadTownEmpty", "Y");
+            data.addProperty("isLeadTownEmpty", true);
         } else {
-            data.addProperty("isLeadTownEmpty", "N");
+            data.addProperty("isLeadTownEmpty", false);
         }
 
         data.addProperty("imageUrl", "http://192.168.1.242:8080/image/");
@@ -165,15 +165,15 @@ public class AuthController {
                 userService.setRefreshToken(findUser.getUserIdx(), tokenDto.getRefreshToken());
 
                 if (findUser.getNickName() == null || ("").equals(findUser.getNickName())) {
-                    data.addProperty("isNicknameEmpty", "Y");
+                    data.addProperty("isNicknameEmpty", true);
                 } else {
-                    data.addProperty("isNicknameEmpty", "N");
+                    data.addProperty("isNicknameEmpty", false);
                 }
 
                 if (findUser.getLeadTown() == null || ("").equals(findUser.getLeadTown())) {
-                    data.addProperty("isLeadTownEmpty", "Y");
+                    data.addProperty("isLeadTownEmpty", true);
                 } else {
-                    data.addProperty("isLeadTownEmpty", "N");
+                    data.addProperty("isLeadTownEmpty", false);
                 }
                 data.addProperty("imageUrl", "http://192.168.1.242:8080/image/");
             } else {

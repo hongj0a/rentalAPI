@@ -207,13 +207,9 @@ public class UserController {
 
     @GetMapping("/getOtherUserDetailPage")
     public ResponseEntity<JsonObject> getOtherUserDetailPage(@RequestParam (value = "userIdx") Long userIdx,
-                                                            @RequestParam (value = "type") int type,
-                                                            Pageable pageable,
-                                                            HttpServletRequest req) throws AppException {
+                                                             HttpServletRequest req) throws AppException {
         JsonObject data = new JsonObject();
         JsonArray townArr = new JsonArray();
-        JsonArray renArr = new JsonArray();
-        JsonArray reviewArr = new JsonArray();
 
         User otherUser = userRepository.getOne(userIdx);
 
@@ -248,6 +244,22 @@ public class UserController {
         data.addProperty("starPoint", otherUser.getStarPoint());
         data.add("townList", townArr);
 
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+    @GetMapping("/getOtherUserDetailPageList")
+    public ResponseEntity<JsonObject> getOtherUserDetailPageList(@RequestParam (value = "userIdx") Long userIdx,
+                                                            @RequestParam (value = "type") int type,
+                                                            Pageable pageable,
+                                                            HttpServletRequest req) throws AppException {
+        JsonObject data = new JsonObject();
+        JsonArray townArr = new JsonArray();
+        JsonArray renArr = new JsonArray();
+        JsonArray reviewArr = new JsonArray();
+
+        User otherUser = userRepository.getOne(userIdx);
         if (type == 1) {
             //렌탈중인 게시글
             Page<Rental> etcRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotIn(otherUser.getUserIdx(), true, false, new int[]{4}, pageable);

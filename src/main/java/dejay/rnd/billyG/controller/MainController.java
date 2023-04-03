@@ -290,6 +290,7 @@ public class MainController {
 
 
         data.addProperty("userNickName", findRental.getUser().getNickName());
+        data.addProperty("userIdx", findRental.getUser().getUserIdx());
         data.addProperty("userStarPoint", findRental.getUser().getStarPoint());
         data.addProperty("activityScore", findRental.getUser().getActivityScore());
         data.addProperty("userGrade", findRental.getUser().getUserLevel());
@@ -298,18 +299,18 @@ public class MainController {
         if (findRental.getUser().getUserIdx() != findUser.getUserIdx()) {
             //조회수 업데이트
             rentalService.updateViewCnt(findRental);
-            data.addProperty("isMine","N");
+            data.addProperty("isMine",false);
         } else {
-            data.addProperty("isMine", "Y");
+            data.addProperty("isMine", true);
         }
 
         //좋아요 눌렀는지 안 눌렀는지 플래그 값
         Likes likeFlag = likeRepository.findByRental_rentalIdxAndUser_userIdxAndDeleteYn(rentalIdx, findUser.getUserIdx(), false);
 
         if (likeFlag != null) {
-            data.addProperty("likeFlag", "Y");
+            data.addProperty("likeFlag", true);
         } else {
-            data.addProperty("likeFlag", "N");
+            data.addProperty("likeFlag", false);
         }
 
         String status;

@@ -42,6 +42,7 @@ public class Faq {
     private Boolean deleteYn;
 
     @Column (name = "active_yn")
+    @Builder.Default
     private boolean activeYn = true;
 
     @Temporal(value = TemporalType.TIMESTAMP)

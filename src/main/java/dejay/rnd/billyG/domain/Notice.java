@@ -51,6 +51,7 @@ public class Notice {
     private Boolean deleteYn;
 
     @Column (name = "active_yn")
+    @Builder.Default
     private boolean activeYn = true;
     
     @ColumnDefault("0")
