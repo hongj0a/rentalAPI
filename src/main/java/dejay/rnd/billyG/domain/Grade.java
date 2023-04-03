@@ -22,17 +22,18 @@ import java.util.Date;
 public class Grade {
 
     @Id
-    @Column(name = "grade_idx", length = 50)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "grade_idx")
     private Long gradeIdx;
 
     @Column(name = "grade_name", length = 50)
     private String gradeName;
 
-    @Column(name = "middle_name")
-    private String middleName;
+    @Column(name = "middle_grade")
+    private Long middleGrade;
 
     @Column(name = "grade_score")
-    private String gradeScore;
+    private Long gradeScore;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp

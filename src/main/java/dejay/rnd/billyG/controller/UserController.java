@@ -40,8 +40,9 @@ public class UserController {
     private final RentalImageRepository rentalImageRepository;
     private final ReviewRepository reviewRepository;
     private final ReviewImageRepository reviewImageRepository;
+    private final GradeRepository gradeRepository;
 
-    public UserController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository) {
+    public UserController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.townService = townService;
@@ -51,6 +52,7 @@ public class UserController {
         this.rentalImageRepository = rentalImageRepository;
         this.reviewRepository = reviewRepository;
         this.reviewImageRepository = reviewImageRepository;
+        this.gradeRepository = gradeRepository;
     }
 
     @PostMapping("/signup")
@@ -212,6 +214,7 @@ public class UserController {
         JsonArray townArr = new JsonArray();
 
         User otherUser = userRepository.getOne(userIdx);
+        Grade grade = gradeRepository.findTop1ByOrderByGradeScoreDesc();
 
         //필수니깐 없을수가 없음
         Town findLeadTown = townRepository.getOne(otherUser.getLeadTown());
@@ -240,6 +243,8 @@ public class UserController {
         data.addProperty("profileImage", otherUser.getProfileImageUrl());
         data.addProperty("nickName", otherUser.getNickName());
         data.addProperty("grade", otherUser.getUserLevel());
+        data.addProperty("activityScore", otherUser.getActivityScore());
+        data.addProperty("maxScore", grade.getGradeScore());
         data.addProperty("leadTown", otherUser.getLeadTown());
         data.addProperty("starPoint", otherUser.getStarPoint());
         data.add("townList", townArr);

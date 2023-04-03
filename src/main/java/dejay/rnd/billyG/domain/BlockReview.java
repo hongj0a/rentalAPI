@@ -45,6 +45,9 @@ public class BlockReview {
     @Column (name = "processing_status")
     private Integer processingStatus;
 
+    @Column (name = "processing_content", length = 1000)
+    private String processingContent;
+
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
