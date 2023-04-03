@@ -139,9 +139,6 @@ public class User {
     @Column (name = "device_id")
     private String deviceId;
 
-    @Column (name = "grade_idx")
-    private Integer gradeIdx;
-
     @ManyToOne
     @JoinColumn (name = "outIdx")
     private MemberOutType memberOutType;
@@ -156,7 +153,7 @@ public class User {
     @JoinTable(
             name = "user_grade",
             joinColumns = {@JoinColumn(name = "user_idx", referencedColumnName = "user_idx")},
-            inverseJoinColumns = {@JoinColumn(name = "grade_name", referencedColumnName = "grade_name")})
+            inverseJoinColumns = {@JoinColumn(name = "grade_idx", referencedColumnName = "grade_idx")})
     private Set<Grade> grades;
 
     @Column(name = "lead_town")

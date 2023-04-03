@@ -22,19 +22,21 @@ public class LikeService {
     Date now_date = Timestamp.valueOf(date);
 
     @Transactional
-    public void insertLikeInfo(Rental rental, User user, Likes findLike){
-        if (findLike != null) {
-            findLike.setDeleteYn(false);
-            findLike.setDeleteAt(now_date);
-            findLike.setUpdator(user.getEmail());
-        } else {
-            Likes likes = new Likes();
-            likes.setRental(rental);
-            likes.setUser(user);
-            likes.setCreateAt(now_date);
+    public void insertLikeInfo(Rental rental, User user){
 
-            likeRepository.save(likes);
-        }
+        Likes likes = new Likes();
+        likes.setRental(rental);
+        likes.setUser(user);
+        likes.setCreateAt(now_date);
+
+        likeRepository.save(likes);
+
+    }
+
+    @Transactional
+    public void updateLikeInfo(Likes likes, User user) {
+        likes.setDeleteYn(false);
+        likes.setUpdator(user.getEmail());
     }
 
     @Transactional

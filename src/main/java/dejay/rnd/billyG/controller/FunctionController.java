@@ -7,6 +7,7 @@ import dejay.rnd.billyG.domain.Rental;
 import dejay.rnd.billyG.domain.User;
 import dejay.rnd.billyG.dto.LikeDto;
 import dejay.rnd.billyG.except.AppException;
+import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.repository.LikeRepository;
 import dejay.rnd.billyG.repository.RentalRepository;
 import dejay.rnd.billyG.repository.UserRepository;
@@ -42,34 +43,51 @@ public class FunctionController {
     public ResponseEntity<JsonObject> setLike(@RequestBody LikeDto likeDto,
                                               HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
         Rental findRental = rentalRepository.getOne(likeDto.getRentalIdx());
-        Likes findLike = likeRepository.findByRental_rentalIdxAndUser_userIdxAndDeleteYn(findRental.getRentalIdx(), findUser.getUserIdx(), true);
+        Likes findLike = likeRepository.findByRental_rentalIdxAndUser_userIdx(findRental.getRentalIdx(), findUser.getUserIdx());
 
         if (likeDto.getLikeFlag() == 1) {
             //좋아요, 렌탈게시물 좋아요 수 업데이트
-            if (findLike != null) {
-                likeService.insertLikeInfo(findRental,findUser,findLike);
+            if (findLike != null ) {
+                if ( findLike.isDeleteYn() == true && findLike.getUser().getUserIdx() == findUser.getUserIdx()) {
+                    likeService.updateLikeInfo(findLike, findUser);
+                    data.addProperty("likeFlag", "Y");
+                    //likeService.insertLikeInfo(findRental,findUser);
+                } else if ( findLike.isDeleteYn() == false && findLike.getUser().getUserIdx() == findUser.getUserIdx()){
+                    apiRes.setStatus(9999);
+                    apiRes.setMessage("이미 좋아요 한 게시물");
+                    return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+                }
+
             } else {
-                likeService.insertLikeInfo(findRental,findUser, null);
+                likeService.insertLikeInfo(findRental,findUser);
             }
             rentalService.updateLikeCnt(findRental, true);
             //좋아요 테이블에 row 추가
 
         } else {
             //좋아요취소
-            findLike = likeRepository.findByRental_rentalIdxAndUser_userIdxAndDeleteYn(findRental.getRentalIdx(), findUser.getUserIdx(), false);
-            rentalService.updateLikeCnt(findRental, false);
-            likeService.removeLikeInfo(findLike);
+            if (findLike != null && findLike.isDeleteYn() == false) {
+                likeService.removeLikeInfo(findLike);
+                rentalService.updateLikeCnt(findRental, false);
+                data.addProperty("likeFlag", "N");
+            } else {
+                apiRes.setError(ErrCode.err_api_is_not_exist_like.code());
+                apiRes.setMessage(ErrCode.err_api_is_not_exist_like.msg());
+                return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+            }
+
 
         }
 
 
-        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
 

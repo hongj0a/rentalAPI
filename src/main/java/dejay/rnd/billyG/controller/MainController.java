@@ -10,6 +10,7 @@ import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.repositoryImpl.RentalRepositories;
 import dejay.rnd.billyG.repositoryImpl.TownRepositories;
+import dejay.rnd.billyG.service.AlarmService;
 import dejay.rnd.billyG.service.CategoryService;
 import dejay.rnd.billyG.service.RentalService;
 import dejay.rnd.billyG.util.UserMiningUtil;
@@ -21,10 +22,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.*;
 
 import static java.time.LocalTime.now;
 
@@ -44,8 +46,9 @@ public class MainController {
     private final LikeRepository likeRepository;
     private final AlarmRepository alarmRepository;
     private final ReviewRepository reviewRepository;
+    private final AlarmService alarmService;
 
-    public MainController(UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository) {
+    public MainController(UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, AlarmService alarmService) {
         this.userRepository = userRepository;
         this.townRepository = townRepository;
         this.townRepositories = townRepositories;
@@ -59,6 +62,7 @@ public class MainController {
         this.likeRepository = likeRepository;
         this.alarmRepository = alarmRepository;
         this.reviewRepository = reviewRepository;
+        this.alarmService = alarmService;
     }
 
     @GetMapping("/string")
@@ -103,7 +107,8 @@ public class MainController {
         }
 
 
-        Long totalCount = rentalRepositories.getTotalCount(p_status, keyword, towns, categories);
+        Integer totalCount = rentalRepositories.getTotalCount(p_status, keyword, towns, categories);
+
         Page<Rental> mains = rentalRepositories.findAll(p_status, filter, keyword, towns, categories, pageable);
         mains.forEach(
                 rental -> {
@@ -256,13 +261,12 @@ public class MainController {
     }
 
     @GetMapping("/getRental")
-    public ResponseEntity<JsonObject> getRental(@RequestParam(value="rentalIdx") Long rentalIdx, Pageable pageable,
+    public ResponseEntity<JsonObject> getRental(@RequestParam(value="rentalIdx") Long rentalIdx,
                                                 HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray townArr = new JsonArray();
         JsonArray imageArr = new JsonArray();
         JsonArray cateArr = new JsonArray();
-        JsonArray renArr = new JsonArray();
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
@@ -294,16 +298,18 @@ public class MainController {
         if (findRental.getUser().getUserIdx() != findUser.getUserIdx()) {
             //조회수 업데이트
             rentalService.updateViewCnt(findRental);
-            //좋아요 눌렀는지 안 눌렀는지 플래그 값
-            Likes likeFlag = likeRepository.findByRental_rentalIdxAndUser_userIdxAndDeleteYn(rentalIdx, findUser.getUserIdx(), false);
             data.addProperty("isMine","N");
-            if (likeFlag != null) {
-                data.addProperty("likeFlag", "Y");
-            } else {
-                data.addProperty("likeFlag", "N");
-            }
         } else {
             data.addProperty("isMine", "Y");
+        }
+
+        //좋아요 눌렀는지 안 눌렀는지 플래그 값
+        Likes likeFlag = likeRepository.findByRental_rentalIdxAndUser_userIdxAndDeleteYn(rentalIdx, findUser.getUserIdx(), false);
+
+        if (likeFlag != null) {
+            data.addProperty("likeFlag", "Y");
+        } else {
+            data.addProperty("likeFlag", "N");
         }
 
         String status;
@@ -368,6 +374,28 @@ public class MainController {
                 }
         );
 
+        data.add("towns", townArr);
+        data.add("images", imageArr);
+        data.add("categoryInfo", cateArr);
+
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+    @GetMapping("/getEtcRentals")
+    public ResponseEntity<JsonObject> getEtcRentals(@RequestParam(value="rentalIdx") Long rentalIdx, Pageable pageable,
+                                                HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+        JsonArray renArr = new JsonArray();
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        Rental findRental = rentalRepository.getOne(rentalIdx);
+
+
         Page<Rental> etcRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotIn(findRental.getUser().getUserIdx(), true, false, new int[]{4}, pageable);
         List<Rental> etc = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotIn(findRental.getUser().getUserIdx(), true, false, new int[]{4});
 
@@ -386,17 +414,12 @@ public class MainController {
                 }
         );
 
-
-        data.add("towns", townArr);
-        data.add("images", imageArr);
-        data.add("categoryInfo", cateArr);
         data.add("etcRentals", renArr);
         data.addProperty("etcRentalTotalCount", etc.size());
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
     }
-
     @GetMapping("/getTransactionHistory")
     public ResponseEntity<JsonObject> getTransactionHistory(@RequestParam(value="rentalIdx") Long rentalIdx,
                                                             Pageable pageable,
@@ -442,17 +465,34 @@ public class MainController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
-        List<Alarm> alarms = alarmRepository.findByHostIdxAndDeleteYnAndCreateAtGreaterThanEqualAndCreateAtLessThanEqualOrderByCreateAtDesc(findUser.getUserIdx(), false, now().minusHours(720), now());
+        Date currentTime = java.sql.Timestamp.valueOf(LocalDateTime.now());
+        Date beforeTime = java.sql.Timestamp.valueOf(LocalDateTime.now().minusHours(720));
+
+        List<Alarm> alarms = alarmRepository.findByHostIdxAndDeleteYnAndCreateAtGreaterThanEqualAndCreateAtLessThanEqualOrderByCreateAtDesc(findUser.getUserIdx(), false, beforeTime, currentTime);
 
         alarms.forEach(
                 ar -> {
                     JsonObject bell = new JsonObject();
                     bell.addProperty("alarmSeq", ar.getAlarmIdx());
                     bell.addProperty("sendUserIdx", ar.getUser().getUserIdx());
-                    bell.addProperty("sendUserProfile", ar.getUser().getProfileImageUrl());
+                    if (ar.getUser().getProfileImageUrl() != null) {
+                        bell.addProperty("sendUserProfile", ar.getUser().getProfileImageUrl());
+                    } else {
+                        bell.addProperty("sendUserProfile", "");
+                    }
                     bell.addProperty("content", ar.getContent());
                     bell.addProperty("regDate", ar.getCreateAt().getTime());
                     bell.addProperty("readYn", ar.isReadYn());
+
+                    if (ar.getChatIdx() != null) {
+                        bell.addProperty("chatIdx", ar.getChatIdx());
+                    }
+                    if (ar.getRentalIdx() != null) {
+                        bell.addProperty("rentalIdx", ar.getRentalIdx());
+                    }
+                    if (ar.getReviewIdx() != null) {
+                        bell.addProperty("reviewIdx", ar.getReviewIdx());
+                    }
 
                     alarmArr.add(bell);
                 }

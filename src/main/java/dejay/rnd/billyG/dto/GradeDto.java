@@ -8,5 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GradeDto {
+   private Long gradeIdx;
    private String gradeName;
 }

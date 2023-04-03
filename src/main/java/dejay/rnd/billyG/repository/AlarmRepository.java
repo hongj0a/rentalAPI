@@ -6,11 +6,12 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.List;
 
 @EnableJpaRepositories
 @Repository
 public interface AlarmRepository extends JpaRepository<Alarm, Long> {
 
-    List<Alarm> findByHostIdxAndDeleteYnAndCreateAtGreaterThanEqualAndCreateAtLessThanEqualOrderByCreateAtDesc(Long userIdx, boolean deleteYn, LocalTime beforeDate, LocalTime currentDate);
+    List<Alarm> findByHostIdxAndDeleteYnAndCreateAtGreaterThanEqualAndCreateAtLessThanEqualOrderByCreateAtDesc(Long userIdx, boolean deleteYn, Date beforeDate, Date currentDate);
 }

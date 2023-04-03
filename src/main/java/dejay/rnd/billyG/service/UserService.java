@@ -51,22 +51,23 @@ public class UserService {
         LocalDateTime date = LocalDateTime.now();
         Date now_date = Timestamp.valueOf(date);
 
-        System.out.println("UserService.signup");
         Grade grade = Grade.builder()
-                .gradeName("도톨씨앗")
+                .gradeIdx(1L)
                 .build();
 
         User user = User.builder()
                 .email(userDto.getEmail())
+                .idEmail(userDto.getEmail())
                 .snsType(passwordEncoder.encode(userDto.getSnsType()))
                 .snsName(userDto.getSnsType())
                 .name(userDto.getName())
                 .activityScore(0)
-                .userLevel(1)
+                .starPoint(0)
                 .phoneNum(userDto.getPhoneNumber())
                 .ciValue(userDto.getCiValue())
                 .grades(Collections.singleton(grade))
                 .createAt(now_date)
+                .levelupAt(now_date)
                 .build();
         return UserDto.from(userRepository.save(user));
     }
@@ -121,7 +122,7 @@ public class UserService {
 
 
         // 2. 실제 검증 (사용자 비밀번호 체크)이 이루어지는 부분
-        // authenticate 매서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드가 실행
+        // authenticate 매서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByㅎUsername 메서드가 실행
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         // 3. 인증 정보를 기반으로 JWT 토큰 생성
         TokenDto tokenInfo = tokenProvider.createToken(authentication);

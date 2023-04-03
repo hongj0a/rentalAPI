@@ -22,6 +22,9 @@ import java.util.Date;
 public class Grade {
 
     @Id
+    @Column(name = "grade_idx", length = 50)
+    private Long gradeIdx;
+
     @Column(name = "grade_name", length = 50)
     private String gradeName;
 
@@ -46,8 +49,9 @@ public class Grade {
     private boolean activeYn = true;
 
     @Column(name = "admin_idx")
-    private Integer adminIdx;
+    private Long adminIdx;
 
     @Column(length = 1000)
     private String imageUrl;
+
 }

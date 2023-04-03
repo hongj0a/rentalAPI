@@ -100,7 +100,7 @@ public class UserController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
-
+        System.out.println("userTown.getLeadTownName() = " + userTown.getLeadTownName());
         Map<Integer, Long> userTowns = new HashMap<>();
         Town userTownIdx = townService.setTowns(userTown.getLeadTownName());
         userTowns.put(0, userTownIdx.getTownIdx());

@@ -58,11 +58,12 @@ public class UserDto {
    public static UserDto from(User user) {
       if(user == null) return null;
 
+      System.out.println("user.getGrades() = " + user.getGrades());
       return UserDto.builder()
               .email(user.getEmail())
               .nickName(user.getNickName())
               .authorityDtoSet(user.getGrades().stream()
-                      .map(authority -> GradeDto.builder().gradeName(authority.getGradeName()).build())
+                      .map(authority -> GradeDto.builder().gradeIdx(authority.getGradeIdx()).build())
                       .collect(Collectors.toSet()))
               .build();
    }

@@ -52,6 +52,7 @@ public class TownService {
             town.setUpdateAt(now_date);
             town.setTownName(town_name);
 
+
             townRepository.save(town);
         }
 

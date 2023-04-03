@@ -126,7 +126,7 @@ public class RentalRepositories implements RentalRepositoryCustom {
         return null;
     }
 
-    public Long getTotalCount(ArrayList<Integer> status, String title, Long[] towns, Long[] categories) {
+    public Integer getTotalCount(ArrayList<Integer> status, String title, Long[] towns, Long[] categories) {
 
         QRental rental = QRental.rental;
         QRentalCategoryInfo rentalCategoryInfo = QRentalCategoryInfo.rentalCategoryInfo;
@@ -152,11 +152,7 @@ public class RentalRepositories implements RentalRepositoryCustom {
                         .and(rental.activeYn.eq(true))
                         .and(rental.deleteYn.eq(false)))
                 .fetch();
-        Long total = 0L;
-        System.out.println("total = " + totalInfo);
-        if (totalInfo.size() != 0) {
-            total = totalInfo.get(0);
-        }
+        Integer total = totalInfo.size();
         return total;
     }
 

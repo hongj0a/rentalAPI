@@ -13,4 +13,5 @@ import java.util.List;
 public interface LikeRepository extends JpaRepository<Likes, Long> {
 
     Likes findByRental_rentalIdxAndUser_userIdxAndDeleteYn(Long rentalIdx, Long userIdx, boolean deleteYn);
+    Likes findByRental_rentalIdxAndUser_userIdx(Long rentalIdx, Long userIdx);
 }

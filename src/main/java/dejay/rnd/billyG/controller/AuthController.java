@@ -175,12 +175,12 @@ public class AuthController {
                 } else {
                     data.addProperty("isLeadTownEmpty", "N");
                 }
+                data.addProperty("imageUrl", "http://192.168.1.242:8080/image/");
             } else {
                 data.addProperty("message", "잘못된 토큰 정보");
             }
         }
 
-        data.addProperty("imageUrl", "http://192.168.1.242:8080/image/");
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
 

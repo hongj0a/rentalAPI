@@ -35,7 +35,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         List<GrantedAuthority> grantedAuthorities = user.getGrades().stream()
-                .map(authority -> new SimpleGrantedAuthority(authority.getGradeName()))
+                .map(authority -> new SimpleGrantedAuthority(String.valueOf(authority.getGradeIdx())))
                 .collect(Collectors.toList());
 
         return new org.springframework.security.core.userdetails.User(user.getEmail(),
