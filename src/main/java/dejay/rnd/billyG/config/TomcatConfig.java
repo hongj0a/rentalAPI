@@ -20,7 +20,7 @@ public class TomcatConfig implements WebMvcConfigurer {
         log.info("os_info :: {} ", osName);
         if (osName.contains("win")) {
             registry.addResourceHandler("/image/**")
-                    .addResourceLocations("file:///C:/home/ubuntu/research/image/");
+                    .addResourceLocations("file:///C:/home/image/");
         } else if (osName.contains("mac")){
             System.out.println("TomcatConfig.addResourceHandlers.elseIf");
             registry.addResourceHandler("/image/**")
