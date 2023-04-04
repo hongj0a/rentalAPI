@@ -1,6 +1,7 @@
 package dejay.rnd.billyG.service;
 
 import dejay.rnd.billyG.domain.Rental;
+import dejay.rnd.billyG.repository.RentalRepository;
 import dejay.rnd.billyG.repositoryImpl.RentalRepositories;
 import dejay.rnd.billyG.repositoryImpl.UserRepositories;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +18,14 @@ import java.util.Date;
 public class RentalService {
     private final UserRepositories userRepositories;
     private final RentalRepositories rentalRepositories;
+    private final RentalRepository rentalRepository;
     LocalDateTime date = LocalDateTime.now();
     Date now_date = Timestamp.valueOf(date);
+
+    @Transactional
+    public Rental insertRental(Rental rental) {
+        return rentalRepository.save(rental);
+    }
 
     @Transactional
     public void updateViewCnt(Rental rental){

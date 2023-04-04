@@ -22,4 +22,5 @@ public class CategoryService {
     public List<Category> findBlockTypes(String blockType) {
         return categoryRepositories.findBlockTypes(blockType);
     }
+
 }

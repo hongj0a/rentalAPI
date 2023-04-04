@@ -21,8 +21,6 @@ public class FileWriter {
 
     public long writeFile( MultipartFile multipartFile, String filePath ) {
         try {
-            log.info("multipartFile..." , multipartFile);
-            System.out.println("multipartFile = " + filePath);
             multipartFile.transferTo(new File(filePath));
         } catch (IllegalStateException ile) {
             throw new RuntimeException("file write error");

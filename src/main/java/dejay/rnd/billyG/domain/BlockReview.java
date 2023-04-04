@@ -27,8 +27,8 @@ public class BlockReview {
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "blockTypeIdx")
-    private BlockType blockType;
+    @JoinColumn (name = "categoryIdx")
+    private Category category;
 
     @ManyToOne
     @NotNull

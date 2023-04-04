@@ -156,5 +156,6 @@ public class RentalRepositories implements RentalRepositoryCustom {
         return total;
     }
 
+
 }
 

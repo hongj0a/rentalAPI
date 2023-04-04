@@ -6,10 +6,7 @@ import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.ReportDto;
 import dejay.rnd.billyG.except.AppException;
-import dejay.rnd.billyG.repository.BlockTypeRepository;
-import dejay.rnd.billyG.repository.RentalRepository;
-import dejay.rnd.billyG.repository.ReviewRepository;
-import dejay.rnd.billyG.repository.UserRepository;
+import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.service.CategoryService;
 import dejay.rnd.billyG.service.ReportService;
 import dejay.rnd.billyG.util.UserMiningUtil;
@@ -25,21 +22,21 @@ import java.util.List;
 @RequestMapping("/api")
 public class ReportController {
 
-    private final BlockTypeRepository blockTypeRepository;
     private final UserRepository userRepository;
     private final ReportService reportService;
     private final RentalRepository rentalRepository;
     private final ReviewRepository reviewRepository;
     private final CategoryService categoryService;
+    private final CategoryRepository categoryRepository;
 
 
-    public ReportController(BlockTypeRepository blockTypeRepository, UserRepository userRepository, ReportService reportService, RentalRepository rentalRepository, ReviewRepository reviewRepository, CategoryService categoryService) {
-        this.blockTypeRepository = blockTypeRepository;
+    public ReportController(UserRepository userRepository, ReportService reportService, RentalRepository rentalRepository, ReviewRepository reviewRepository, CategoryService categoryService, CategoryRepository categoryRepository) {
         this.userRepository = userRepository;
         this.reportService = reportService;
         this.rentalRepository = rentalRepository;
         this.reviewRepository = reviewRepository;
         this.categoryService = categoryService;
+        this.categoryRepository = categoryRepository;
     }
 
     @GetMapping("/getReportList")
@@ -75,7 +72,7 @@ public class ReportController {
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
-        BlockType findBT = blockTypeRepository.getOne(reportDto.getBlockTypeIdx());
+        Category findBT = categoryRepository.getOne(reportDto.getBlockTypeIdx());
 
         Rental findRental = new Rental();
         User reportUser = new User();

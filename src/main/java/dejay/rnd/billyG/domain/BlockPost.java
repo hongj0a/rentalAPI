@@ -32,8 +32,8 @@ public class BlockPost {
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "blockTypeIdx")
-    private BlockType blockType;
+    @JoinColumn (name = "categoryIdx")
+    private Category category;
 
     @Column
     private String reason;

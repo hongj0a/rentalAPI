@@ -260,7 +260,6 @@ public class UserController {
                                                             Pageable pageable,
                                                             HttpServletRequest req) throws AppException {
         JsonObject data = new JsonObject();
-        JsonArray townArr = new JsonArray();
         JsonArray renArr = new JsonArray();
         JsonArray reviewArr = new JsonArray();
 
@@ -275,16 +274,16 @@ public class UserController {
 
                         List<RentalImage> renImgs = rentalImageRepository.findByRental_rentalIdx(etcs.getRentalIdx());
 
-                        etcRental.addProperty("rentalIdx", etcs.getRentalIdx());
-                        etcRental.addProperty("rentalImage", renImgs.get(0).getImageUrl());
+                        etcRental.addProperty("rentalSeq", etcs.getRentalIdx());
+                        etcRental.addProperty("imageUrl", renImgs.get(0).getImageUrl());
                         etcRental.addProperty("title", etcs.getTitle());
-                        etcRental.addProperty("dailyFee", etcs.getRentalPrice());
+                        etcRental.addProperty("dailyRentalFee", etcs.getRentalPrice());
 
                         renArr.add(etcRental);
                     }
             );
-            data.add("rentalList", renArr);
-            data.addProperty("rentalsTotalCount", etc.size());
+            data.add("rentals", renArr);
+            data.addProperty("totalCount", etc.size());
         } else if (type == 2){
             //후기 전체 list
             Page<Review> findReviews = reviewRepository.findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAt(userIdx, true, false, pageable);
@@ -296,7 +295,7 @@ public class UserController {
 
                         rvs.addProperty("renterIdx", review.getTransaction().getUser().getUserIdx());
                         rvs.addProperty("renterImage", review.getTransaction().getUser().getProfileImageUrl());
-                        rvs.addProperty("renterNickName", review.getTransaction().getUser().getName());
+                        rvs.addProperty("renterNickName", review.getTransaction().getUser().getNickName());
                         rvs.addProperty("renterLeadTown", review.getTransaction().getUser().getLeadTown());
                         rvs.addProperty("reviewRegDate", review.getCreateAt().getTime());
                         rvs.addProperty("reviewIdx", review.getReviewIdx());
@@ -327,10 +326,10 @@ public class UserController {
         Review review = reviewRepository.getOne(reviewIdx);
 
         data.addProperty("userIdx", review.getTransaction().getUser().getUserIdx());
-        data.addProperty("userNickName", review.getTransaction().getUser().getNickName());
+        data.addProperty("nickName", review.getTransaction().getUser().getNickName());
         data.addProperty("starPoint", review.getReviewScore());
-        data.addProperty("rentalTitle", review.getTransaction().getRental().getTitle());
-        data.addProperty("reviewContent", review.getReviewContent());
+        data.addProperty("title", review.getTransaction().getRental().getTitle());
+        data.addProperty("content", review.getReviewContent());
 
         List<ReviewImage> images = reviewImageRepository.findByReview_ReviewIdx(review.getReviewIdx());
 
@@ -344,9 +343,15 @@ public class UserController {
                         rvImg.add(rvs);
                     }
             );
-        }
+            data.add("reviewImageList", rvImg);
+        } else {
+            JsonObject rvs = new JsonObject();
+            rvs.addProperty("imageIdx", "");
+            rvs.addProperty("imageUrl", "");
+            rvImg.add(rvs);
 
-        data.add("reviewImageList", rvImg);
+            data.add("reviewImageList", rvs);
+        }
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());

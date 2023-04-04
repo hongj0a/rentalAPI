@@ -24,11 +24,11 @@ public class ReportService {
     Date now_date = Timestamp.valueOf(date);
 
     @Transactional
-    public void insertBlockPost(Rental rental, BlockType blockType, String reason, Long userIdx){
+    public void insertBlockPost(Rental rental, Category blockType, String reason, Long userIdx){
 
         BlockPost blockPost = new BlockPost();
         blockPost.setRental(rental);
-        blockPost.setBlockType(blockType);;
+        blockPost.setCategory(blockType);;
         blockPost.setReason(reason);
         blockPost.setReporterIdx(userIdx);
         blockPost.setCreateAt(now_date);
@@ -38,11 +38,11 @@ public class ReportService {
     }
 
     @Transactional
-    public void insertBlockUser(User user, BlockType blockType, String reason, Long userIdx){
+    public void insertBlockUser(User user, Category blockType, String reason, Long userIdx){
 
         BlockUser blockUser = new BlockUser();
         blockUser.setUser(user);
-        blockUser.setBlockType(blockType);;
+        blockUser.setCategory(blockType);;
         blockUser.setReason(reason);
         blockUser.setReporterIdx(userIdx);
         blockUser.setCreateAt(now_date);
@@ -52,11 +52,11 @@ public class ReportService {
     }
 
     @Transactional
-    public void insertBlockReview(Review review, BlockType blockType, String reason, Long userIdx){
+    public void insertBlockReview(Review review, Category blockType, String reason, Long userIdx){
 
         BlockReview blockReview = new BlockReview();
         blockReview.setReview(review);
-        blockReview.setBlockType(blockType);;
+        blockReview.setCategory(blockType);;
         blockReview.setReason(reason);
         blockReview.setReporterIdx(userIdx);
         blockReview.setCreateAt(now_date);
