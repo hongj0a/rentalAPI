@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -207,8 +208,8 @@ public class UserController {
 
     }
 
-    @GetMapping("/getOtherUserDetailPage")
-    public ResponseEntity<JsonObject> getOtherUserDetailPage(@RequestParam (value = "userIdx") Long userIdx,
+    @GetMapping("/getUserDetailPage")
+    public ResponseEntity<JsonObject> getUserDetailPage(@RequestParam (value = "userIdx") Long userIdx,
                                                              HttpServletRequest req) throws AppException {
         JsonObject data = new JsonObject();
         JsonArray townArr = new JsonArray();
@@ -275,7 +276,10 @@ public class UserController {
                         List<RentalImage> renImgs = rentalImageRepository.findByRental_rentalIdx(etcs.getRentalIdx());
 
                         etcRental.addProperty("rentalSeq", etcs.getRentalIdx());
-                        etcRental.addProperty("imageUrl", renImgs.get(0).getImageUrl());
+                        if (renImgs.size() != 0) {
+                            etcRental.addProperty("imageUrl", renImgs.get(0).getImageUrl());
+                        }
+
                         etcRental.addProperty("title", etcs.getTitle());
                         etcRental.addProperty("dailyRentalFee", etcs.getRentalPrice());
 
@@ -337,7 +341,7 @@ public class UserController {
             images.forEach(
                     ri -> {
                         JsonObject rvs = new JsonObject();
-                        rvs.addProperty("imageIdx", ri.getImageIdx());
+                        rvs.addProperty("imageSeq", ri.getImageIdx());
                         rvs.addProperty("imageUrl", ri.getImageUrl());
 
                         rvImg.add(rvs);
@@ -345,12 +349,8 @@ public class UserController {
             );
             data.add("reviewImageList", rvImg);
         } else {
-            JsonObject rvs = new JsonObject();
-            rvs.addProperty("imageIdx", "");
-            rvs.addProperty("imageUrl", "");
-            rvImg.add(rvs);
 
-            data.add("reviewImageList", rvs);
+            data.add("reviewImageList", rvImg);
         }
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);

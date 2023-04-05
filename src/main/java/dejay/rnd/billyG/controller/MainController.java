@@ -573,10 +573,9 @@ public class MainController {
         if (town4 != 0L) rental.setTown4(town4);
 
         Rental findRental = rentalService.insertRental(rental);
-        RentalImage rentalImage = new RentalImage();
 
         for (int i = 0; i < multipartFile.length; i++) {
-            System.out.println("multipartFile = " + multipartFile[i]);
+            RentalImage rentalImage = new RentalImage();
             ImageFile file = uploadService.upload(multipartFile[i]);
 
             rentalImage.setRental(findRental);
@@ -585,11 +584,9 @@ public class MainController {
             rentalImageRepository.save(rentalImage);
         }
 
-        RentalCategoryInfo rentalCategoryInfo = new RentalCategoryInfo();
-
         for (int i = 0; i < categories.length; i++) {
-            System.out.println("categories[i] = " + categories[i]);
-            
+
+            RentalCategoryInfo rentalCategoryInfo = new RentalCategoryInfo();
             Category findCt = categoryRepository.getOne(categories[i]);
             rentalCategoryInfo.setCategory(findCt);
             rentalCategoryInfo.setRental(findRental);

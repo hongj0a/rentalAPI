@@ -46,7 +46,6 @@ public class ReportController {
         JsonArray reportArr = new JsonArray();
 
         List<Category> blockTypes = categoryService.findBlockTypes(reportType);
-        //List<BlockType> blockTypes = blockTypeRepository.findByTypeFlagAndActiveYnAndDeleteYn(reportType, true, false);
 
         blockTypes.forEach(
                 blockType -> {

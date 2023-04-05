@@ -56,4 +56,7 @@ public class Grade {
     @Column(length = 1000)
     private String imageUrl;
 
+    @Column (name = "menu_num")
+    private Integer menuNum;
+
 }
