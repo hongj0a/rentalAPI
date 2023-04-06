@@ -14,6 +14,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "user")
@@ -32,6 +33,7 @@ public class User {
     @Column (name = "id_email")
     private String idEmail;
 
+    @ColumnDefault("test")
     @Column (name = "email", unique = true)
     private String email;
 
@@ -64,17 +66,13 @@ public class User {
     @Column (name = "push_token")
     private String pushToken;
 
-    @Builder.Default
-    @Column (name = "active_yn")
-    private boolean activeYn = true;
+    @ColumnDefault("10")
+    @Column (name = "status")
+    private Integer status;
 
-    @ColumnDefault("0")
-    @Column (name = "delete_yn")
-    private boolean deleteYn;
-
-    @ColumnDefault("0")
-    @Column (name = "block_yn")
-    private boolean blockYn;
+    /*@Builder.Default
+    @Column (name = "status")
+    private Integer status = 10;*/
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
@@ -83,12 +81,6 @@ public class User {
 
     @Column (name = "update_at")
     private Date updateAt;
-
-    @Column (name = "delete_at")
-    private Date deleteAt;
-
-    @Column (name = "block_at")
-    private Date blockAt;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp

@@ -267,6 +267,7 @@ public class MainController {
 
     }
 
+    //수정 조회에서도 같이 씀
     @GetMapping("/getRental")
     public ResponseEntity<JsonObject> getRental(@RequestParam(value="rentalIdx") Long rentalIdx,
                                                 HttpServletRequest req) throws AppException, ParseException {
@@ -449,7 +450,7 @@ public class MainController {
         transactions.forEach(
                 tn -> {
                     JsonObject tns = new JsonObject();
-                    tns.addProperty("renterSeq", tn.getUser().getUserIdx());
+                    tns.addProperty("renterIdx", tn.getUser().getUserIdx());
                     tns.addProperty("renterNickName", tn.getUser().getNickName());
                     tns.addProperty("renterImage", tn.getUser().getProfileImageUrl());
                     tns.addProperty("startDate", tn.getCreateAt().getTime());
@@ -515,11 +516,97 @@ public class MainController {
 
     }
 
+
     @Transactional(rollbackFor = Exception.class)
     @PostMapping("/setRental")
     public ResponseEntity<JsonObject> setRental(@RequestPart (value = "images") MultipartFile multipartFile[],
                                                 @RequestParam (value = "towns") Long towns[],
                                                 @RequestParam (value = "categories") Long categories[],
+                                                @RequestParam (value = "title") String title,
+                                                @RequestParam (value = "rentalDailyFee") int rentalDailyFee,
+                                                @RequestParam (value = "content") String content,
+                                                HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        Long leadTown = 0L;
+        Long town1 = 0L;
+        Long town2 = 0L;
+        Long town3 = 0L;
+        Long town4 = 0L;
+
+        for (int i = 0; i < towns.length; i++) {
+
+            switch (i) {
+                case 1 :
+                    town1 = towns[1];
+                    break;
+                case 2 :
+                    town2 = towns[2];
+                    break;
+                case 3 :
+                    town3 = towns[3];
+                    break;
+                case 4 :
+                    town4 = towns[4];
+                    break;
+                default:
+                    leadTown = towns[0];
+                    break;
+            }
+        }
+
+
+        Rental rental = new Rental();
+        rental.setTitle(title);
+        rental.setRentalPrice(rentalDailyFee);
+        rental.setContent(content);
+        rental.setUser(findUser);
+
+        if (leadTown != 0L) rental.setLeadTown(leadTown);
+        if (town1 != 0L) rental.setTown1(town1);
+        if (town2 != 0L) rental.setTown2(town2);
+        if (town3 != 0L) rental.setTown3(town3);
+        if (town4 != 0L) rental.setTown4(town4);
+
+        Rental findRental = rentalService.insertRental(rental);
+
+        for (int i = 0; i < multipartFile.length; i++) {
+            RentalImage rentalImage = new RentalImage();
+            ImageFile file = uploadService.upload(multipartFile[i]);
+
+            rentalImage.setRental(findRental);
+            rentalImage.setImageUrl(file.getFileName());
+
+            rentalImageRepository.save(rentalImage);
+        }
+
+        for (int i = 0; i < categories.length; i++) {
+
+            RentalCategoryInfo rentalCategoryInfo = new RentalCategoryInfo();
+            Category findCt = categoryRepository.getOne(categories[i]);
+            rentalCategoryInfo.setCategory(findCt);
+            rentalCategoryInfo.setRental(findRental);
+
+            rentalCategoryInfoRepository.save(rentalCategoryInfo);
+        }
+
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+
+    @Transactional(rollbackFor = Exception.class)
+    @PostMapping("/editRental")
+    public ResponseEntity<JsonObject> editRental(@RequestPart (value = "images") MultipartFile multipartFile[],
+                                                @RequestParam (value = "towns") Long towns[],
+                                                @RequestParam (value = "categories") Long categories[],
+                                                @RequestParam (value = "rentalIdx") Long rentalIdx,
                                                 @RequestParam (value = "title") String title,
                                                 @RequestParam (value = "rentalDailyFee") int rentalDailyFee,
                                                 @RequestParam (value = "content") String content,

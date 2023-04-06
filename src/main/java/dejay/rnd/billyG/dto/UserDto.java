@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
+@ToString
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -56,12 +57,13 @@ public class UserDto {
    private Set<GradeDto> authorityDtoSet;
 
    public static UserDto from(User user) {
+      System.out.println("!@#!@#!@#!@#user.toString() = " + user.toString());
       if(user == null) return null;
 
-      System.out.println("user.getGrades() = " + user.getGrades());
       return UserDto.builder()
               .email(user.getEmail())
               .nickName(user.getNickName())
+              .phoneNumber(user.getPhoneNum())
               .authorityDtoSet(user.getGrades().stream()
                       .map(authority -> GradeDto.builder().gradeIdx(authority.getGradeIdx()).build())
                       .collect(Collectors.toSet()))

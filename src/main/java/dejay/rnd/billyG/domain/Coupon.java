@@ -48,6 +48,7 @@ public class Coupon {
     @Column (length = 100, name = "coupon_fee")
     private String couponFee;
 
+    //웬만하면 쓰지말 것 리팩터링 때 다 지울 것
     @ColumnDefault("0")
     @Column (name = "delete_yn")
     private boolean deleteYn;

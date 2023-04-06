@@ -66,8 +66,8 @@ public class UserService {
                 .phoneNum(userDto.getPhoneNumber())
                 .ciValue(userDto.getCiValue())
                 .grades(Collections.singleton(grade))
-                .createAt(now_date)
                 .levelupAt(now_date)
+                .lastLoginDate(now_date)
                 .build();
         return UserDto.from(userRepository.save(user));
     }

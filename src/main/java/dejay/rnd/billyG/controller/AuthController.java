@@ -49,14 +49,16 @@ public class AuthController {
     public ResponseEntity<JsonObject> authorize(@RequestBody LoginDto loginDto, HttpServletRequest req) throws java.text.ParseException {
         JsonObject data = new JsonObject();
 
-        // TODO - plus. outMember check
+
         String email = loginDto.getEmail();
         String snsType = loginDto.getSnsType();
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
-        User findUser = userRepository.findByEmail(email);
+        User userOne = userRepository.findByEmail(email);
+
+        String star = "";
 
         // 신규유저라면 회원가입 하고 바로 로그인
-        if (findUser == null) {
+        if (userOne == null) {
             UserDto userDto = new UserDto();
             userDto.setEmail(email);
             userDto.setSnsType(snsType);
@@ -66,8 +68,9 @@ public class AuthController {
             userService.signup(userDto);
         }
 
-        User userOne = userRepository.findByEmail(email);
+        userOne = userRepository.findByEmail(email);
 
+        System.out.println("userOne.toString() = " + userOne.toString());
         //1년이상 장기 미이용 고객 return 커스텀
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
@@ -118,7 +121,7 @@ public class AuthController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         if (findUser != null) {
             //y
-            if (findUser.isDeleteYn() == true) {
+            if (findUser.getStatus() == 30) {
                 apiRes.setError(ErrCode.err_api_is_delete_user.code());
                 apiRes.setMessage(ErrCode.err_api_is_delete_user.msg());
                 return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
@@ -192,7 +195,7 @@ public class AuthController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         if (isUser != null) {
-            if(isUser.isDeleteYn() == true) {
+            if(isUser.getStatus() == 30) {
                 apiRes.setError(ErrCode.err_api_is_delete_user.code());
                 apiRes.setMessage(ErrCode.err_api_is_delete_user.msg());
                 return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
