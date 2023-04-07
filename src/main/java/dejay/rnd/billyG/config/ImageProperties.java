@@ -18,7 +18,7 @@ import java.util.Locale;
 public class ImageProperties {
 
 
-    @Value("${file.upload.location}")
+    @Value("${file.upload.location.mac}")
     private String defaultPath;
 
     @PostConstruct

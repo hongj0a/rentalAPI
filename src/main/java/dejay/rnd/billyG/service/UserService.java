@@ -63,6 +63,8 @@ public class UserService {
                 .name(userDto.getName())
                 .activityScore(0)
                 .starPoint(0)
+                .userLevel(1)
+                .status(10)
                 .phoneNum(userDto.getPhoneNumber())
                 .ciValue(userDto.getCiValue())
                 .grades(Collections.singleton(grade))

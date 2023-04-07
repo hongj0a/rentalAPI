@@ -18,6 +18,8 @@ public class MainDto {
 
    private String keyword;
 
+   private Long rentalIdx;
+
    private Long categories[];
 
 

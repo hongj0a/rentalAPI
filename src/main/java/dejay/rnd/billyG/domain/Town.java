@@ -14,6 +14,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "town")

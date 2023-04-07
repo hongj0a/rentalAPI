@@ -5,6 +5,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.domain.*;
+import dejay.rnd.billyG.dto.MainDto;
+import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.model.ImageFile;
@@ -567,6 +569,7 @@ public class MainController {
         rental.setRentalPrice(rentalDailyFee);
         rental.setContent(content);
         rental.setUser(findUser);
+        rental.setStatus(1);
 
         if (leadTown != 0L) rental.setLeadTown(leadTown);
         if (town1 != 0L) rental.setTown1(town1);
@@ -600,6 +603,78 @@ public class MainController {
 
     }
 
+    //편집하기 전에 게시글, 마이 타운정보 리스트 get api 있어야 함
+    @GetMapping("/getDetailTowns")
+    public ResponseEntity<JsonObject> getDetailTowns(@RequestParam (value = "rentalIdx") Long rentalIdx,
+                                                     HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+        JsonArray townArr = new JsonArray();
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        Rental findRental = rentalRepository.getOne(rentalIdx);
+
+        ArrayList<Long> sumTownInfo = new ArrayList<>();
+        ArrayList<Long> orgTownInfo = new ArrayList<>();
+
+        sumTownInfo.add(findUser.getLeadTown());
+        if (findUser.getTown1() != null ) sumTownInfo.add(findUser.getTown1());
+        if (findUser.getTown2() != null ) sumTownInfo.add(findUser.getTown2());
+        if (findUser.getTown3() != null ) sumTownInfo.add(findUser.getTown3());
+        if (findUser.getTown4() != null ) sumTownInfo.add(findUser.getTown4());
+
+        sumTownInfo.add(findRental.getLeadTown());
+        orgTownInfo.add(findRental.getLeadTown());
+        if (findRental.getTown1() != null ) {
+            sumTownInfo.add(findRental.getTown1());
+            orgTownInfo.add(findRental.getTown1());
+        }
+        if (findRental.getTown2() != null ) {
+            sumTownInfo.add(findRental.getTown2());
+            orgTownInfo.add(findRental.getTown2());
+
+        }
+        if (findRental.getTown3() != null ) {
+            sumTownInfo.add(findRental.getTown3());
+            orgTownInfo.add(findRental.getTown3());
+        }
+        if (findRental.getTown4() != null ) {
+            sumTownInfo.add(findRental.getTown4());
+            orgTownInfo.add(findRental.getTown4());
+        }
+
+        System.out.println("townInfo = " + orgTownInfo);
+        Set<Long> setTowns = new HashSet<Long>(sumTownInfo);
+        List<Long> newTowns = new ArrayList<Long>(setTowns);
+
+        List<Town> names = townRepository.findAllById(newTowns);
+
+        names.forEach(
+                name -> {
+                    JsonObject nameObj = new JsonObject();
+
+                    if (orgTownInfo.contains(name.getTownIdx())) {
+                        System.out.println("name.getTownIdx() = " + name.getTownIdx());
+                        nameObj.addProperty("checked", true);
+                    } else {
+                        nameObj.addProperty("checked", false);
+                    }
+                    nameObj.addProperty("townSeq", name.getTownIdx());
+                    nameObj.addProperty("townName", name.getTownName());
+
+                    townArr.add(nameObj);
+                }
+        );
+        data.add("allTowns", townArr);
+        
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
 
     @Transactional(rollbackFor = Exception.class)
     @PostMapping("/editRental")
@@ -625,6 +700,33 @@ public class MainController {
         Long town3 = 0L;
         Long town4 = 0L;
 
+        //원래의 게시글을 찾아서
+
+        //---- 배열의 길이는 몇개가 올지 모르니깐
+        //이미지 전체 삭제 후 받은 이미지로 다시 저장
+        //타운 전체 삭제 후 받은 정보로 다시 저장
+        //카테고리 전체 삭제 후 받은 정보로 다시 저장
+        //title,content,status update
+
+
+        Rental orgRental = rentalRepository.getOne(rentalIdx);
+
+        List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(rentalIdx);
+        for (int i = 0; i < rentalImages.size(); i++) {
+            rentalImageRepository.delete(rentalImages.get(i));
+        }
+
+        List<RentalCategoryInfo> categoryInfos = rentalCategoryInfoRepository.findByRental_rentalIdx(rentalIdx);
+        for (int i = 0; i < categoryInfos.size(); i++) {
+            rentalCategoryInfoRepository.delete(categoryInfos.get(i));
+        }
+
+        if (orgRental.getLeadTown()!= null) orgRental.setLeadTown(0L);
+        if (orgRental.getTown1()!= null) orgRental.setTown1(0L);
+        if (orgRental.getTown2()!= null) orgRental.setTown2(0L);
+        if (orgRental.getTown3()!= null) orgRental.setTown3(0L);
+        if (orgRental.getTown4()!= null) orgRental.setTown4(0L);
+
         for (int i = 0; i < towns.length; i++) {
 
             switch (i) {
@@ -647,25 +749,24 @@ public class MainController {
         }
 
 
-        Rental rental = new Rental();
-        rental.setTitle(title);
-        rental.setRentalPrice(rentalDailyFee);
-        rental.setContent(content);
-        rental.setUser(findUser);
+        orgRental.setTitle(title);
+        orgRental.setRentalPrice(rentalDailyFee);
+        orgRental.setContent(content);
+        orgRental.setUpdator(findUser.getEmail());
 
-        if (leadTown != 0L) rental.setLeadTown(leadTown);
-        if (town1 != 0L) rental.setTown1(town1);
-        if (town2 != 0L) rental.setTown2(town2);
-        if (town3 != 0L) rental.setTown3(town3);
-        if (town4 != 0L) rental.setTown4(town4);
+        if (leadTown != 0L) orgRental.setLeadTown(leadTown);
+        if (town1 != 0L) orgRental.setTown1(town1);
+        if (town2 != 0L) orgRental.setTown2(town2);
+        if (town3 != 0L) orgRental.setTown3(town3);
+        if (town4 != 0L) orgRental.setTown4(town4);
 
-        Rental findRental = rentalService.insertRental(rental);
+        rentalService.updateRental(orgRental);
 
         for (int i = 0; i < multipartFile.length; i++) {
             RentalImage rentalImage = new RentalImage();
             ImageFile file = uploadService.upload(multipartFile[i]);
 
-            rentalImage.setRental(findRental);
+            rentalImage.setRental(orgRental);
             rentalImage.setImageUrl(file.getFileName());
 
             rentalImageRepository.save(rentalImage);
@@ -676,10 +777,153 @@ public class MainController {
             RentalCategoryInfo rentalCategoryInfo = new RentalCategoryInfo();
             Category findCt = categoryRepository.getOne(categories[i]);
             rentalCategoryInfo.setCategory(findCt);
-            rentalCategoryInfo.setRental(findRental);
+            rentalCategoryInfo.setRental(orgRental);
 
             rentalCategoryInfoRepository.save(rentalCategoryInfo);
         }
+
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+    //공개게시글 (status in 1,3) -> 4로 변경 가능
+    //숨김게시글 (status == 4) -> 1로 변경 가능
+    //공개,숨김 상태변경 + 끌어올리기
+    @PostMapping("/editStatus")
+    public ResponseEntity<JsonObject> editStatus(HttpServletRequest req,
+                                                 @RequestBody MainDto mainDto) throws ParseException {
+        JsonObject data = new JsonObject();
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        Rental findRental = rentalRepository.getOne(mainDto.getRentalIdx());
+
+        if (mainDto.getStatus() == 99) {
+            findRental.setPullUpCnt(findRental.getPullUpCnt()+1);
+            findRental.setUpdator(findUser.getEmail());
+            rentalService.pullUpRental(findRental);
+        } else {
+            findRental.setStatus(mainDto.getStatus());
+            findRental.setUpdator(findUser.getEmail());
+            rentalService.updateRental(findRental);
+        }
+
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+    }
+
+
+    //삭제
+    @PostMapping("/deleteRental")
+    public ResponseEntity<JsonObject> deleteRental(HttpServletRequest req,
+                                                 @RequestBody MainDto mainDto) throws ParseException {
+        JsonObject data = new JsonObject();
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        Rental findRental = rentalRepository.getOne(mainDto.getRentalIdx());
+
+        findRental.setDeleteYn(true);
+        findRental.setUpdator(findUser.getEmail());
+        rentalService.deleteRental(findRental);
+
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+    }
+
+    //내 게시글 (공개게시글/숨김게시글) 조회
+    @GetMapping("/getMyRental")
+    public ResponseEntity<JsonObject> getMyRental(@RequestParam(value="status") int status, Pageable pageable,
+                                                    HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+        JsonArray renArr = new JsonArray();
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        ArrayList<Integer> p_status = new ArrayList<>();
+
+        if (status != 4) {
+            p_status.add(1);
+            p_status.add(2);
+            p_status.add(3);
+        } else {
+            p_status.add(4);
+        }
+
+        Page<Rental> myRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusIn(findUser.getUserIdx(), true, false, p_status, pageable);
+        List<Rental> my = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusIn(findUser.getUserIdx(), true, false, p_status);
+
+        myRentals.forEach(
+                etcs -> {
+                    JsonObject etcRental = new JsonObject();
+
+                    List<RentalImage> renImgs = rentalImageRepository.findByRental_rentalIdx(etcs.getRentalIdx());
+                    etcRental.addProperty("rentalIdx", etcs.getRentalIdx());
+                    etcRental.addProperty("rentalImage", renImgs.get(0).getImageUrl());
+                    etcRental.addProperty("title", etcs.getTitle());
+                    etcRental.addProperty("dailyFee", etcs.getRentalPrice());
+                    etcRental.addProperty("regDate", etcs.getPullUpAt().getTime());
+
+                    switch (etcs.getStatus()) {
+                        case 2 :
+                            etcRental.addProperty("status", "렌탈중");
+                            break;
+                        case 3:
+                            etcRental.addProperty("status", "렌탈완료");
+                            break;
+                        case 4:
+                            etcRental.addProperty("status", "렌탈숨기기");
+                            break;
+                        default:
+                            etcRental.addProperty("status", "렌탈가능");
+                            break;
+                    }
+
+                    //town 리스트 추출
+                    List<String> tLst = new ArrayList<>();
+
+                    if (null != etcs.getLeadTown()) {
+                        Town Ltown = townRepository.getOne(etcs.getLeadTown());
+                        tLst.add(Ltown.getTownName());
+                    }
+
+                    if ( null != etcs.getTown1() ) {
+                        Town town1 = townRepository.getOne(etcs.getTown1());
+                        tLst.add(town1.getTownName());
+
+                    }
+
+                    if ( null != etcs.getTown2() ) {
+                        Town town2 = townRepository.getOne(etcs.getTown2());
+                        tLst.add(town2.getTownName());
+                    }
+
+                    if ( null != etcs.getTown3() ) {
+                        Town town3 = townRepository.getOne(etcs.getTown3());
+                        tLst.add(town3.getTownName());
+                    }
+
+                    if ( null != etcs.getTown4() ) {
+                        Town town4 = townRepository.getOne(etcs.getTown4());
+                        tLst.add(town4.getTownName());
+                    }
+
+                    Gson gson = new Gson();
+                    etcRental.add("towns", gson.toJsonTree(tLst));
+
+                    renArr.add(etcRental);
+                }
+        );
+
+        data.add("myRentals", renArr);
+        data.addProperty("etcRentalTotalCount", my.size());
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 

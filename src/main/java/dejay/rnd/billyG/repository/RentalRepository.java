@@ -3,7 +3,6 @@ package dejay.rnd.billyG.repository;
 import dejay.rnd.billyG.domain.Rental;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Repository;
@@ -31,6 +30,9 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
     Rental getOne(Long rentalIdx);
 
+    Page<Rental> findByUser_userIdxAndActiveYnAndDeleteYnAndStatusIn(Long user_idx, boolean active_yn, boolean delete_yn, ArrayList<Integer> status, Pageable pageable);
+
+    List<Rental> findByUser_userIdxAndActiveYnAndDeleteYnAndStatusIn(Long user_idx, boolean active_yn, boolean delete_yn, ArrayList<Integer> status);
     Page<Rental> findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotIn(Long user_idx, boolean active_yn, boolean delete_yn, int[] status, Pageable pageable);
     List<Rental> findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotIn(Long user_idx, boolean active_yn, boolean delete_yn, int[] status);
 }

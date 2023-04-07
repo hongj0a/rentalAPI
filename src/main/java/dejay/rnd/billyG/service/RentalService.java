@@ -28,6 +28,20 @@ public class RentalService {
     }
 
     @Transactional
+    public void updateRental(Rental rental) {
+        rental.setUpdateAt(now_date);
+    }
+
+    @Transactional
+    public void deleteRental(Rental rental) {
+        rental.setDeleteAt(now_date);
+    }
+    @Transactional
+    public void pullUpRental(Rental rental) {
+        rental.setPullUpAt(now_date);
+    }
+
+    @Transactional
     public void updateViewCnt(Rental rental){
         rental.setViewCnt(rental.getViewCnt()+1);
         rental.setUpdateAt(now_date);
