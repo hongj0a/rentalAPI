@@ -1,7 +1,7 @@
 package dejay.rnd.billyG.dto;
 
+import dejay.rnd.billyG.domain.Category;
 import dejay.rnd.billyG.domain.Faq;
-import dejay.rnd.billyG.domain.FaqType;
 import lombok.*;
 
 import java.util.Date;
@@ -13,7 +13,7 @@ import java.util.Date;
 public class FaqDto {
 
     private Long faqIdx;
-    private FaqType faqType;
+    private Category category;
     private String title;
     private String content;
     private Boolean deleteYn;
@@ -24,7 +24,7 @@ public class FaqDto {
 
     public FaqDto(Faq faq){
         faqIdx = faq.getFaqIdx();
-        faqType = faq.getFaqType();
+        category = faq.getCategory();
         title = faq.getTitle();
         content = faq.getContent();
         deleteYn = faq.getDeleteYn();

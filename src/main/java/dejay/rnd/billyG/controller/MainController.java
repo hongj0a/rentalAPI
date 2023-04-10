@@ -675,6 +675,37 @@ public class MainController {
 
     }
 
+    @GetMapping("/getDetailCategories")
+    public ResponseEntity<JsonObject> getDetailCategories(@RequestParam (value = "rentalIdx") Long rentalIdx,
+                                                     HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+        JsonArray townArr = new JsonArray();
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        Rental findRental = rentalRepository.getOne(rentalIdx);
+        List<RentalCategoryInfo> findCates = rentalCategoryInfoRepository.findByRental_rentalIdx(rentalIdx);
+
+        findCates.forEach(
+                name -> {
+                    JsonObject nameObj = new JsonObject();
+
+                    nameObj.addProperty("townSeq", name.getCategory().getCategoryIdx());
+                    nameObj.addProperty("townName", name.getCategory().getName());
+
+                    townArr.add(nameObj);
+                }
+        );
+        data.add("checkedCategoryList", townArr);
+
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
 
     @Transactional(rollbackFor = Exception.class)
     @PostMapping("/editRental")

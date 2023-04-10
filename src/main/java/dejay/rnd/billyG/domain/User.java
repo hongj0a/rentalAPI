@@ -131,9 +131,10 @@ public class User {
     @Column (name = "device_id")
     private String deviceId;
 
+    //회원탈퇴시, 탈퇴사유idx
     @ManyToOne
-    @JoinColumn (name = "outIdx")
-    private MemberOutType memberOutType;
+    @JoinColumn (name = "categoryIdx")
+    private Category category;
 
     @Column (name = "out_reason", length = 1000)
     private String outReason;

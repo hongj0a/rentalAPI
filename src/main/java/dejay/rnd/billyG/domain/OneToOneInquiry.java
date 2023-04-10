@@ -32,8 +32,8 @@ public class OneToOneInquiry {
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "oneTypeIdx")
-    private OneToOneType oneType;
+    @JoinColumn (name = "categoryIdx")
+    private Category category;
 
     @Column
     private String title;

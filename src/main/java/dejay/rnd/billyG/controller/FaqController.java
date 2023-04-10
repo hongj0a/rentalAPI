@@ -37,12 +37,12 @@ public class FaqController {
         JsonObject data = new JsonObject();
         JsonArray faqArr = new JsonArray();
 
-        List<FaqDto> list = faqService.findByFaqType(faqType, pageable);
+        /*List<FaqDto> list = faqService.findByFaqType(faqType, pageable);
 
         Gson gson = new Gson();
         for(FaqDto faqList: list){
             faqArr.add(gson.toJsonTree(faqList));
-        }
+        }*/
         data.add("faqList",faqArr);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
@@ -55,12 +55,12 @@ public class FaqController {
                                                  @PageableDefault(size=10, sort="faqTypeIdx", direction = Sort.Direction.DESC)Pageable pageable) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray faqTypeArr = new JsonArray();
-        List<FaqTypeDto> list = faqService.findAll(pageable);
+        //List<FaqTypeDto> list = faqService.findAll(pageable);
 
-        Gson gson = new Gson();
+       /* Gson gson = new Gson();
         for(FaqTypeDto faqTypeList: list){
             faqTypeArr.add(gson.toJsonTree(faqTypeList));
-        }
+        }*/
 
         data.add("faqType",faqTypeArr);
 

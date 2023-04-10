@@ -15,27 +15,35 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "one_to_one_type")
+@Table(name = "user_history")
 @Entity
 @DynamicInsert
-public class OneToOneType {
+public class UserHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "one_type_idx")
-    private Long oneTypeIdx;
+    @Column (name ="history_idx")
+    private Long historyIdx;
+
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "userIdx")
+    private User user;
 
     @ManyToOne
     @NotNull
     @JoinColumn (name = "adminIdx")
     private Admin admin;
 
-    @Column (name = "type_name")
-    private String typeName;
+    @Column(length = 1000)
+    private String title;
 
-    @ColumnDefault("0")
-    @Column (name = "delete_yn")
-    private boolean deleteYn;
+    @Column
+    @Lob
+    private String content;
+
+    @Column
+    private Integer status;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
@@ -45,12 +53,4 @@ public class OneToOneType {
     @Column (name = "update_at")
     private Date updateAt;
 
-    @Column (name = "delete_at")
-    private Date deleteAt;
-
-    @Column
-    private String updator;
-
-    @Column (name = "order_num")
-    private Integer orderNum;
 }

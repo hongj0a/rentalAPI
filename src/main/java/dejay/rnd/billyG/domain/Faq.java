@@ -27,8 +27,13 @@ public class Faq {
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "faqTypeIdx")
-    private FaqType faqType;
+    @JoinColumn (name = "categoryIdx")
+    private Category category;
+
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "adminIdx")
+    private Admin admin;
 
     @Column
     private String title;
