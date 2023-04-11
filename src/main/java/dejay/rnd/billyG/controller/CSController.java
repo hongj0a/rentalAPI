@@ -4,9 +4,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.domain.*;
+import dejay.rnd.billyG.dto.InquiryDto;
+import dejay.rnd.billyG.dto.MainDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.repository.*;
+import dejay.rnd.billyG.service.FileUploadService;
+import dejay.rnd.billyG.service.OneToOneInquiryService;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +39,9 @@ public class CSController {
     private final OneToOneInquiryRepository oneToOneInquiryRepository;
     private final UserRepository userRepository;
     private final AnswerRepository answerRepository;
+    private final OneToOneInquiryService oneToOneInquiryService;
+    private final FileUploadService uploadService;
+    private final InquiryImageRepository inquiryImageRepository;
 
     @GetMapping("/getNotice")
     public ResponseEntity<JsonObject> getNoticeList(HttpServletRequest req, @PageableDefault(size = 10, sort = "noticeIdx", direction = Sort.Direction.DESC) Pageable pageable) throws AppException {
@@ -196,9 +203,7 @@ public class CSController {
     public ResponseEntity<JsonObject> setInquiry(@RequestParam (value = "images") List<MultipartFile> images,
                                                 @RequestParam (value = "title") String title,
                                                 @RequestParam (value = "content") String content,
-                                                @RequestParam (value = "categories") String[] categories,
-                                                @RequestParam (value = "towns") String[] towns,
-                                                @RequestParam (value ="rentalDailyFee") String rentalDailyFee,
+                                                @RequestParam (value = "categoryIdx") String categoryIdx,
                                                 HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
 
@@ -207,10 +212,55 @@ public class CSController {
         User findUser = userRepository.findByEmail(userEmail);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        Category findCategory = categoryRepository.getOne(Long.valueOf(categoryIdx));
+
+        OneToOneInquiry one = new OneToOneInquiry();
+        one.setTitle(title);
+        one.setContent(content);
+        one.setUser(findUser);
+        one.setCategory(findCategory);
+
+        OneToOneInquiry oneToOneInquiry = oneToOneInquiryService.insertOne(one);
+
+        for (int i = 0; i < images.size(); i++) {
+            InquiryImage inquiryImage = new InquiryImage();
+            ImageFile file = uploadService.upload(images.get(i));
+
+            inquiryImage.setOneToOneInquiry(oneToOneInquiry);
+            inquiryImage.setImageUrl(file.getFileName());
+
+            inquiryImageRepository.save(inquiryImage);
+        }
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
     }
 
     //1:1문의 삭제
+    @PostMapping("/delInquiry")
+    public ResponseEntity<JsonObject> delInquiry(@RequestBody InquiryDto inquiryDto,
+                                                 HttpServletRequest req) throws ParseException {
+        JsonObject data = new JsonObject();
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        OneToOneInquiry findInquiry = oneToOneInquiryRepository.getOne(inquiryDto.getOneIdx());
+        findInquiry.setDeleteYn(true);
+        findInquiry.setUpdator(findUser.getEmail());
+
+        oneToOneInquiryService.updateInquiry(findInquiry);
+
+        List<InquiryImage> imglist = inquiryImageRepository.findByOneToOneInquiry_oneIdx(inquiryDto.getOneIdx());
+
+        for (int i = 0; i < imglist.size(); i++) {
+            inquiryImageRepository.delete(imglist.get(i));
+        }
+
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+    }
+
+
 }

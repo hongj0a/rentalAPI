@@ -306,7 +306,6 @@ public class MainController {
         data.addProperty("userStarPoint", findRental.getUser().getStarPoint());
         data.addProperty("activityScore", findRental.getUser().getActivityScore());
         data.addProperty("userGrade", findRental.getUser().getUserLevel());
-        data.addProperty("activeScore", findRental.getUser().getActivityScore());
         data.addProperty("maxScore", getGrade.getGradeScore());
         data.addProperty("reviewCount", reviews.size());
 
@@ -420,10 +419,10 @@ public class MainController {
 
                     List<RentalImage> renImgs = rentalImageRepository.findByRental_rentalIdx(etcs.getRentalIdx());
 
-                    etcRental.addProperty("rentalIdx", etcs.getRentalIdx());
-                    etcRental.addProperty("rentalImage", renImgs.get(0).getImageUrl());
+                    etcRental.addProperty("rentalSeq", etcs.getRentalIdx());
+                    etcRental.addProperty("imageUrl", renImgs.get(0).getImageUrl());
                     etcRental.addProperty("title", etcs.getTitle());
-                    etcRental.addProperty("dailyFee", etcs.getRentalPrice());
+                    etcRental.addProperty("dailyRentalFee", etcs.getRentalPrice());
 
                     renArr.add(etcRental);
                 }
@@ -520,6 +519,92 @@ public class MainController {
 
 
 
+    @Transactional(rollbackFor = Exception.class)
+    @PostMapping(value = "/setRental", consumes = {"multipart/form-data"})
+    public ResponseEntity<JsonObject> setRental(@RequestParam (value = "images") List<MultipartFile> images,
+                                                @RequestParam (value = "title") String title,
+                                                @RequestParam (value = "content") String content,
+                                                @RequestParam (value = "categories") String[] categories,
+                                                @RequestParam (value = "towns") String[] towns,
+                                                @RequestParam (value ="rentalDailyFee") String rentalDailyFee,
+                                                HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+
+        for (int i = 0; i < towns.length; i++) {
+            System.out.println("towns[i] = " + towns[i]);
+        }
+        Long leadTown = 0L;
+        Long town1 = 0L;
+        Long town2 = 0L;
+        Long town3 = 0L;
+        Long town4 = 0L;
+
+        for (int i = 0; i < towns.length; i++) {
+
+            switch (i) {
+                case 1 :
+                    town1 = Long.valueOf(towns[1]);
+                    break;
+                case 2 :
+                    town2 = Long.valueOf(towns[2]);
+                    break;
+                case 3 :
+                    town3 = Long.valueOf(towns[3]);
+                    break;
+                case 4 :
+                    town4 = Long.valueOf(towns[4]);
+                    break;
+                default:
+                    leadTown = Long.valueOf(towns[0]);
+                    break;
+            }
+        }
+
+
+        Rental rental = new Rental();
+        rental.setTitle(title);
+        rental.setRentalPrice(Long.valueOf(rentalDailyFee));
+        rental.setContent(content);
+        rental.setUser(findUser);
+        rental.setStatus(1);
+
+        if (leadTown != 0L) rental.setLeadTown(leadTown);
+        if (town1 != 0L) rental.setTown1(town1);
+        if (town2 != 0L) rental.setTown2(town2);
+        if (town3 != 0L) rental.setTown3(town3);
+        if (town4 != 0L) rental.setTown4(town4);
+
+        Rental findRental = rentalService.insertRental(rental);
+
+        for (int i = 0; i < images.size(); i++) {
+            RentalImage rentalImage = new RentalImage();
+            ImageFile file = uploadService.upload(images.get(i));
+
+            rentalImage.setRental(findRental);
+            rentalImage.setImageUrl(file.getFileName());
+
+            rentalImageRepository.save(rentalImage);
+        }
+
+        for (int i = 0; i < categories.length; i++) {
+
+            RentalCategoryInfo rentalCategoryInfo = new RentalCategoryInfo();
+            Category findCt = categoryRepository.getOne(Long.valueOf(categories[i]));
+            rentalCategoryInfo.setCategory(findCt);
+            rentalCategoryInfo.setRental(findRental);
+
+            rentalCategoryInfoRepository.save(rentalCategoryInfo);
+        }
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
 
     //편집하기 전에 게시글, 마이 타운정보 리스트 get api 있어야 함
     @GetMapping("/getDetailTowns")
@@ -627,15 +712,15 @@ public class MainController {
 
 
     @Transactional(rollbackFor = Exception.class)
-    @PostMapping("/editRental")
-    public ResponseEntity<JsonObject> editRental(@RequestPart (value = "images") MultipartFile multipartFile[],
-                                                @RequestParam (value = "towns") Long towns[],
-                                                @RequestParam (value = "categories") Long categories[],
-                                                @RequestParam (value = "rentalIdx") Long rentalIdx,
-                                                @RequestParam (value = "title") String title,
-                                                @RequestParam (value = "rentalDailyFee") int rentalDailyFee,
-                                                @RequestParam (value = "content") String content,
-                                                HttpServletRequest req) throws AppException, ParseException {
+    @PostMapping(value = "/editRental", consumes = {"multipart/form-data"})
+    public ResponseEntity<JsonObject> editRental(@RequestParam (value = "images") List<MultipartFile> images,
+                                                 @RequestParam (value = "title") String title,
+                                                 @RequestParam (value = "content") String content,
+                                                 @RequestParam (value = "categories") String[] categories,
+                                                 @RequestParam (value = "towns") String[] towns,
+                                                 @RequestParam (value ="rentalDailyFee") String rentalDailyFee,
+                                                 @RequestParam (value = "rentalIdx") String rentalIdx,
+                                                 HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
@@ -658,15 +743,14 @@ public class MainController {
         //카테고리 전체 삭제 후 받은 정보로 다시 저장
         //title,content,status update
 
+        Rental orgRental = rentalRepository.getOne(Long.valueOf(rentalIdx));
 
-        Rental orgRental = rentalRepository.getOne(rentalIdx);
-
-        List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(rentalIdx);
+        List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(Long.valueOf(rentalIdx));
         for (int i = 0; i < rentalImages.size(); i++) {
             rentalImageRepository.delete(rentalImages.get(i));
         }
 
-        List<RentalCategoryInfo> categoryInfos = rentalCategoryInfoRepository.findByRental_rentalIdx(rentalIdx);
+        List<RentalCategoryInfo> categoryInfos = rentalCategoryInfoRepository.findByRental_rentalIdx(Long.valueOf(rentalIdx));
         for (int i = 0; i < categoryInfos.size(); i++) {
             rentalCategoryInfoRepository.delete(categoryInfos.get(i));
         }
@@ -681,26 +765,26 @@ public class MainController {
 
             switch (i) {
                 case 1 :
-                    town1 = towns[1];
+                    town1 = Long.valueOf(towns[1]);
                     break;
                 case 2 :
-                    town2 = towns[2];
+                    town2 = Long.valueOf(towns[2]);
                     break;
                 case 3 :
-                    town3 = towns[3];
+                    town3 = Long.valueOf(towns[3]);
                     break;
                 case 4 :
-                    town4 = towns[4];
+                    town4 = Long.valueOf(towns[4]);
                     break;
                 default:
-                    leadTown = towns[0];
+                    leadTown = Long.valueOf(towns[0]);
                     break;
             }
         }
 
 
         orgRental.setTitle(title);
-        orgRental.setRentalPrice(rentalDailyFee);
+        orgRental.setRentalPrice(Long.valueOf(rentalDailyFee));
         orgRental.setContent(content);
         orgRental.setUpdator(findUser.getEmail());
 
@@ -712,9 +796,9 @@ public class MainController {
 
         rentalService.updateRental(orgRental);
 
-        for (int i = 0; i < multipartFile.length; i++) {
+        for (int i = 0; i < images.size(); i++) {
             RentalImage rentalImage = new RentalImage();
-            ImageFile file = uploadService.upload(multipartFile[i]);
+            ImageFile file = uploadService.upload(images.get(i));
 
             rentalImage.setRental(orgRental);
             rentalImage.setImageUrl(file.getFileName());
@@ -725,7 +809,7 @@ public class MainController {
         for (int i = 0; i < categories.length; i++) {
 
             RentalCategoryInfo rentalCategoryInfo = new RentalCategoryInfo();
-            Category findCt = categoryRepository.getOne(categories[i]);
+            Category findCt = categoryRepository.getOne(Long.valueOf(categories[i]));
             rentalCategoryInfo.setCategory(findCt);
             rentalCategoryInfo.setRental(orgRental);
 

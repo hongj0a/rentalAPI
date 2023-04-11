@@ -66,6 +66,14 @@ public class User {
     @Column (name = "push_token")
     private String pushToken;
 
+
+    /**
+     * 회원상태값
+     * 10 : 활동회원
+     * 20 : 휴면회원
+     * 30 : 탈퇴회원
+     * 40 : 블랙리스트 회원
+     */
     @ColumnDefault("10")
     @Column (name = "status")
     private Integer status;

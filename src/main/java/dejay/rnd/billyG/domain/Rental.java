@@ -55,9 +55,9 @@ public class Rental {
 
     @ColumnDefault("0")
     @Column (name = "rental_price")
-    private Integer rentalPrice;
+    private Long rentalPrice;
 
-    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String content;
 
     @ColumnDefault("0")
