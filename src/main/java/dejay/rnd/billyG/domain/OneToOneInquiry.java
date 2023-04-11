@@ -39,6 +39,9 @@ public class OneToOneInquiry {
     private String title;
 
     @Column
+    private Integer status;
+
+    @Column
     @Lob
     private String content;
 

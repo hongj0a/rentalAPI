@@ -176,6 +176,7 @@ public class UserController {
         data.addProperty("profileImage", findUser.getProfileImageUrl());
         data.addProperty("nickName", findUser.getNickName());
         data.addProperty("phoneNumber", findUser.getPhoneNum());
+        data.addProperty("email", findUser.getEmail());
 
         //필수니깐 없을수가 없음
         Town findLeadTown = townRepository.getOne(findUser.getLeadTown());

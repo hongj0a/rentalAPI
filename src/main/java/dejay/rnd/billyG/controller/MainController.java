@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.MainDto;
+import dejay.rnd.billyG.dto.RentalDto;
 import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
@@ -49,12 +50,11 @@ public class MainController {
     private final LikeRepository likeRepository;
     private final AlarmRepository alarmRepository;
     private final ReviewRepository reviewRepository;
-    private final AlarmService alarmService;
     private final GradeRepository gradeRepository;
     private final FileUploadService uploadService;
     private final CategoryRepository categoryRepository;
 
-    public MainController(UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, AlarmService alarmService, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository) {
+    public MainController(UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository) {
         this.userRepository = userRepository;
         this.townRepository = townRepository;
         this.townRepositories = townRepositories;
@@ -68,11 +68,11 @@ public class MainController {
         this.likeRepository = likeRepository;
         this.alarmRepository = alarmRepository;
         this.reviewRepository = reviewRepository;
-        this.alarmService = alarmService;
         this.gradeRepository = gradeRepository;
         this.uploadService = uploadService;
         this.categoryRepository = categoryRepository;
     }
+
 
     @GetMapping("/string")
     public String test() {
@@ -519,89 +519,7 @@ public class MainController {
     }
 
 
-    @Transactional(rollbackFor = Exception.class)
-    @PostMapping("/setRental")
-    public ResponseEntity<JsonObject> setRental(@RequestPart (value = "images") MultipartFile multipartFile[],
-                                                @RequestParam (value = "towns") Long towns[],
-                                                @RequestParam (value = "categories") Long categories[],
-                                                @RequestParam (value = "title") String title,
-                                                @RequestParam (value = "rentalDailyFee") int rentalDailyFee,
-                                                @RequestParam (value = "content") String content,
-                                                HttpServletRequest req) throws AppException, ParseException {
-        JsonObject data = new JsonObject();
 
-        String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
-
-        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
-
-        Long leadTown = 0L;
-        Long town1 = 0L;
-        Long town2 = 0L;
-        Long town3 = 0L;
-        Long town4 = 0L;
-
-        for (int i = 0; i < towns.length; i++) {
-
-            switch (i) {
-                case 1 :
-                    town1 = towns[1];
-                    break;
-                case 2 :
-                    town2 = towns[2];
-                    break;
-                case 3 :
-                    town3 = towns[3];
-                    break;
-                case 4 :
-                    town4 = towns[4];
-                    break;
-                default:
-                    leadTown = towns[0];
-                    break;
-            }
-        }
-
-
-        Rental rental = new Rental();
-        rental.setTitle(title);
-        rental.setRentalPrice(rentalDailyFee);
-        rental.setContent(content);
-        rental.setUser(findUser);
-        rental.setStatus(1);
-
-        if (leadTown != 0L) rental.setLeadTown(leadTown);
-        if (town1 != 0L) rental.setTown1(town1);
-        if (town2 != 0L) rental.setTown2(town2);
-        if (town3 != 0L) rental.setTown3(town3);
-        if (town4 != 0L) rental.setTown4(town4);
-
-        Rental findRental = rentalService.insertRental(rental);
-
-        for (int i = 0; i < multipartFile.length; i++) {
-            RentalImage rentalImage = new RentalImage();
-            ImageFile file = uploadService.upload(multipartFile[i]);
-
-            rentalImage.setRental(findRental);
-            rentalImage.setImageUrl(file.getFileName());
-
-            rentalImageRepository.save(rentalImage);
-        }
-
-        for (int i = 0; i < categories.length; i++) {
-
-            RentalCategoryInfo rentalCategoryInfo = new RentalCategoryInfo();
-            Category findCt = categoryRepository.getOne(categories[i]);
-            rentalCategoryInfo.setCategory(findCt);
-            rentalCategoryInfo.setRental(findRental);
-
-            rentalCategoryInfoRepository.save(rentalCategoryInfo);
-        }
-
-        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
-
-    }
 
     //편집하기 전에 게시글, 마이 타운정보 리스트 get api 있어야 함
     @GetMapping("/getDetailTowns")
@@ -675,6 +593,7 @@ public class MainController {
 
     }
 
+    //카테고리 정보는 보류
     @GetMapping("/getDetailCategories")
     public ResponseEntity<JsonObject> getDetailCategories(@RequestParam (value = "rentalIdx") Long rentalIdx,
                                                      HttpServletRequest req) throws AppException, ParseException {

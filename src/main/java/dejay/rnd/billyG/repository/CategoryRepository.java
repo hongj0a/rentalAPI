@@ -14,4 +14,6 @@ import java.util.List;
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     Category getOne(Long categoryIdx);
+
+    List<Category> findAllByCategoryTypeOrderByOrderNum(String categoryType);
 }
