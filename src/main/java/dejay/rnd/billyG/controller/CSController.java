@@ -165,12 +165,16 @@ public class CSController {
         User findUser = userRepository.findByEmail(userEmail);
 
         Page<OneToOneInquiry> list = oneToOneInquiryRepository.findAllByUser_userIdxAndDeleteYnOrderByCreateAtDesc(findUser.getUserIdx(), false, pageable);
+        List<OneToOneInquiry> size = oneToOneInquiryRepository.findAllByUser_userIdxAndDeleteYn(findUser.getUserIdx(), false);
 
 
         list.forEach(
                 ones -> {
                     JsonObject oto = new JsonObject();
+                    JsonArray imgArr = new JsonArray();
+
                     String statusStr = "답변대기";
+
                     oto.addProperty("oneIdx", ones.getOneIdx());
                     oto.addProperty("typeName", ones.getCategory().getName());
                     oto.addProperty("title", ones.getTitle());
@@ -184,15 +188,27 @@ public class CSController {
                         oto.addProperty("answerContent", "");
                     }
                     oto.addProperty("status", statusStr);
+
+                    List<InquiryImage> findimg = inquiryImageRepository.findByOneToOneInquiry_oneIdx(ones.getOneIdx());
+                    findimg.forEach(
+                            img -> {
+                                JsonObject iObj = new JsonObject();
+                                iObj.addProperty("imageSeq", img.getImageIdx());
+                                iObj.addProperty("imageUrl", img.getImageUrl());
+                                imgArr.add(iObj);
+                            }
+                    );
+
+
                     oto.addProperty("regDate", ones.getCreateAt().getTime());
                     oto.addProperty("content", ones.getContent());
-
+                    oto.add("images", imgArr);
                     faqArr.add(oto);
                 }
         );
 
         data.add("oneList", faqArr);
-
+        data.addProperty("totalCount", size.size());
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
@@ -218,6 +234,7 @@ public class CSController {
         one.setTitle(title);
         one.setContent(content);
         one.setUser(findUser);
+        one.setStatus(0);
         one.setCategory(findCategory);
 
         OneToOneInquiry oneToOneInquiry = oneToOneInquiryService.insertOne(one);

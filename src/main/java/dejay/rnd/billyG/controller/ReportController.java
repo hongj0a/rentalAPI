@@ -39,6 +39,7 @@ public class ReportController {
         this.categoryRepository = categoryRepository;
     }
 
+    //신고항목리스트
     @GetMapping("/getReportList")
     public ResponseEntity<JsonObject> getReportList (@RequestParam(name = "reportType") String reportType,
                                                  HttpServletRequest req) throws AppException {

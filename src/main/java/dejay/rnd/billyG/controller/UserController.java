@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.domain.*;
+import dejay.rnd.billyG.dto.AlarmDto;
 import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -103,7 +105,6 @@ public class UserController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
-        System.out.println("userTown.getLeadTownName() = " + userTown.getLeadTownName());
         Map<Integer, Long> userTowns = new HashMap<>();
         Town userTownIdx = townService.setTowns(userTown.getLeadTownName());
         userTowns.put(0, userTownIdx.getTownIdx());
@@ -245,6 +246,8 @@ public class UserController {
         data.addProperty("profileImage", otherUser.getProfileImageUrl());
         data.addProperty("nickName", otherUser.getNickName());
         data.addProperty("grade", otherUser.getUserLevel());
+        data.addProperty("email", otherUser.getEmail());
+        data.addProperty("idEmail", otherUser.getIdEmail());
         data.addProperty("activityScore", otherUser.getActivityScore());
         data.addProperty("maxScore", grade.getGradeScore());
         data.addProperty("leadTown", otherUser.getLeadTown());
@@ -359,4 +362,69 @@ public class UserController {
 
     }
 
+    @GetMapping("/emailCheck")
+    public ResponseEntity<JsonObject> emailCheck(@RequestParam (value = "email") String email,
+                                                  HttpServletRequest req) throws AppException {
+        JsonObject data = new JsonObject();
+
+        User findUser = userRepository.findByEmail(email);
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        if (findUser != null) {
+            apiRes.setError(ErrCode.err_api_duplicate_email.code());
+            apiRes.setMessage(ErrCode.err_api_duplicate_email.msg());
+            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+        } else {
+            apiRes.setError(ErrCode.err_api_available_email.code());
+            apiRes.setMessage(ErrCode.err_api_available_email.msg());
+            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+        }
+
+    }
+    @PostMapping("/setEmail")
+    public ResponseEntity<JsonObject> setEmail(@RequestParam(value="email", required = false) String email,
+                                                  HttpServletRequest req) throws ParseException {
+        JsonObject data = new JsonObject();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        findUser.setIdEmail(email);
+        userService.updateUser(findUser);
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+
+    }
+
+    @PostMapping("/setAlarm")
+    public ResponseEntity<JsonObject> setEmail(@RequestBody AlarmDto alarmDto,
+                                               HttpServletRequest req) throws ParseException {
+        JsonObject data = new JsonObject();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        //컬럼을 파야될듯
+        findUser.setDoNotDisturbTimeYn(alarmDto.isDoNotDisturbTimeYn());
+        if (alarmDto.isDoNotDisturbTimeYn() == true) {
+            if (alarmDto.isAfterNoon() == true) {
+                Time startTime = Time.valueOf(alarmDto.getStartHour()+12 +":"+ alarmDto.getStartMinute());
+                Time endTime = Time.valueOf(alarmDto.getStartHour()+":"+alarmDto.getStartMinute());
+                findUser.setDoNotDisturbStartTime(startTime);
+                findUser.setDoNotDisturbEndTime(endTime);
+            }
+        }
+        findUser.setChatNoticeYn(alarmDto.isChatNoticeYn());
+        findUser.setActivityNoticeYn(alarmDto.isActivityNoticeYn());
+        findUser.setMarketingNoticeYn(alarmDto.isMarketingNoticeYn());
+        userService.updateUser(findUser);
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+
+    }
 }

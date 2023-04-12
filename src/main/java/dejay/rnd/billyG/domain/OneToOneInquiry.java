@@ -38,6 +38,11 @@ public class OneToOneInquiry {
     @Column
     private String title;
 
+    /**
+     * 답변상태
+     * 0 : 답변대기
+     * 1 : 답변완료
+     */
     @Column
     private Integer status;
 

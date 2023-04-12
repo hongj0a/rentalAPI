@@ -103,10 +103,11 @@ public class User {
     @Column (name = "do_not_disturb_time_yn")
     private boolean doNotDisturbTimeYn;
 
-    @Column (name = "do_not_disturb_start_time")
+
+    @Column (name = "do_not_disturb_start_time", columnDefinition = "TIME")
     private Date doNotDisturbStartTime;
 
-    @Column (name = "do_not_disturb_end_time")
+    @Column (name = "do_not_disturb_end_time", columnDefinition = "TIME")
     private Date doNotDisturbEndTime;
 
     @ColumnDefault("0")
@@ -171,5 +172,20 @@ public class User {
 
     @Column(name = "town_4")
     private Long town4;
+
+    @Column (name = "active_at")
+    private Date activeAt;
+
+    @Column (name = "dormancy_at")
+    private Date dormancyAt;
+
+    @Column (name = "delete_at")
+    private Date deleteAt;
+
+    @Column (name = "black_at")
+    private Date blackAt;
+
+    @Column (name = "is_after_noon")
+    private boolean isAfterNoon;
 
 }

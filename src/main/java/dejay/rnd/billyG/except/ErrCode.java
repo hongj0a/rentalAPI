@@ -15,6 +15,8 @@ public enum ErrCode {
   err_over_towns                    ("1211","이미 등록된 관심지역이 10개입니다."),
   err_not_an_positive_integer       ("1300", "양의정수 오류"),
   err_api_duplicate_nickname        ("1400", "중복 닉네임"),
+  err_api_duplicate_email        ("1401", "중복 이메일"),
+  err_api_available_email         ("1411", "사용가능"),
   err_api_is_exist_user              ("1402", "존재하는 회원"),
   err_api_is_delete_user             ("1405", "탈퇴한 회원"),
   err_api_is_new_user              ("1403", "신규 회원"),

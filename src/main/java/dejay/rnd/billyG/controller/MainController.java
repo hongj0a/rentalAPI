@@ -328,7 +328,7 @@ public class MainController {
 
         String status;
         if (findRental.getStatus() == 1) {
-            status = "렌틸가능";
+            status = "렌탈가능";
         } else if (findRental.getStatus() == 2) {
             status = "렌탈중";
         } else {

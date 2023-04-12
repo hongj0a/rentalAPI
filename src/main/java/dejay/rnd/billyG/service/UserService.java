@@ -45,6 +45,8 @@ public class UserService {
         this.userCountRepository = userCountRepository;
         this.userCountRepositories = userCountRepositories;
     }
+    LocalDateTime date = LocalDateTime.now();
+    Date now_date = Timestamp.valueOf(date);
 
     @Transactional
     public UserDto signup(UserDto userDto) {
@@ -70,14 +72,14 @@ public class UserService {
                 .grades(Collections.singleton(grade))
                 .levelupAt(now_date)
                 .lastLoginDate(now_date)
+                .activeAt(now_date)
                 .build();
         return UserDto.from(userRepository.save(user));
     }
 
     @Transactional
     public void updateUserInfo(Long userIdx, String snsType) {
-        LocalDateTime date = LocalDateTime.now();
-        Date now_date = Timestamp.valueOf(date);
+
 
         User findUser = userRepositories.findOne(userIdx);
         findUser.setSnsName(snsType);
@@ -175,9 +177,6 @@ public class UserService {
     @Transactional
     public void setRefreshToken(Long userIdx, String refreshToken) {
 
-        LocalDateTime date = LocalDateTime.now();
-        Date now_date = Timestamp.valueOf(date);
-
         User findUser = userRepositories.findOne(userIdx);
         findUser.setRefreshToken(refreshToken);
         findUser.setUpdateAt(now_date);
@@ -187,31 +186,23 @@ public class UserService {
     @Transactional
     public void setUserProfile(Long userIdx, String nickname, String image_name) {
 
-        LocalDateTime date = LocalDateTime.now();
-        Date now_date = Timestamp.valueOf(date);
-
         User findUser = userRepositories.findOne(userIdx);
         findUser.setProfileImageUrl(image_name);
         findUser.setNickName(nickname);
         findUser.setUpdateAt(now_date);
     }
 
+    @Transactional
+    public void updateUser(User user) {
+        user.setUpdateAt(now_date);
+    }
 
     @Transactional
     public void updateCiValue(String phoneNum, User user) {
-
-        LocalDateTime date = LocalDateTime.now();
-        Date now_date = Timestamp.valueOf(date);
 
         user.setPhoneNum(phoneNum);
         user.setUpdateAt(now_date);
     }
 
-    @Transactional
-    public void setUserTownInfo(User user, UserDto userDto) {
-        LocalDateTime date = LocalDateTime.now();
-        Date now_date = Timestamp.valueOf(date);
-
-    }
 
 }

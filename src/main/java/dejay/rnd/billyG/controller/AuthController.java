@@ -70,7 +70,6 @@ public class AuthController {
 
         userOne = userRepository.findByEmail(email);
 
-        System.out.println("userOne.toString() = " + userOne.toString());
         //1년이상 장기 미이용 고객 return 커스텀
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
