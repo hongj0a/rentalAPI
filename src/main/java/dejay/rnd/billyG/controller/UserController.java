@@ -24,8 +24,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.sql.Time;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +42,9 @@ public class UserController {
     private final ReviewRepository reviewRepository;
     private final ReviewImageRepository reviewImageRepository;
     private final GradeRepository gradeRepository;
+    private final BlockPostRepository blockPostRepository;
 
-    public UserController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository) {
+    public UserController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, BlockPostRepository blockPostRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.townService = townService;
@@ -56,6 +55,7 @@ public class UserController {
         this.reviewRepository = reviewRepository;
         this.reviewImageRepository = reviewImageRepository;
         this.gradeRepository = gradeRepository;
+        this.blockPostRepository = blockPostRepository;
     }
 
     @PostMapping("/signup")
@@ -399,7 +399,7 @@ public class UserController {
     }
 
     @PostMapping("/setAlarm")
-    public ResponseEntity<JsonObject> setEmail(@RequestBody AlarmDto alarmDto,
+    public ResponseEntity<JsonObject> setAlarm(@RequestBody AlarmDto alarmDto,
                                                HttpServletRequest req) throws ParseException {
         JsonObject data = new JsonObject();
 
@@ -410,12 +410,7 @@ public class UserController {
         //컬럼을 파야될듯
         findUser.setDoNotDisturbTimeYn(alarmDto.isDoNotDisturbTimeYn());
         if (alarmDto.isDoNotDisturbTimeYn() == true) {
-            if (alarmDto.isAfterNoon() == true) {
-                Time startTime = Time.valueOf(alarmDto.getStartHour()+12 +":"+ alarmDto.getStartMinute());
-                Time endTime = Time.valueOf(alarmDto.getStartHour()+":"+alarmDto.getStartMinute());
-                findUser.setDoNotDisturbStartTime(startTime);
-                findUser.setDoNotDisturbEndTime(endTime);
-            }
+            System.out.println("UserController.setEmail######");
         }
         findUser.setChatNoticeYn(alarmDto.isChatNoticeYn());
         findUser.setActivityNoticeYn(alarmDto.isActivityNoticeYn());

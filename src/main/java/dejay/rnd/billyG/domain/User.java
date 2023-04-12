@@ -103,13 +103,6 @@ public class User {
     @Column (name = "do_not_disturb_time_yn")
     private boolean doNotDisturbTimeYn;
 
-
-    @Column (name = "do_not_disturb_start_time", columnDefinition = "TIME")
-    private Date doNotDisturbStartTime;
-
-    @Column (name = "do_not_disturb_end_time", columnDefinition = "TIME")
-    private Date doNotDisturbEndTime;
-
     @ColumnDefault("0")
     @Column (name = "chat_notice_yn")
     private boolean chatNoticeYn;
@@ -186,6 +179,22 @@ public class User {
     private Date blackAt;
 
     @Column (name = "is_after_noon")
-    private boolean isAfterNoon;
+    private Boolean isAfterNoon;
+
+    @Column (name = "do_not_disturb_start_hour")
+    private Integer doNotDisturbStartHour;
+
+    @Column (name = "do_not_disturb_end_hour")
+    private Integer doNotDisturbEndHour;
+
+    @Column (name = "do_not_disturb_start_minute")
+    private Integer doNotDisturbStartMinute;
+
+    @Column (name = "do_not_disturb_end_minute")
+    private Integer doNotDisturbEndMinute;
+
+    @Column
+    private String updator;
+
 
 }

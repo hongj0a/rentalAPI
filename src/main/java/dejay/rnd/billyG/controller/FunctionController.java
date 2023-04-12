@@ -76,7 +76,7 @@ public class FunctionController {
             if (findLike != null && findLike.isDeleteYn() == false) {
                 likeService.removeLikeInfo(findLike);
                 rentalService.updateLikeCnt(findRental, false);
-                data.addProperty("likeFlag", "N");
+                data.addProperty("likeFlag", false);
             } else {
                 apiRes.setError(ErrCode.err_api_is_not_exist_like.code());
                 apiRes.setMessage(ErrCode.err_api_is_not_exist_like.msg());

@@ -624,14 +624,18 @@ public class MainController {
         ArrayList<Long> sumTownInfo = new ArrayList<>();
         ArrayList<Long> orgTownInfo = new ArrayList<>();
 
+
         sumTownInfo.add(findUser.getLeadTown());
         if (findUser.getTown1() != null ) sumTownInfo.add(findUser.getTown1());
         if (findUser.getTown2() != null ) sumTownInfo.add(findUser.getTown2());
         if (findUser.getTown3() != null ) sumTownInfo.add(findUser.getTown3());
         if (findUser.getTown4() != null ) sumTownInfo.add(findUser.getTown4());
 
+        ArrayList<Long> myTownInfo = (ArrayList<Long>) sumTownInfo.clone();
+
         sumTownInfo.add(findRental.getLeadTown());
         orgTownInfo.add(findRental.getLeadTown());
+
         if (findRental.getTown1() != null ) {
             sumTownInfo.add(findRental.getTown1());
             orgTownInfo.add(findRental.getTown1());
@@ -650,7 +654,6 @@ public class MainController {
             orgTownInfo.add(findRental.getTown4());
         }
 
-        System.out.println("townInfo = " + orgTownInfo);
         Set<Long> setTowns = new HashSet<Long>(sumTownInfo);
         List<Long> newTowns = new ArrayList<Long>(setTowns);
 
@@ -660,9 +663,16 @@ public class MainController {
                 name -> {
                     JsonObject nameObj = new JsonObject();
 
+                    //기존 게시글에 등록된 타운리스트에 포함되면
                     if (orgTownInfo.contains(name.getTownIdx())) {
-                        System.out.println("name.getTownIdx() = " + name.getTownIdx());
-                        nameObj.addProperty("checked", true);
+                        //게시글에 포함된 타운체크
+                        nameObj.addProperty("isChecked", true);
+                        if(myTownInfo.contains(name.getTownIdx())) {
+                            //그 중에 마이페이지 타운리스트랑 겹치면 편집가능 / editable
+                            nameObj.addProperty("isEditable", true);
+                        } else {
+                            nameObj.addProperty("isEditable", false);
+                        }
                     } else {
                         nameObj.addProperty("checked", false);
                     }
