@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
@@ -45,6 +46,7 @@ public class AuthController {
      *  6. refresh_token expired 시 재 로그인 요청
      *  7. access_token expired 시 refresh_token 으로 검증해서 access_token 재발급, 이 때 AT, RT 모두 갱신
      */
+    @Transactional(rollbackFor = Exception.class)
     @PostMapping("/authenticate")
     public ResponseEntity<JsonObject> authorize(@RequestBody LoginDto loginDto, HttpServletRequest req) throws java.text.ParseException {
         JsonObject data = new JsonObject();

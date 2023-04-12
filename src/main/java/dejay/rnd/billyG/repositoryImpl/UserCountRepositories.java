@@ -7,6 +7,9 @@ import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -15,7 +18,11 @@ public class UserCountRepositories {
     @PersistenceContext
     private final EntityManager em;
 
+    LocalDateTime date = LocalDateTime.now();
+    Date now_date = Timestamp.valueOf(date);
+
     public void save(UserCount userCount){
+        userCount.setCreateAt(now_date);
         em.persist(userCount);
     }
 }

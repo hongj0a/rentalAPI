@@ -6,15 +6,13 @@ import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.MainDto;
-import dejay.rnd.billyG.dto.RentalDto;
-import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.repositoryImpl.RentalRepositories;
 import dejay.rnd.billyG.repositoryImpl.TownRepositories;
-import dejay.rnd.billyG.service.AlarmService;
+import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
 import dejay.rnd.billyG.service.CategoryService;
 import dejay.rnd.billyG.service.FileUploadService;
 import dejay.rnd.billyG.service.RentalService;
@@ -53,8 +51,10 @@ public class MainController {
     private final GradeRepository gradeRepository;
     private final FileUploadService uploadService;
     private final CategoryRepository categoryRepository;
+    private final UserCountRepository userCountRepository;
+    private final UserCountRepositories userCountRepositories;
 
-    public MainController(UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository) {
+    public MainController(UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories) {
         this.userRepository = userRepository;
         this.townRepository = townRepository;
         this.townRepositories = townRepositories;
@@ -71,6 +71,8 @@ public class MainController {
         this.gradeRepository = gradeRepository;
         this.uploadService = uploadService;
         this.categoryRepository = categoryRepository;
+        this.userCountRepository = userCountRepository;
+        this.userCountRepositories = userCountRepositories;
     }
 
 
@@ -270,6 +272,7 @@ public class MainController {
     }
 
     //수정 조회에서도 같이 씀
+    @Transactional(rollbackFor = Exception.class)
     @GetMapping("/getRental")
     public ResponseEntity<JsonObject> getRental(@RequestParam(value="rentalIdx") Long rentalIdx,
                                                 HttpServletRequest req) throws AppException, ParseException {
@@ -284,6 +287,8 @@ public class MainController {
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
+
+        UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
 
         Rental findRental = rentalRepository.getOne(rentalIdx);
         List<Review> reviews = reviewRepository.findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAt(findRental.getUser().getUserIdx(), true, false);
@@ -312,6 +317,18 @@ public class MainController {
         if (findRental.getUser().getUserIdx() != findUser.getUserIdx()) {
             //조회수 업데이트
             rentalService.updateViewCnt(findRental);
+
+            if (userCount != null) {
+                userCount.setViewCnt(userCount.getViewCnt()+1);
+
+            } else {
+                UserCount newCount = new UserCount();
+                newCount.setUser(findUser);
+                newCount.setViewCnt(1L);
+
+                userCountRepositories.save(newCount);
+            }
+
             data.addProperty("isMine",false);
         } else {
             data.addProperty("isMine", true);
@@ -534,6 +551,7 @@ public class MainController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
+        UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
 
@@ -582,6 +600,17 @@ public class MainController {
         if (town4 != 0L) rental.setTown4(town4);
 
         Rental findRental = rentalService.insertRental(rental);
+
+        if (userCount != null) {
+            userCount.setRentalBoardCnt(userCount.getRentalBoardCnt()+1);
+
+        } else {
+            UserCount newCount = new UserCount();
+            newCount.setUser(findUser);
+            newCount.setRentalBoardCnt(1L);
+
+            userCountRepositories.save(newCount);
+        }
 
         for (int i = 0; i < images.size(); i++) {
             RentalImage rentalImage = new RentalImage();

@@ -51,4 +51,9 @@ public class StatusHistory {
 
     @Column
     private String updator;
+
+    @Temporal(value = TemporalType.TIMESTAMP)
+    @CreationTimestamp
+    @Column (name = "create_at")
+    private Date createAt;
 }

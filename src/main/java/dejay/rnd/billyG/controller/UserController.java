@@ -42,9 +42,10 @@ public class UserController {
     private final ReviewRepository reviewRepository;
     private final ReviewImageRepository reviewImageRepository;
     private final GradeRepository gradeRepository;
-    private final BlockPostRepository blockPostRepository;
 
-    public UserController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, BlockPostRepository blockPostRepository) {
+    private final TermsRepository termsRepository;
+
+    public UserController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.townService = townService;
@@ -55,7 +56,7 @@ public class UserController {
         this.reviewRepository = reviewRepository;
         this.reviewImageRepository = reviewImageRepository;
         this.gradeRepository = gradeRepository;
-        this.blockPostRepository = blockPostRepository;
+        this.termsRepository = termsRepository;
     }
 
     @PostMapping("/signup")
@@ -178,6 +179,24 @@ public class UserController {
         data.addProperty("nickName", findUser.getNickName());
         data.addProperty("phoneNumber", findUser.getPhoneNum());
         data.addProperty("email", findUser.getEmail());
+        data.addProperty("signPath", findUser.getSnsName());
+        data.addProperty("disturbInfo", findUser.isDoNotDisturbTimeYn());
+
+        if (findUser.getDoNotDisturbStartHour() != null && findUser.getDoNotDisturbStartMinute() != null) {
+            data.addProperty("startHour", findUser.getDoNotDisturbStartHour());
+            data.addProperty("startMinute", findUser.getDoNotDisturbStartMinute());
+        } else {
+            data.addProperty("startHour","");
+            data.addProperty("startMinute" ,"");
+        }
+
+        if (findUser.getDoNotDisturbEndHour() != null && findUser.getDoNotDisturbEndMinute() != null) {
+            data.addProperty("endHour", findUser.getDoNotDisturbEndHour());
+            data.addProperty("endMinute", findUser.getDoNotDisturbEndMinute());
+        } else {
+            data.addProperty("endHour","");
+            data.addProperty("endMinute" ,"");
+        }
 
         //필수니깐 없을수가 없음
         Town findLeadTown = townRepository.getOne(findUser.getLeadTown());
@@ -426,4 +445,24 @@ public class UserController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
+
+    @GetMapping("/getUseTerms")
+    public ResponseEntity<JsonObject> getUseTerms(HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        //Terms getTerm =
+       /* List<Terms> getOne = termsRepository.findTopOrderByUpdateAtDesc();
+        System.out.println("getOne.get(0).getTitle() = " + getOne.get(0).getTitle());
+*/
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+
 }
