@@ -410,16 +410,20 @@ public class UserController {
         //컬럼을 파야될듯
         findUser.setDoNotDisturbTimeYn(alarmDto.isDoNotDisturbTimeYn());
         if (alarmDto.isDoNotDisturbTimeYn() == true) {
-            System.out.println("UserController.setEmail######");
+            findUser.setIsAfterNoon(alarmDto.isAfterNoon());
+            findUser.setDoNotDisturbStartHour(alarmDto.getStartHour());
+            findUser.setDoNotDisturbStartMinute(alarmDto.getStartMinute());
+            findUser.setDoNotDisturbEndHour(alarmDto.getEndHour());
+            findUser.setDoNotDisturbEndMinute(alarmDto.getEndMinute());
         }
         findUser.setChatNoticeYn(alarmDto.isChatNoticeYn());
         findUser.setActivityNoticeYn(alarmDto.isActivityNoticeYn());
         findUser.setMarketingNoticeYn(alarmDto.isMarketingNoticeYn());
+
+        findUser.setUpdator(findUser.getEmail());
         userService.updateUser(findUser);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
-
-
     }
 }
