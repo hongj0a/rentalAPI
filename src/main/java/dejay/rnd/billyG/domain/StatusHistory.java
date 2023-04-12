@@ -23,12 +23,17 @@ public class StatusHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column (name = "status_idx")
-    private Long likeIdx;
+    private Long statusIdx;
 
     @ManyToOne
     @NotNull
     @JoinColumn (name = "userIdx")
     private User user;
+
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "adminIdx")
+    private Admin admin;
 
     /**
      * 회원상태값
@@ -49,11 +54,21 @@ public class StatusHistory {
     @Column (name = "black_at")
     private Date blackAt;
 
+    @Column(length = 1000)
+    private String title;
+
     @Column
-    private String updator;
+    @Lob
+    private String content;
+
+    @Column
+    private Integer status;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
     private Date createAt;
+
+    @Column (name = "update_at")
+    private Date updateAt;
 }

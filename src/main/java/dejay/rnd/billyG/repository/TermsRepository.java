@@ -14,5 +14,5 @@ import java.util.List;
 @Repository
 public interface TermsRepository extends JpaRepository<Terms, Long> {
 
-    //List<Terms> findTopOrderByUpdateAtDesc();
+    //Terms findFirst();
 }

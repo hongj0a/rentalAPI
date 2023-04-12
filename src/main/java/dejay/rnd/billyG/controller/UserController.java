@@ -454,10 +454,10 @@ public class UserController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
-        //Terms getTerm =
-       /* List<Terms> getOne = termsRepository.findTopOrderByUpdateAtDesc();
-        System.out.println("getOne.get(0).getTitle() = " + getOne.get(0).getTitle());
-*/
+        /*Terms getTerm = termsRepository.findFirst();
+        System.out.println("getTerm = " + getTerm);*/
+        //List<Terms> getOne = termsRepository.findTopOrderByUpdateAtDesc();
+        //System.out.println("getOne.get(0).getTitle() = " + getOne.get(0).getTitle());
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
