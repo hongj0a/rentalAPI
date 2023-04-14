@@ -80,7 +80,7 @@ public class MainController {
     public String test() {
         return "hello";
     }
-//
+
     @GetMapping("/getMainList")
     public ResponseEntity<JsonObject> getMain(@RequestParam(value="status") Integer status,
                                               @RequestParam(required = false, value="filter") Integer filter,
@@ -284,10 +284,12 @@ public class MainController {
 
         Grade getGrade = gradeRepository.findTop1ByOrderByGradeScoreDesc();
 
+
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
+        Grade grade = gradeRepository.getOne(findUser.getUserLevel());
         UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
 
         Rental findRental = rentalRepository.getOne(rentalIdx);
@@ -310,7 +312,7 @@ public class MainController {
         data.addProperty("userIdx", findRental.getUser().getUserIdx());
         data.addProperty("userStarPoint", findRental.getUser().getStarPoint());
         data.addProperty("activityScore", findRental.getUser().getActivityScore());
-        data.addProperty("userGrade", findRental.getUser().getUserLevel());
+        data.addProperty("grade", grade.getGradeName());
         data.addProperty("maxScore", getGrade.getGradeScore());
         data.addProperty("reviewCount", reviews.size());
 
@@ -551,7 +553,6 @@ public class MainController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
-        UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
 
@@ -600,17 +601,6 @@ public class MainController {
         if (town4 != 0L) rental.setTown4(town4);
 
         Rental findRental = rentalService.insertRental(rental);
-
-        if (userCount != null) {
-            userCount.setRentalBoardCnt(userCount.getRentalBoardCnt()+1);
-
-        } else {
-            UserCount newCount = new UserCount();
-            newCount.setUser(findUser);
-            newCount.setRentalBoardCnt(1L);
-
-            userCountRepositories.save(newCount);
-        }
 
         for (int i = 0; i < images.size(); i++) {
             RentalImage rentalImage = new RentalImage();
@@ -905,6 +895,12 @@ public class MainController {
         findRental.setUpdator(findUser.getEmail());
         rentalService.deleteRental(findRental);
 
+        List<RentalImage> imgs = rentalImageRepository.findByRental_rentalIdx(findRental.getRentalIdx());
+
+        for (int i = 0; i < imgs.size(); i++) {
+            rentalImageRepository.delete(imgs.get(i));
+        }
+
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
 
@@ -925,7 +921,6 @@ public class MainController {
         if (status != 4) {
             p_status.add(1);
             p_status.add(2);
-            p_status.add(3);
         } else {
             p_status.add(4);
         }
@@ -938,8 +933,8 @@ public class MainController {
                     JsonObject etcRental = new JsonObject();
 
                     List<RentalImage> renImgs = rentalImageRepository.findByRental_rentalIdx(etcs.getRentalIdx());
-                    etcRental.addProperty("rentalIdx", etcs.getRentalIdx());
-                    etcRental.addProperty("rentalImage", renImgs.get(0).getImageUrl());
+                    etcRental.addProperty("rentalSeq", etcs.getRentalIdx());
+                    etcRental.addProperty("imageUrl", renImgs.get(0).getImageUrl());
                     etcRental.addProperty("title", etcs.getTitle());
                     etcRental.addProperty("dailyFee", etcs.getRentalPrice());
                     etcRental.addProperty("regDate", etcs.getPullUpAt().getTime());
@@ -947,15 +942,15 @@ public class MainController {
                     switch (etcs.getStatus()) {
                         case 2 :
                             etcRental.addProperty("status", "렌탈중");
-                            break;
-                        case 3:
-                            etcRental.addProperty("status", "렌탈완료");
+                            etcRental.addProperty("editable", false);
                             break;
                         case 4:
                             etcRental.addProperty("status", "렌탈숨기기");
+                            etcRental.addProperty("editable", true);
                             break;
                         default:
                             etcRental.addProperty("status", "렌탈가능");
+                            etcRental.addProperty("editable", true);
                             break;
                     }
 

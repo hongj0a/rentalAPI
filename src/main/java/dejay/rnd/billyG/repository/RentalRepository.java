@@ -28,6 +28,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
 */
 
+    List<Rental> findByUser_userIdxAndActiveYnAndDeleteYn(Long userIdx, boolean active_yn, boolean delete_yn);
     Rental getOne(Long rentalIdx);
 
     Page<Rental> findByUser_userIdxAndActiveYnAndDeleteYnAndStatusIn(Long user_idx, boolean active_yn, boolean delete_yn, ArrayList<Integer> status, Pageable pageable);

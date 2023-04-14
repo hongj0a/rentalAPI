@@ -15,5 +15,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     Category getOne(Long categoryIdx);
 
+    List<Category> findAllByCategoryTypeAndOrderNumNotInOrderByOrderNum(String categoryType, int[] orderNum);
     List<Category> findAllByCategoryTypeOrderByOrderNum(String categoryType);
 }

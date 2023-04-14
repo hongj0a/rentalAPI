@@ -65,7 +65,7 @@ public class UserService {
                 .name(userDto.getName())
                 .activityScore(0)
                 .starPoint(0)
-                .userLevel(1)
+                .userLevel(1L)
                 .status(10)
                 .phoneNum(userDto.getPhoneNumber())
                 .ciValue(userDto.getCiValue())

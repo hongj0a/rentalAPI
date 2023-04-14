@@ -89,7 +89,7 @@ public class CSController {
         JsonObject data = new JsonObject();
         JsonArray faqArr = new JsonArray();
 
-        List<Category> list = categoryRepository.findAllByCategoryTypeOrderByOrderNum(csType);
+        List<Category> list = categoryRepository.findAllByCategoryTypeAndOrderNumNotInOrderByOrderNum(csType, new int[]{9999});
 
         list.forEach(
                 faqs -> {
@@ -121,7 +121,7 @@ public class CSController {
          * =================================
          */
 
-        List<Category> list = categoryRepository.findAllByCategoryTypeOrderByOrderNum("2");
+        List<Category> list = categoryRepository.findAllByCategoryTypeAndOrderNumNotInOrderByOrderNum("2", new int[]{9999});
         ArrayList<Long> f_keys = new ArrayList<>();
 
         if (type == 0) {
@@ -176,7 +176,12 @@ public class CSController {
                     String statusStr = "답변대기";
 
                     oto.addProperty("oneIdx", ones.getOneIdx());
-                    oto.addProperty("typeName", ones.getCategory().getName());
+                    if (ones.getCategory().getOrderNum() == 9999) {
+                        oto.addProperty("typeName", "알 수 없음");
+                    } else {
+                        oto.addProperty("typeName", ones.getCategory().getName());
+                    }
+
                     oto.addProperty("title", ones.getTitle());
                     if (ones.getStatus() == 1) {
                         statusStr = "답변완료";
@@ -184,7 +189,7 @@ public class CSController {
                         oto.addProperty("answerIdx", answer.getAnswerIdx());
                         oto.addProperty("answerContent", answer.getAnswerContent());
                     } else {
-                        oto.addProperty("answerIdx", "");
+                        oto.addProperty("answerIdx", 0);
                         oto.addProperty("answerContent", "");
                     }
                     oto.addProperty("status", statusStr);

@@ -26,12 +26,10 @@ public class StatusHistory {
     private Long statusIdx;
 
     @ManyToOne
-    @NotNull
     @JoinColumn (name = "userIdx")
     private User user;
 
     @ManyToOne
-    @NotNull
     @JoinColumn (name = "adminIdx")
     private Admin admin;
 

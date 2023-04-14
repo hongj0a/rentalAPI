@@ -2,6 +2,7 @@ package dejay.rnd.billyG.repository;
 
 import dejay.rnd.billyG.domain.Rental;
 import dejay.rnd.billyG.domain.Transaction;
+import org.hibernate.spi.TreatedNavigablePath;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +15,26 @@ import java.util.List;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
+    Transaction getOne(Long transactionIdx);
+
     List<Transaction> findByRental_rentalIdxAndOwnerStatusOrderByCreateAtDesc(Long rentalIdx, Integer ownerStatus);
     Page<Transaction> findByRental_rentalIdxAndOwnerStatusOrderByCreateAtDesc(Long rentalIdx, Integer ownerStatus, Pageable pageable);
+
+    //렌탈함 status != all
+    Page<Transaction> findByRental_User_userIdxAndCancelYnAndOwnerStatusOrderByCreateAtDesc(Long userIdx, boolean cancelYn, int ownerStatus, Pageable pageable);
+    List<Transaction> findByRental_User_userIdxAndCancelYnAndOwnerStatus(Long userIdx, boolean cancelYn, int ownerStatus);
+
+    //렌탈오너, status == all
+    Page<Transaction> findByRental_User_userIdxAndCancelYnOrderByCreateAtDesc(Long userIdx, boolean cancelYn, Pageable pageable);
+    List<Transaction> findByRental_User_userIdxAndCancelYn(Long userIdx, boolean cancelYn);
+
+    //렌탈러. status != all
+    Page<Transaction> findByUser_userIdxAndCancelYnAndRenterStatusOrderByCreateAtDesc(Long userIdx, boolean cancelYn, int renterStatus, Pageable pageable);
+    List<Transaction> findByUser_userIdxAndCancelYnAndRenterStatus(Long userIdx, boolean cancelYn, int renterStatus);
+
+    //렌탈러, status == all
+    Page<Transaction> findByUser_userIdxAndCancelYnOrderByCreateAtDesc(Long userIdx, boolean cancelYn, Pageable pageable);
+    List<Transaction> findByUser_userIdxAndCancelYn(Long userIdx, boolean cancelYn);
+
+
 }

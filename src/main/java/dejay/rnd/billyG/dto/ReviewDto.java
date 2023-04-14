@@ -7,7 +7,6 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OutDto {
-   private Long typeIdx;
-   private String blockContent;
+public class ReviewDto {
+   private Long reviewIdx;
 }

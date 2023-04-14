@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LikeDto {
-   private Long rentalIdx;
-   private int likeFlag;
+public class OutDto {
+   private Long typeIdx;
+   private String blockContent;
 }

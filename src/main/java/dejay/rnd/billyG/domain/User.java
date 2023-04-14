@@ -45,7 +45,7 @@ public class User {
 
     @ColumnDefault("1")
     @Column (name = "user_level")
-    private Integer userLevel;
+    private Long userLevel;
 
     @ColumnDefault("0")
     @Column (name = "activity_score")

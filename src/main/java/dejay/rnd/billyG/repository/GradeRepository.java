@@ -14,4 +14,9 @@ import java.util.List;
 public interface GradeRepository extends JpaRepository<Grade, Long> {
 
     Grade findTop1ByOrderByGradeScoreDesc();
+
+    Grade getOne(Long gradeIdx);
+
+    List<Grade> findByActiveYnAndMenuNumNotIn(boolean activeYn, int[] menuNum);
+
 }
