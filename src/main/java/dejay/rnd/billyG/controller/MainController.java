@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
+import dejay.rnd.billyG.config.ImageProperties;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.MainDto;
 import dejay.rnd.billyG.except.AppException;
@@ -27,6 +28,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.nio.file.Path;
+
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -53,8 +58,9 @@ public class MainController {
     private final CategoryRepository categoryRepository;
     private final UserCountRepository userCountRepository;
     private final UserCountRepositories userCountRepositories;
+    private final Path fileStorageLocation;
 
-    public MainController(UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories) {
+    public MainController(ImageProperties imageProperties, UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories) {
         this.userRepository = userRepository;
         this.townRepository = townRepository;
         this.townRepositories = townRepositories;
@@ -73,6 +79,8 @@ public class MainController {
         this.categoryRepository = categoryRepository;
         this.userCountRepository = userCountRepository;
         this.userCountRepositories = userCountRepositories;
+        this.fileStorageLocation = Paths.get(imageProperties.getDefaultPath())
+                .toAbsolutePath().normalize();
     }
 
 
@@ -776,6 +784,12 @@ public class MainController {
 
         List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(Long.valueOf(rentalIdx));
         for (int i = 0; i < rentalImages.size(); i++) {
+            File file = new File(fileStorageLocation + rentalImages.get(i).getImageUrl());
+
+            if (file.exists()) {
+                file.delete();
+            }
+
             rentalImageRepository.delete(rentalImages.get(i));
         }
 
@@ -898,6 +912,13 @@ public class MainController {
         List<RentalImage> imgs = rentalImageRepository.findByRental_rentalIdx(findRental.getRentalIdx());
 
         for (int i = 0; i < imgs.size(); i++) {
+
+            File file = new File(fileStorageLocation + imgs.get(i).getImageUrl());
+
+            if (file.exists()) {
+                file.delete();
+            }
+
             rentalImageRepository.delete(imgs.get(i));
         }
 

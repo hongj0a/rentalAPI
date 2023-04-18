@@ -3,9 +3,12 @@ package dejay.rnd.billyG.controller;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
+import dejay.rnd.billyG.config.ImageProperties;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.InquiryDto;
-import dejay.rnd.billyG.dto.MainDto;
+
+import java.io.File;
+import java.nio.file.Path;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.repository.*;
@@ -13,7 +16,6 @@ import dejay.rnd.billyG.service.FileUploadService;
 import dejay.rnd.billyG.service.OneToOneInquiryService;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,12 +27,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api")
 public class CSController {
     private final NoticeRepository noticeRepository;
@@ -42,6 +44,21 @@ public class CSController {
     private final OneToOneInquiryService oneToOneInquiryService;
     private final FileUploadService uploadService;
     private final InquiryImageRepository inquiryImageRepository;
+    private final Path fileStorageLocation;
+
+    public CSController(ImageProperties imageProperties, NoticeRepository noticeRepository, CategoryRepository categoryRepository, FaqRepository faqRepository, OneToOneInquiryRepository oneToOneInquiryRepository, UserRepository userRepository, AnswerRepository answerRepository, OneToOneInquiryService oneToOneInquiryService, FileUploadService uploadService, InquiryImageRepository inquiryImageRepository) {
+        this.noticeRepository = noticeRepository;
+        this.categoryRepository = categoryRepository;
+        this.faqRepository = faqRepository;
+        this.oneToOneInquiryRepository = oneToOneInquiryRepository;
+        this.userRepository = userRepository;
+        this.answerRepository = answerRepository;
+        this.oneToOneInquiryService = oneToOneInquiryService;
+        this.uploadService = uploadService;
+        this.inquiryImageRepository = inquiryImageRepository;
+        this.fileStorageLocation = Paths.get(imageProperties.getDefaultPath())
+                .toAbsolutePath().normalize();
+    }
 
     @GetMapping("/getNotice")
     public ResponseEntity<JsonObject> getNoticeList(HttpServletRequest req, @PageableDefault(size = 10, sort = "noticeIdx", direction = Sort.Direction.DESC) Pageable pageable) throws AppException {
@@ -278,6 +295,12 @@ public class CSController {
         List<InquiryImage> imglist = inquiryImageRepository.findByOneToOneInquiry_oneIdx(inquiryDto.getOneIdx());
 
         for (int i = 0; i < imglist.size(); i++) {
+
+            File file = new File(fileStorageLocation + imglist.get(i).getImageUrl());
+
+            if (file.exists()) {
+                file.delete();
+            }
             inquiryImageRepository.delete(imglist.get(i));
         }
 

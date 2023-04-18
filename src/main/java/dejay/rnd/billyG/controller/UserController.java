@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
+import dejay.rnd.billyG.config.ImageProperties;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.*;
 import dejay.rnd.billyG.except.AppException;
@@ -18,6 +19,7 @@ import dejay.rnd.billyG.service.UserService;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,13 +28,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.Path;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 
+@Slf4j
 @RestController
 @RequestMapping("/api")
 public class UserController {
@@ -55,8 +61,9 @@ public class UserController {
     private final UserCountRepository userCountRepository;
     private final UserCountRepositories userCountRepositories;
     private final ReviewService reviewService;
+    private final Path fileStorageLocation;
 
-    public UserController(UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService) {
+    public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.townService = townService;
@@ -75,6 +82,8 @@ public class UserController {
         this.userCountRepository = userCountRepository;
         this.userCountRepositories = userCountRepositories;
         this.reviewService = reviewService;
+        this.fileStorageLocation = Paths.get(imageProperties.getDefaultPath())
+                .toAbsolutePath().normalize();
     }
 
     @PostMapping("/signup")
@@ -698,6 +707,7 @@ public class UserController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
+
         Gson gson = new Gson();
         Page<Likes> likes = likeRepository.findByUser_userIdxAndDeleteYnOrderByCreateAtDesc(findUser.getUserIdx(), false, pageable);
         List<Likes> likeSize = likeRepository.findByUser_userIdxAndDeleteYn(findUser.getUserIdx(), false);
@@ -705,6 +715,7 @@ public class UserController {
         likes.forEach(
                 li -> {
                     JsonObject my = new JsonObject();
+                    boolean rentalStatus;
 
                     my.addProperty("rentalSeq", li.getRental().getRentalIdx());
                     my.addProperty("title", li.getRental().getTitle());
@@ -714,9 +725,16 @@ public class UserController {
                         my.addProperty("imageSeq", images.get(0).getImageIdx());
                         my.addProperty("imageUrl", images.get(0).getImageUrl());
                     }
+
+                    if (li.getRental().getStatus() == 1) {
+                        rentalStatus = true;
+                    } else {
+                        rentalStatus = false;
+                    }
+
                     my.addProperty("dailyRentalFee", li.getRental().getRentalPrice());
                     my.addProperty("regDate", li.getRental().getCreateAt().getTime());
-                    my.addProperty("status", li.getRental().getStatus());
+                    my.addProperty("status", rentalStatus);
 
                     //town 리스트 추출
                     List<String> tLst = new ArrayList<>();
@@ -883,6 +901,13 @@ public class UserController {
 
         List<ReviewImage> imgs = reviewImageRepository.findByReview_ReviewIdx(findReview.getReviewIdx());
         for (int i = 0; i < imgs.size(); i++) {
+
+            File file = new File(fileStorageLocation + imgs.get(i).getImageUrl());
+
+            if (file.exists()) {
+                file.delete();
+            }
+
             reviewImageRepository.delete(imgs.get(i));
         }
 
@@ -904,6 +929,7 @@ public class UserController {
         Gson gson = new Gson();
 
         List<Grade> grades = gradeRepository.findByActiveYnAndMenuNumNotIn(true, new int[]{0});
+        List<Grade> mains = gradeRepository.findByActiveYnAndMenuNumIn(true, new int[]{0});
         Grade grade = gradeRepository.getOne(findUser.getUserLevel());
         List<Rental> rentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYn(findUser.getUserIdx(), true, false);
         UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
@@ -928,16 +954,28 @@ public class UserController {
         data.addProperty("likeCnt", likes.size());
         data.addProperty("viewCnt", userCount.getViewCnt());
 
-        grades.forEach(
-                gr -> {
-                    JsonObject grInfo = new JsonObject();
-                    grInfo.addProperty("majorGrade", gr.getGradeName());
-                    grInfo.addProperty("minorGrade", gr.getMiddleGrade());
-                    grInfo.addProperty("gradeScore", gr.getGradeScore());
+        mains.forEach(
+                main -> {
+                    JsonArray subGrades = new JsonArray();
+                    grades.forEach(
+                            gr ->{
+                                if (main.getGradeIdx().intValue() == gr.getMenuNum()) {
+                                    JsonObject subObj = new JsonObject();
+                                    subObj.addProperty("minorGrade", gr.getMiddleGrade());
+                                    subObj.addProperty("gradeScore", gr.getGradeScore());
 
+                                    subGrades.add(subObj);
+                                }
+                            }
+                    );
+
+                    JsonObject grInfo = new JsonObject();
+                    grInfo.addProperty("majorGrade", main.getGradeName());
+                    grInfo.add("minorInfo", subGrades);
                     grArr.add(grInfo);
                 }
         );
+
         data.add("gradeInfos", grArr);
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());

@@ -19,4 +19,6 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
 
     List<Grade> findByActiveYnAndMenuNumNotIn(boolean activeYn, int[] menuNum);
 
+    List<Grade> findByActiveYnAndMenuNumIn(boolean activeYn, int[] menuNum);
+
 }
