@@ -21,16 +21,16 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     Page<Transaction> findByRental_rentalIdxAndOwnerStatusOrderByCreateAtDesc(Long rentalIdx, Integer ownerStatus, Pageable pageable);
 
     //렌탈함 status != all
-    Page<Transaction> findByRental_User_userIdxAndCancelYnAndOwnerStatusOrderByCreateAtDesc(Long userIdx, boolean cancelYn, int ownerStatus, Pageable pageable);
-    List<Transaction> findByRental_User_userIdxAndCancelYnAndOwnerStatus(Long userIdx, boolean cancelYn, int ownerStatus);
+    Page<Transaction> findByRental_User_userIdxAndCancelYnAndOwnerStatusInOrderByCreateAtDesc(Long userIdx, boolean cancelYn, int[] ownerStatus, Pageable pageable);
+    List<Transaction> findByRental_User_userIdxAndCancelYnAndOwnerStatusIn(Long userIdx, boolean cancelYn, int[] ownerStatus);
 
     //렌탈오너, status == all
     Page<Transaction> findByRental_User_userIdxAndCancelYnOrderByCreateAtDesc(Long userIdx, boolean cancelYn, Pageable pageable);
     List<Transaction> findByRental_User_userIdxAndCancelYn(Long userIdx, boolean cancelYn);
 
     //렌탈러. status != all
-    Page<Transaction> findByUser_userIdxAndCancelYnAndRenterStatusOrderByCreateAtDesc(Long userIdx, boolean cancelYn, int renterStatus, Pageable pageable);
-    List<Transaction> findByUser_userIdxAndCancelYnAndRenterStatus(Long userIdx, boolean cancelYn, int renterStatus);
+    Page<Transaction> findByUser_userIdxAndCancelYnAndRenterStatusInOrderByCreateAtDesc(Long userIdx, boolean cancelYn, int[] renterStatus, Pageable pageable);
+    List<Transaction> findByUser_userIdxAndCancelYnAndRenterStatusIn(Long userIdx, boolean cancelYn, int[] renterStatus);
 
     //렌탈러, status == all
     Page<Transaction> findByUser_userIdxAndCancelYnOrderByCreateAtDesc(Long userIdx, boolean cancelYn, Pageable pageable);

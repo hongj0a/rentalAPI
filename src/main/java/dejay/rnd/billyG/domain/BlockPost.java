@@ -66,4 +66,7 @@ public class BlockPost {
     @Column
     private String updator;
 
+    @Column (name = "complete_at")
+    private Date completeAt;
+
 }

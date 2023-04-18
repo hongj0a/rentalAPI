@@ -75,7 +75,7 @@ public class AuthController {
         //1년이상 장기 미이용 고객 return 커스텀
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        
+
         cal.add(Calendar.YEAR, -1);
 
         Date date1 = dateFormat.parse(dateFormat.format(cal.getTime()));
@@ -116,7 +116,7 @@ public class AuthController {
     }
 
     @PostMapping("/isExistCheck")
-    public ResponseEntity<JsonObject> isExistCheck(HttpServletRequest req, @RequestBody LoginDto loginDto) {
+    public ResponseEntity<JsonObject> isExistCheck(HttpServletRequest req, @RequestBody LoginDto loginDto) throws java.text.ParseException {
         JsonObject data = new JsonObject();
         User findUser = userRepository.findByEmailAndSnsName(loginDto.getEmail(), loginDto.getSnsType());
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
@@ -127,6 +127,29 @@ public class AuthController {
                 apiRes.setMessage(ErrCode.err_api_is_delete_user.msg());
                 return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
             } else {
+                //1년이상 장기 미이용 고객 return 커스텀
+                Calendar cal = Calendar.getInstance();
+                Calendar cal30 = Calendar.getInstance();
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+
+                cal.add(Calendar.YEAR, -1);
+                cal30.add(Calendar.MONTH, -1);
+
+                Date date1 = dateFormat.parse(dateFormat.format(cal.getTime()));
+                Date date2 = findUser.getLastLoginDate();
+                Date date3 = dateFormat.parse(dateFormat.format(cal30.getTime()));
+
+                if (date2.before(date1)) {
+                    apiRes.setError(ErrCode.err_long_time_no_use_user.code());
+                    apiRes.setMessage(ErrCode.err_long_time_no_use_user.msg());
+                    return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+                }
+
+                if (date2.before(date3)) {
+                    apiRes.setError(ErrCode.err_30days_no_use_user.code());
+                    apiRes.setMessage(ErrCode.err_30days_no_use_user.msg());
+                    return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+                }
                 apiRes.setError(ErrCode.err_api_is_exist_user.code());
                 apiRes.setMessage(ErrCode.err_api_is_exist_user.msg());
                 return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
@@ -211,5 +234,6 @@ public class AuthController {
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
         }
     }
+
 
 }

@@ -354,7 +354,7 @@ public class MainController {
             status = "렌탈완료";
         }
 
-        data.addProperty("rentalIdx", findRental.getRentalIdx());
+        data.addProperty("rentalSeq", findRental.getRentalIdx());
         data.addProperty("rentalStatus", status);
         data.addProperty("viewCount", findRental.getViewCnt());
         data.addProperty("likeCount", findRental.getLikeCnt());

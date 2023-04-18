@@ -574,7 +574,7 @@ public class UserController {
 
     @GetMapping("/getSendOrReceivedRentals")
     public ResponseEntity<JsonObject> getSendOrReceivedRentals(@RequestParam(value="rentalFlag") int rentalFlag,
-                                                               @RequestParam(value="rentalStatus") int rentalStatus, Pageable pageable,
+                                                               @RequestParam(value="rentalStatus") int rentalStatus[], Pageable pageable,
                                                                HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray renArr = new JsonArray();
@@ -591,25 +591,25 @@ public class UserController {
 
         if (rentalFlag == 0) {
         //rental received
-            if (rentalStatus == 0) {
+            if (rentalStatus.length == 0) {
                 //전체는 0으로
                 transactions = transactionRepository.findByUser_userIdxAndCancelYnOrderByCreateAtDesc(findUser.getUserIdx(), false, pageable);
                 tranSize = transactionRepository.findByUser_userIdxAndCancelYn(findUser.getUserIdx(), false);
             } else {
                 //status값 별로 조회
-                transactions = transactionRepository.findByUser_userIdxAndCancelYnAndRenterStatusOrderByCreateAtDesc(findUser.getUserIdx(), false, rentalStatus, pageable);
-                tranSize = transactionRepository.findByUser_userIdxAndCancelYnAndRenterStatus(findUser.getUserIdx(), false, rentalStatus);
+                transactions = transactionRepository.findByUser_userIdxAndCancelYnAndRenterStatusInOrderByCreateAtDesc(findUser.getUserIdx(), false, rentalStatus, pageable);
+                tranSize = transactionRepository.findByUser_userIdxAndCancelYnAndRenterStatusIn(findUser.getUserIdx(), false, rentalStatus);
             }
         } else {
             //rental send
-            if (rentalStatus == 0) {
+            if (rentalStatus.length == 0) {
                 //여기도 마찬가지로 전체 0
                 transactions = transactionRepository.findByRental_User_userIdxAndCancelYnOrderByCreateAtDesc(findUser.getUserIdx(), false, pageable);
                 tranSize = transactionRepository.findByRental_User_userIdxAndCancelYn(findUser.getUserIdx(), false);
             } else {
                 //status값 별로 조회
-                transactions = transactionRepository.findByRental_User_userIdxAndCancelYnAndOwnerStatusOrderByCreateAtDesc(findUser.getUserIdx(), false, rentalStatus, pageable);
-                tranSize = transactionRepository.findByRental_User_userIdxAndCancelYnAndOwnerStatus(findUser.getUserIdx(), false, rentalStatus);
+                transactions = transactionRepository.findByRental_User_userIdxAndCancelYnAndOwnerStatusInOrderByCreateAtDesc(findUser.getUserIdx(), false, rentalStatus, pageable);
+                tranSize = transactionRepository.findByRental_User_userIdxAndCancelYnAndOwnerStatusIn(findUser.getUserIdx(), false, rentalStatus);
 
             }
         }
@@ -621,7 +621,7 @@ public class UserController {
                     trs.addProperty("rentalSeq", tr.getRental().getRentalIdx());
                     List<RentalImage> img = rentalImageRepository.findByRental_rentalIdx(tr.getRental().getRentalIdx());
                     if (img.size() != 0) {
-                        trs.addProperty("imagSeq", img.get(0).getImageIdx());
+                        trs.addProperty("imageSeq", img.get(0).getImageIdx());
                         trs.addProperty("imageUrl", img.get(0).getImageUrl());
                     }
                     trs.addProperty("title", tr.getRental().getTitle());
@@ -707,6 +707,7 @@ public class UserController {
                     JsonObject my = new JsonObject();
 
                     my.addProperty("rentalSeq", li.getRental().getRentalIdx());
+                    my.addProperty("title", li.getRental().getTitle());
 
                     List<RentalImage> images = rentalImageRepository.findByRental_rentalIdx(li.getRental().getRentalIdx());
                     if (images.size() != 0) {
@@ -715,6 +716,7 @@ public class UserController {
                     }
                     my.addProperty("dailyRentalFee", li.getRental().getRentalPrice());
                     my.addProperty("regDate", li.getRental().getCreateAt().getTime());
+                    my.addProperty("status", li.getRental().getStatus());
 
                     //town 리스트 추출
                     List<String> tLst = new ArrayList<>();
