@@ -10,8 +10,6 @@ import lombok.*;
 public class ReportDto {
    private int reportFlag;
    private Long blockTypeIdx;
-   private Long rentalIdx;
-   private Long userIdx;
-   private Long reviewIdx;
+   private Long keyIdx;
    private String blockContent;
 }

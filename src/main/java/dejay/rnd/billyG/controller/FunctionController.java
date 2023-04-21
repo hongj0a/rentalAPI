@@ -1,16 +1,13 @@
 package dejay.rnd.billyG.controller;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
-import dejay.rnd.billyG.domain.Likes;
-import dejay.rnd.billyG.domain.Rental;
-import dejay.rnd.billyG.domain.User;
+import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.LikeDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
-import dejay.rnd.billyG.repository.LikeRepository;
-import dejay.rnd.billyG.repository.RentalRepository;
-import dejay.rnd.billyG.repository.UserRepository;
+import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.service.LikeService;
 import dejay.rnd.billyG.service.RentalService;
 import dejay.rnd.billyG.util.UserMiningUtil;
@@ -19,6 +16,8 @@ import org.json.simple.parser.ParseException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -30,13 +29,15 @@ public class FunctionController {
     private final LikeService likeService;
     private final UserRepository userRepository;
     private final LikeRepository likeRepository;
+    private final SlangsRepository slangsRepository;
 
-    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository) {
+    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository, SlangsRepository slangsRepository) {
         this.rentalRepository = rentalRepository;
         this.rentalService = rentalService;
         this.likeService = likeService;
         this.userRepository = userRepository;
         this.likeRepository = likeRepository;
+        this.slangsRepository = slangsRepository;
     }
 
     @PostMapping("/setLike")
@@ -91,4 +92,22 @@ public class FunctionController {
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
 
+    @GetMapping("/getSlangs")
+    public ResponseEntity<JsonObject> getSlangs(HttpServletRequest req) throws AppException {
+        JsonObject data = new JsonObject();
+        JsonArray slangArr = new JsonArray();
+
+        List<Slangs> list = slangsRepository.findAllByActiveYn(true);
+
+        list.forEach(
+                sl -> {
+                    slangArr.add(sl.getSlang());
+                }
+        );
+
+        data.add("slangs", slangArr);
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+    }
 }

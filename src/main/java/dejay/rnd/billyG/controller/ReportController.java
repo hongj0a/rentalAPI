@@ -87,12 +87,16 @@ public class ReportController {
         Review findReview = new Review();
 
         //신고대상
-        if (reportDto.getRentalIdx() != null) {
-            findRental = rentalRepository.getOne(reportDto.getRentalIdx());
-        } else if (reportDto.getUserIdx() != null) {
-            reportUser = userRepository.getOne(reportDto.getUserIdx());
-        } else if (reportDto.getReviewIdx() != null){
-            findReview = reviewRepository.getOne(reportDto.getReviewIdx());
+        switch (reportDto.getReportFlag()) {
+            case 5:
+                findRental = rentalRepository.getOne(reportDto.getKeyIdx());
+                break;
+            case 6:
+                reportUser = userRepository.getOne(reportDto.getKeyIdx());
+                break;
+            default:
+                findReview = reviewRepository.getOne(reportDto.getKeyIdx());
+                break;
         }
 
         UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());

@@ -53,10 +53,16 @@ public class Notice {
     @Column (name = "active_yn")
     @Builder.Default
     private boolean activeYn = true;
-    
-    @ColumnDefault("0")
-    @Column (name = "main_yn")
-    private Boolean mainYn;
+
+    /**
+     * 공지사항 메인노출
+     * 10 : 일반
+     * 20 : 시스템 (메인노출)
+     * 30 : 기타... 나중에 추가될 수 있음
+     */
+    @ColumnDefault("10")
+    @Column (name = "view_type")
+    private Integer viewType;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
@@ -72,4 +78,6 @@ public class Notice {
     @Column
     private String updator;
 
+    @Column (name = "active_at")
+    private Date activeAt;
 }

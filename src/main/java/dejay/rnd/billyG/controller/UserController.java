@@ -485,7 +485,7 @@ public class UserController {
         }
         findUser.setChatNoticeYn(alarmDto.isChatNoticeYn());
         findUser.setActivityNoticeYn(alarmDto.isActivityNoticeYn());
-        findUser.setMarketingNoticeYn(alarmDto.isMarketingNoticeYn());
+        findUser.setMarketingNoticeType(alarmDto.getMarketingNoticeType());
 
         findUser.setUpdator(findUser.getEmail());
         userService.updateUser(findUser);
@@ -944,6 +944,7 @@ public class UserController {
         String[] resultArr = linkedHashSet.toArray(new String[0]);
 
         data.addProperty("imageUrl", findUser.getProfileImageUrl());
+        data.addProperty("nickName", findUser.getNickName());
         data.addProperty("grade", grade.getGradeName()+grade.getMiddleGrade());
         data.addProperty("activityScore", findUser.getActivityScore());
         data.addProperty("maxScore", getGrade.getGradeScore());
@@ -971,6 +972,7 @@ public class UserController {
 
                     JsonObject grInfo = new JsonObject();
                     grInfo.addProperty("majorGrade", main.getGradeName());
+                    grInfo.addProperty("imageUrl", main.getImageUrl());
                     grInfo.add("minorInfo", subGrades);
                     grArr.add(grInfo);
                 }
