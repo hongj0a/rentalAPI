@@ -62,8 +62,9 @@ public class UserController {
     private final UserCountRepositories userCountRepositories;
     private final ReviewService reviewService;
     private final Path fileStorageLocation;
+    private final UserEvaluationRepository userEvaluationRepository;
 
-    public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService) {
+    public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService, UserEvaluationRepository userEvaluationRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.townService = townService;
@@ -84,6 +85,7 @@ public class UserController {
         this.reviewService = reviewService;
         this.fileStorageLocation = Paths.get(imageProperties.getDefaultPath())
                 .toAbsolutePath().normalize();
+        this.userEvaluationRepository = userEvaluationRepository;
     }
 
     @PostMapping("/signup")
@@ -824,7 +826,7 @@ public class UserController {
     @PostMapping(value = "/setReview", consumes = {"multipart/form-data"})
     public ResponseEntity<JsonObject> setReview(@RequestParam (value = "images") List<MultipartFile> images,
                                                 @RequestParam (value = "content") String content,
-                                                @RequestParam (value = "score") String score,
+                                                @RequestParam (value = "score") String score[],
                                                 @RequestParam (value ="historyIdx") String historyIdx,
                                                 HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
@@ -839,14 +841,25 @@ public class UserController {
         UserCount receiveCnt = userCountRepository.findByUser_UserIdx(transaction.getRental().getUser().getUserIdx());
 
         Review review = new Review();
-        //실수도 받을 수 있게 수정
-        review.setReviewScore(Integer.valueOf(score));
+
+        review.setReviewScore(Integer.valueOf(score.length));
         review.setReviewContent(content);
         review.setRenterIdx(transaction.getUser().getUserIdx());
         review.setOwnerIdx(transaction.getRental().getUser().getUserIdx());
         review.setTransaction(transaction);
 
         Review getReview = reviewRepository.save(review);
+
+        for (int i = 0; i < score.length; i++) {
+            UserEvaluation userEvaluation = new UserEvaluation();
+
+            userEvaluation.setUser(transaction.getRental().getUser());
+            Category category = categoryRepository.getOne(Long.valueOf(score[i]));
+            userEvaluation.setCategory(category);
+
+            userEvaluationRepository.save(userEvaluation);
+        }
+
 
         if (userCount != null) {
             userCount.setGiveReviewCnt(userCount.getGiveReviewCnt()+1);

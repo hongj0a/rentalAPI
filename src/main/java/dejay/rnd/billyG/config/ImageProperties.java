@@ -19,7 +19,7 @@ public class ImageProperties {
 
     String osName = System.getProperty("os.name").toLowerCase();
 
-    @Value("${file.upload.location}")
+    @Value("${file.upload.location.mac}")
     private String defaultPath;
 
     @PostConstruct

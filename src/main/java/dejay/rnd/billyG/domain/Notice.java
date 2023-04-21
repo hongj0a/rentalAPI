@@ -37,13 +37,12 @@ public class Notice {
      * 2. 채용
      */
     @Column (name = "notice_type")
-    private Integer noticeType;
+    private String noticeType;
 
     @Column
     private String title;
 
-    @Column
-    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String content;
 
     @ColumnDefault("0")
@@ -62,7 +61,7 @@ public class Notice {
      */
     @ColumnDefault("10")
     @Column (name = "view_type")
-    private Integer viewType;
+    private String viewType;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp

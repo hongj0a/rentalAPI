@@ -28,7 +28,6 @@ public class NoticeDto {
 
     public  NoticeDto (Notice notice){
         noticeIdx = notice.getNoticeIdx();
-        noticeType = notice.getNoticeType();
         title = notice.getTitle();
         content = notice.getContent();
         createAt = notice.getCreateAt();
@@ -41,7 +40,6 @@ public class NoticeDto {
     public Notice toEntity() {
         return Notice.builder()
                 .noticeIdx(noticeIdx)
-                .noticeType(noticeType)
                 .title(title)
                 .content(content)
                 .createAt(createAt)

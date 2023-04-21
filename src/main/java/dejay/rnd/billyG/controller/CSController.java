@@ -74,10 +74,10 @@ public class CSController {
                     String type = "";
                     no.addProperty("noticeIdx", noti.getNoticeIdx());
                     switch (noti.getNoticeType()) {
-                        case 0:
+                        case "0":
                             type = "공지";
                             break;
-                        case 1:
+                        case "1":
                             type = "이벤트";
                             break;
                         default:
