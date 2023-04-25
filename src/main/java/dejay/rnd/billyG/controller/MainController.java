@@ -301,7 +301,7 @@ public class MainController {
         UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
 
         Rental findRental = rentalRepository.getOne(rentalIdx);
-        List<Review> reviews = reviewRepository.findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAt(findRental.getUser().getUserIdx(), true, false);
+        List<Review> reviews = reviewRepository.findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAtDesc(findRental.getUser().getUserIdx(), true, false);
 
         if (findRental.isDeleteYn() == true || findRental.getStatus() == 4 || findRental.isActiveYn() == false) {
             apiRes.setError(ErrCode.err_api_is_deleted_post.code());

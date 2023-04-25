@@ -310,12 +310,21 @@ public class UserController {
     public ResponseEntity<JsonObject> getOtherUserDetailPageList(@RequestParam (value = "userIdx") Long userIdx,
                                                             @RequestParam (value = "type") int type,
                                                             Pageable pageable,
-                                                            HttpServletRequest req) throws AppException {
+                                                            HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray renArr = new JsonArray();
         JsonArray reviewArr = new JsonArray();
 
-        User otherUser = userRepository.getOne(userIdx);
+        User otherUser;
+
+        if (userIdx != 0) {
+            otherUser = userRepository.getOne(userIdx);
+        } else {
+            String acToken = req.getHeader("Authorization").substring(7);
+            String userEmail = UserMiningUtil.getUserInfo(acToken);
+            otherUser = userRepository.findByEmail(userEmail);
+        }
+
         if (type == 1) {
             //렌탈중인 게시글
             Page<Rental> etcRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotIn(otherUser.getUserIdx(), true, false, new int[]{4}, pageable);
@@ -341,8 +350,8 @@ public class UserController {
             data.addProperty("totalCount", etc.size());
         } else if (type == 2){
             //받은후기
-            Page<Review> findReviews = reviewRepository.findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAt(userIdx, true, false, pageable);
-            List<Review> reviews = reviewRepository.findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAt(userIdx, true, false);
+            Page<Review> findReviews = reviewRepository.findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAtDesc(otherUser.getUserIdx(), true, false, pageable);
+            List<Review> reviews = reviewRepository.findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAtDesc(otherUser.getUserIdx(), true, false);
 
             findReviews.forEach(
                     review -> {
@@ -365,8 +374,8 @@ public class UserController {
 
         } else if (type == 3) {
             //보낸후기
-            Page<Review> findReviews = reviewRepository.findByRenterIdxAndActiveYnAndDeleteYnOrderByCreateAt(userIdx, true, false, pageable);
-            List<Review> reviews = reviewRepository.findByRenterIdxAndActiveYnAndDeleteYnOrderByCreateAt(userIdx, true, false);
+            Page<Review> findReviews = reviewRepository.findByRenterIdxAndActiveYnAndDeleteYnOrderByCreateAtDesc(otherUser.getUserIdx(), true, false, pageable);
+            List<Review> reviews = reviewRepository.findByRenterIdxAndActiveYnAndDeleteYnOrderByCreateAtDesc(otherUser.getUserIdx(), true, false);
 
             findReviews.forEach(
                     review -> {
@@ -395,13 +404,23 @@ public class UserController {
 
     @GetMapping("/getReview")
     public ResponseEntity<JsonObject> getReview(@RequestParam (value = "reviewIdx") Long reviewIdx,
-                                                 HttpServletRequest req) throws AppException {
+                                                 HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray rvImg = new JsonArray();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
 
         //삭제검사 생략, 애초에 리뷰 리스트 가져올 때 delete_yn 필터링 됨.
 
         Review review = reviewRepository.getOne(reviewIdx);
+
+        if (findUser.getUserIdx() == review.getRenterIdx()) {
+            data.addProperty("isMine", true);
+        } else {
+            data.addProperty("isMine", false);
+        }
 
         data.addProperty("userIdx", review.getTransaction().getUser().getUserIdx());
         data.addProperty("nickName", review.getTransaction().getUser().getNickName());
@@ -824,8 +843,8 @@ public class UserController {
 
     @Transactional(rollbackFor = Exception.class)
     @PostMapping(value = "/setReview", consumes = {"multipart/form-data"})
-    public ResponseEntity<JsonObject> setReview(@RequestParam (value = "images") List<MultipartFile> images,
-                                                @RequestParam (value = "content") String content,
+    public ResponseEntity<JsonObject> setReview(@RequestParam (value = "images", required = false) List<MultipartFile> images,
+                                                @RequestParam (value = "content", required = false) String content,
                                                 @RequestParam (value = "score") String score[],
                                                 @RequestParam (value ="historyIdx") String historyIdx,
                                                 HttpServletRequest req) throws AppException, ParseException {
@@ -843,7 +862,9 @@ public class UserController {
         Review review = new Review();
 
         review.setReviewScore(Integer.valueOf(score.length));
-        review.setReviewContent(content);
+        if (content != null) {
+            review.setReviewContent(content);
+        }
         review.setRenterIdx(transaction.getUser().getUserIdx());
         review.setOwnerIdx(transaction.getRental().getUser().getUserIdx());
         review.setTransaction(transaction);
@@ -881,15 +902,16 @@ public class UserController {
 
             userCountRepositories.save(newCount);
         }
+        if (images.size() != 0 && images != null) {
+            for (int i = 0; i < images.size(); i++) {
+                ReviewImage reviewImage = new ReviewImage();
+                ImageFile file = uploadService.upload(images.get(i));
 
-        for (int i = 0; i < images.size(); i++) {
-            ReviewImage reviewImage = new ReviewImage();
-            ImageFile file = uploadService.upload(images.get(i));
+                reviewImage.setReview(getReview);
+                reviewImage.setImageUrl(file.getFileName());
 
-            reviewImage.setReview(getReview);
-            reviewImage.setImageUrl(file.getFileName());
-
-            reviewImageRepository.save(reviewImage);
+                reviewImageRepository.save(reviewImage);
+            }
         }
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());

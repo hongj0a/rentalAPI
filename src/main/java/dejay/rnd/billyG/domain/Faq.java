@@ -38,8 +38,7 @@ public class Faq {
     @Column
     private String title;
 
-    @Column
-    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String content;
 
     @ColumnDefault("0")
@@ -61,8 +60,12 @@ public class Faq {
     @Column (name = "delete_at")
     private Date deleteAt;
 
+    @Column (name = "active_at")
+    private Date activeAt;
+
     @Column
     private String updator;
 
-
+    @Column(columnDefinition = "LONGTEXT")
+    private String answer;
 }
