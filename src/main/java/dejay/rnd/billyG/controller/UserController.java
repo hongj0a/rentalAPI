@@ -293,12 +293,23 @@ public class UserController {
 
         data.addProperty("profileImage", otherUser.getProfileImageUrl());
         data.addProperty("nickName", otherUser.getNickName());
+        data.addProperty("phoneNumber", otherUser.getPhoneNum());
+        data.addProperty("snsType", otherUser.getSnsName());
         data.addProperty("grade", otherUser.getUserLevel());
         data.addProperty("email", otherUser.getEmail());
-        data.addProperty("idEmail", otherUser.getIdEmail());
+        data.addProperty("receptionEmail", otherUser.getIdEmail());
         data.addProperty("activityScore", otherUser.getActivityScore());
         data.addProperty("maxScore", grade.getGradeScore());
         data.addProperty("starPoint", otherUser.getStarPoint());
+        data.addProperty("disturbTimeYn", otherUser.isDoNotDisturbTimeYn());
+
+        if (otherUser.isDoNotDisturbTimeYn() == true) {
+            data.addProperty("isAfterNoon", otherUser.getIsAfterNoon());
+            data.addProperty("disturbStartHour", otherUser.getDoNotDisturbStartHour());
+            data.addProperty("disturbStartMinute", otherUser.getDoNotDisturbStartMinute());
+            data.addProperty("disturbEndHour", otherUser.getDoNotDisturbEndHour());
+            data.addProperty("disturbEndMinute", otherUser.getDoNotDisturbEndMinute());
+        }
         data.add("townList", townArr);
 
 
@@ -456,15 +467,13 @@ public class UserController {
                                                   HttpServletRequest req) throws AppException {
         JsonObject data = new JsonObject();
 
-        User findUser = userRepository.findByEmail(email);
+        User findUser = userRepository.findByEmailOrIdEmail(email, email);
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         if (findUser != null) {
             apiRes.setError(ErrCode.err_api_duplicate_email.code());
             apiRes.setMessage(ErrCode.err_api_duplicate_email.msg());
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
         } else {
-            apiRes.setError(ErrCode.err_api_available_email.code());
-            apiRes.setMessage(ErrCode.err_api_available_email.msg());
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
         }
 

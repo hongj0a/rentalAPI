@@ -35,11 +35,6 @@ public class Answer {
     @JoinColumn (name = "adminIdx")
     private Admin admin;
 
-    // 답변상태 1:완료 0:대기
-    // 관리자가 답변을 남기고 노출을 시키는 시점에 완료로 변경
-    @ColumnDefault("0")
-    private boolean status;
-
     @Column (name = "answer_content")
     @Lob
     private String answerContent;
