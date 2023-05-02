@@ -10,8 +10,8 @@ import dejay.rnd.billyG.dto.InquiryDto;
 import java.io.File;
 import java.nio.file.Path;
 import dejay.rnd.billyG.except.AppException;
-import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.repository.*;
+import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.service.FileUploadService;
 import dejay.rnd.billyG.service.OneToOneInquiryService;
 import dejay.rnd.billyG.util.UserMiningUtil;
@@ -40,19 +40,17 @@ public class CSController {
     private final FaqRepository faqRepository;
     private final OneToOneInquiryRepository oneToOneInquiryRepository;
     private final UserRepository userRepository;
-    private final AnswerRepository answerRepository;
     private final OneToOneInquiryService oneToOneInquiryService;
     private final FileUploadService uploadService;
     private final InquiryImageRepository inquiryImageRepository;
     private final Path fileStorageLocation;
 
-    public CSController(ImageProperties imageProperties, NoticeRepository noticeRepository, CategoryRepository categoryRepository, FaqRepository faqRepository, OneToOneInquiryRepository oneToOneInquiryRepository, UserRepository userRepository, AnswerRepository answerRepository, OneToOneInquiryService oneToOneInquiryService, FileUploadService uploadService, InquiryImageRepository inquiryImageRepository) {
+    public CSController(ImageProperties imageProperties, NoticeRepository noticeRepository, CategoryRepository categoryRepository, FaqRepository faqRepository, OneToOneInquiryRepository oneToOneInquiryRepository, UserRepository userRepository, OneToOneInquiryService oneToOneInquiryService, FileUploadService uploadService, InquiryImageRepository inquiryImageRepository) {
         this.noticeRepository = noticeRepository;
         this.categoryRepository = categoryRepository;
         this.faqRepository = faqRepository;
         this.oneToOneInquiryRepository = oneToOneInquiryRepository;
         this.userRepository = userRepository;
-        this.answerRepository = answerRepository;
         this.oneToOneInquiryService = oneToOneInquiryService;
         this.uploadService = uploadService;
         this.inquiryImageRepository = inquiryImageRepository;
@@ -202,9 +200,9 @@ public class CSController {
                     oto.addProperty("title", ones.getTitle());
                     if (ones.getStatus() == 1) {
                         statusStr = "답변완료";
-                        Answer answer = answerRepository.findByOneToOneInquiry_OneIdx(ones.getOneIdx());
+                        /*Answer answer = answerRepository.findByOneToOneInquiry_OneIdx(ones.getOneIdx());
                         oto.addProperty("answerIdx", answer.getAnswerIdx());
-                        oto.addProperty("answerContent", answer.getAnswerContent());
+                        oto.addProperty("answerContent", answer.getAnswerContent());*/
                     } else {
                         oto.addProperty("answerIdx", 0);
                         oto.addProperty("answerContent", "");

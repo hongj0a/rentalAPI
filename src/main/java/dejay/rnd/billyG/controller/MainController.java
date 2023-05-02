@@ -3,14 +3,15 @@ package dejay.rnd.billyG.controller;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.querydsl.core.Tuple;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.config.ImageProperties;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.MainDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
-import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.repository.*;
+import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.repositoryImpl.RentalRepositories;
 import dejay.rnd.billyG.repositoryImpl.TownRepositories;
 import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
@@ -84,11 +85,47 @@ public class MainController {
     }
 
 
-    @GetMapping("/string")
-    public String test() {
-        return "hello";
-    }
+   /* @GetMapping("/string")
+    public ResponseEntity<JsonObject> test(HttpServletRequest req) {
+        JsonObject data = new JsonObject();
+        JsonArray testArr = new JsonArray();
+        List<Rental> testRental = rentalRepositories.findByMainAllTest();
 
+        *//*for (int i = 0; i < testRental.size(); i++) {
+            if (testRental.get(i).getRentalCategoryInfos().size() != 0) {
+                System.out.println("testRental.get(i).getRentalCategoryInfos().get(i).getCategory().getName() = " + testRental.get(i).getRentalCategoryInfos().get(i).getCategory().getName());
+            }
+            if (testRental.get(i).getTransactionInfos().size() != 0) {
+                System.out.println("testRental = " + testRental.get(i).getTransactionInfos().get(i).getOwnerStatus());
+            }
+
+
+        }*//*
+
+        testRental.forEach(
+                tes -> {
+                    JsonObject tRen = new JsonObject();
+
+                    if (tes.getRentalCategoryInfos().size() != 0) {
+                        tRen.addProperty("category", tes.getRentalCategoryInfos().get(tes.getRentalCategoryInfos().size()-1).getCategory().getName());
+                    }
+
+                    if (tes.getTransactionInfos().size() != 0) {
+                        tRen.addProperty("transaction", tes.getTransactionInfos().get(tes.getTransactionInfos().size()-1).getOwnerStatus());
+                    }
+
+
+
+                    testArr.add(tRen);
+                }
+        );
+        data.add("testResult", testArr);
+        data.addProperty("testResultSize", testArr.size());
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+    }
+*/
     @GetMapping("/getMainList")
     public ResponseEntity<JsonObject> getMain(@RequestParam(value="status") Integer status,
                                               @RequestParam(required = false, value="filter") Integer filter,
@@ -428,6 +465,7 @@ public class MainController {
                                                 HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray renArr = new JsonArray();
+
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
@@ -515,6 +553,11 @@ public class MainController {
                     JsonObject bell = new JsonObject();
                     bell.addProperty("alarmSeq", ar.getAlarmIdx());
                     bell.addProperty("sendUserIdx", ar.getUser().getUserIdx());
+                    if (ar.getUser().getNickName() != null) {
+                        bell.addProperty("sendUserNickName", ar.getUser().getNickName());
+                    } else {
+                        bell.addProperty("sendUserNickName", "");
+                    }
                     if (ar.getUser().getProfileImageUrl() != null) {
                         bell.addProperty("sendUserProfile", ar.getUser().getProfileImageUrl());
                     } else {

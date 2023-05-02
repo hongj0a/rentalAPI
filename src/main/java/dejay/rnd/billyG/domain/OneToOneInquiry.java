@@ -35,6 +35,11 @@ public class OneToOneInquiry {
     @JoinColumn (name = "categoryIdx")
     private Category category;
 
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "adminIdx")
+    private Admin admin;
+
     @Column
     private String title;
 
@@ -46,9 +51,12 @@ public class OneToOneInquiry {
     @Column
     private Integer status;
 
-    @Column
-    @Lob
+    @Column (columnDefinition = "TEXT")
     private String content;
+
+
+    @Column (name = "answer_content", columnDefinition = "TEXT")
+    private String answerContent;
 
     @ColumnDefault("0")
     @Column (name = "delete_yn")
@@ -65,6 +73,9 @@ public class OneToOneInquiry {
 
     @Column (name = "update_at")
     private Date updateAt;
+
+    @Column (name = "answer_at")
+    private Date answerAt;
 
     @Column (name = "delete_at")
     private Date deleteAt;

@@ -7,7 +7,11 @@ import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.LikeDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
-import dejay.rnd.billyG.repository.*;
+import dejay.rnd.billyG.repository.LikeRepository;
+import dejay.rnd.billyG.repository.RentalRepository;
+import dejay.rnd.billyG.repository.SlangsRepository;
+import dejay.rnd.billyG.repository.UserRepository;
+
 import dejay.rnd.billyG.service.LikeService;
 import dejay.rnd.billyG.service.RentalService;
 import dejay.rnd.billyG.util.UserMiningUtil;

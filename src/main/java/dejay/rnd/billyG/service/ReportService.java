@@ -4,7 +4,6 @@ import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.repository.BlockPostRepository;
 import dejay.rnd.billyG.repository.BlockReviewRepository;
 import dejay.rnd.billyG.repository.BlockUserRepository;
-import dejay.rnd.billyG.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

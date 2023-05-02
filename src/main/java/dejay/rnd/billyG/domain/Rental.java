@@ -25,7 +25,7 @@ public class Rental {
     @Column (name = "rental_idx")
     private Long rentalIdx;
 
-    @OneToMany(mappedBy = "rental")
+    @OneToMany(mappedBy = "rental", fetch = FetchType.LAZY)
     @Builder.Default
     private List<RentalCategoryInfo> rentalCategoryInfos = new ArrayList<>();
 

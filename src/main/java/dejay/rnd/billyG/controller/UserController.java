@@ -6,11 +6,14 @@ import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.config.ImageProperties;
 import dejay.rnd.billyG.domain.*;
-import dejay.rnd.billyG.dto.*;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
-import dejay.rnd.billyG.model.ImageFile;
+import dejay.rnd.billyG.dto.AlarmDto;
+import dejay.rnd.billyG.dto.OutDto;
+import dejay.rnd.billyG.dto.ReviewDto;
+import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.repository.*;
+import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
 import dejay.rnd.billyG.service.FileUploadService;
 import dejay.rnd.billyG.service.ReviewService;
@@ -206,6 +209,7 @@ public class UserController {
 
         data.addProperty("profileImage", findUser.getProfileImageUrl());
         data.addProperty("nickName", findUser.getNickName());
+        data.addProperty("name", findUser.getName());
         data.addProperty("phoneNumber", findUser.getPhoneNum());
         data.addProperty("email", findUser.getEmail());
         data.addProperty("signPath", findUser.getSnsName());
@@ -260,11 +264,20 @@ public class UserController {
 
     @GetMapping("/getUserDetailPage")
     public ResponseEntity<JsonObject> getUserDetailPage(@RequestParam (value = "userIdx") Long userIdx,
-                                                             HttpServletRequest req) throws AppException {
+                                                             HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray townArr = new JsonArray();
 
-        User otherUser = userRepository.getOne(userIdx);
+        User otherUser;
+
+        if (userIdx != 0) {
+            otherUser = userRepository.getOne(userIdx);
+        } else {
+            String acToken = req.getHeader("Authorization").substring(7);
+            String userEmail = UserMiningUtil.getUserInfo(acToken);
+            otherUser = userRepository.findByEmail(userEmail);
+        }
+
         Grade grade = gradeRepository.findTop1ByOrderByGradeScoreDesc();
 
         //필수니깐 없을수가 없음
@@ -293,6 +306,7 @@ public class UserController {
 
         data.addProperty("profileImage", otherUser.getProfileImageUrl());
         data.addProperty("nickName", otherUser.getNickName());
+        data.addProperty("name", otherUser.getName());
         data.addProperty("phoneNumber", otherUser.getPhoneNum());
         data.addProperty("snsType", otherUser.getSnsName());
         data.addProperty("grade", otherUser.getUserLevel());
@@ -304,7 +318,6 @@ public class UserController {
         data.addProperty("disturbTimeYn", otherUser.isDoNotDisturbTimeYn());
 
         if (otherUser.isDoNotDisturbTimeYn() == true) {
-            data.addProperty("isAfterNoon", otherUser.getIsAfterNoon());
             data.addProperty("disturbStartHour", otherUser.getDoNotDisturbStartHour());
             data.addProperty("disturbStartMinute", otherUser.getDoNotDisturbStartMinute());
             data.addProperty("disturbEndHour", otherUser.getDoNotDisturbEndHour());
@@ -478,6 +491,23 @@ public class UserController {
         }
 
     }
+
+    @GetMapping("/getPushSettingInfo")
+    public ResponseEntity<JsonObject> getPushSettingInfo(HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        data.addProperty("chatNoticeYn", findUser.isChatNoticeYn());
+        data.addProperty("marketingNoticeType", findUser.getMarketingNoticeType());
+        data.addProperty("activityNoticeYn", findUser.isActivityNoticeYn());
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
     @PostMapping("/setEmail")
     public ResponseEntity<JsonObject> setEmail(@RequestParam(value="email", required = false) String email,
                                                   HttpServletRequest req) throws ParseException {
@@ -507,7 +537,6 @@ public class UserController {
 
         findUser.setDoNotDisturbTimeYn(alarmDto.isDoNotDisturbTimeYn());
         if (alarmDto.isDoNotDisturbTimeYn() == true) {
-            findUser.setIsAfterNoon(alarmDto.isAfterNoon());
             findUser.setDoNotDisturbStartHour(alarmDto.getStartHour());
             findUser.setDoNotDisturbStartMinute(alarmDto.getStartMinute());
             findUser.setDoNotDisturbEndHour(alarmDto.getEndHour());
