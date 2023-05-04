@@ -198,11 +198,10 @@ public class CSController {
                     }
 
                     oto.addProperty("title", ones.getTitle());
-                    if (ones.getStatus() == 1) {
+                    if (ones.equals("1")) {
                         statusStr = "답변완료";
-                        /*Answer answer = answerRepository.findByOneToOneInquiry_OneIdx(ones.getOneIdx());
-                        oto.addProperty("answerIdx", answer.getAnswerIdx());
-                        oto.addProperty("answerContent", answer.getAnswerContent());*/
+                        //Answer answer = answerRepository.findByOneToOneInquiry_OneIdx(ones.getOneIdx());
+                        oto.addProperty("answerIdx", ones.getAnswerContent());
                     } else {
                         oto.addProperty("answerIdx", 0);
                         oto.addProperty("answerContent", "");
@@ -254,7 +253,7 @@ public class CSController {
         one.setTitle(title);
         one.setContent(content);
         one.setUser(findUser);
-        one.setStatus(0);
+        one.setStatus("0");
         one.setCategory(findCategory);
 
         OneToOneInquiry oneToOneInquiry = oneToOneInquiryService.insertOne(one);
@@ -294,7 +293,7 @@ public class CSController {
 
         for (int i = 0; i < imglist.size(); i++) {
 
-            File file = new File(fileStorageLocation + imglist.get(i).getImageUrl());
+            File file = new File(fileStorageLocation + File.separator + imglist.get(i).getImageUrl());
 
             if (file.exists()) {
                 file.delete();

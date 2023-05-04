@@ -32,7 +32,7 @@ public class RentalRepositories implements RentalRepositoryCustom {
     private final JPAQueryFactory queryFactory;
     private final RentalRepository rentalRepository;
 
-    @Transactional
+    /*@Transactional
     public List<Rental> findByMainAllTest() {
         QRental rental = QRental.rental;
         QRentalCategoryInfo rentalCategoryInfo = QRentalCategoryInfo.rentalCategoryInfo;
@@ -46,7 +46,7 @@ public class RentalRepositories implements RentalRepositoryCustom {
                 .distinct()
                 .fetch();
 
-        /*return queryFactory.select(Projections.fields(Rental.class, new CaseBuilder()
+        *//*return queryFactory.select(Projections.fields(Rental.class, new CaseBuilder()
                         .when(rental.status.in(1))
                         .then(1)
                         .when(rental.status.in(2))
@@ -87,8 +87,8 @@ public class RentalRepositories implements RentalRepositoryCustom {
                 .leftJoin(rental.rentalCategoryInfos, rentalCategoryInfo)
                 .leftJoin(rental.transactionInfos, transaction)
                 .distinct()
-                .fetch();*/
-    }
+                .fetch();*//*
+    }*/
 
     @Override
     public Page<Rental> findAll(ArrayList<Integer> status, Integer filter, String title, Long[] towns, Long[] categories, Pageable pageable){

@@ -64,7 +64,7 @@ public class UserService {
                 .snsName(userDto.getSnsType())
                 .name(userDto.getName())
                 .activityScore(0)
-                .starPoint(0)
+                .starPoint("0")
                 .userLevel(1L)
                 .status(10)
                 .phoneNum(userDto.getPhoneNumber())
@@ -191,10 +191,25 @@ public class UserService {
         findUser.setNickName(nickname);
         findUser.setUpdateAt(now_date);
     }
+    @Transactional
+    public void setUserProfileImageUrl(Long userIdx, String image_name) {
 
+        User findUser = userRepositories.findOne(userIdx);
+        findUser.setProfileImageUrl(image_name);
+        findUser.setUpdateAt(now_date);
+    }
+
+    @Transactional
+    public void setUserNickName(Long userIdx, String nickname) {
+
+        User findUser = userRepositories.findOne(userIdx);
+        findUser.setNickName(nickname);
+        findUser.setUpdateAt(now_date);
+    }
     @Transactional
     public void updateUser(User user) {
         user.setUpdateAt(now_date);
+        user.setUpdator(user.getEmail());
     }
 
     @Transactional

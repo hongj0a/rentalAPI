@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 
 import java.nio.file.Paths;
@@ -84,48 +85,6 @@ public class MainController {
                 .toAbsolutePath().normalize();
     }
 
-
-   /* @GetMapping("/string")
-    public ResponseEntity<JsonObject> test(HttpServletRequest req) {
-        JsonObject data = new JsonObject();
-        JsonArray testArr = new JsonArray();
-        List<Rental> testRental = rentalRepositories.findByMainAllTest();
-
-        *//*for (int i = 0; i < testRental.size(); i++) {
-            if (testRental.get(i).getRentalCategoryInfos().size() != 0) {
-                System.out.println("testRental.get(i).getRentalCategoryInfos().get(i).getCategory().getName() = " + testRental.get(i).getRentalCategoryInfos().get(i).getCategory().getName());
-            }
-            if (testRental.get(i).getTransactionInfos().size() != 0) {
-                System.out.println("testRental = " + testRental.get(i).getTransactionInfos().get(i).getOwnerStatus());
-            }
-
-
-        }*//*
-
-        testRental.forEach(
-                tes -> {
-                    JsonObject tRen = new JsonObject();
-
-                    if (tes.getRentalCategoryInfos().size() != 0) {
-                        tRen.addProperty("category", tes.getRentalCategoryInfos().get(tes.getRentalCategoryInfos().size()-1).getCategory().getName());
-                    }
-
-                    if (tes.getTransactionInfos().size() != 0) {
-                        tRen.addProperty("transaction", tes.getTransactionInfos().get(tes.getTransactionInfos().size()-1).getOwnerStatus());
-                    }
-
-
-
-                    testArr.add(tRen);
-                }
-        );
-        data.add("testResult", testArr);
-        data.addProperty("testResultSize", testArr.size());
-        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
-
-        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
-    }
-*/
     @GetMapping("/getMainList")
     public ResponseEntity<JsonObject> getMain(@RequestParam(value="status") Integer status,
                                               @RequestParam(required = false, value="filter") Integer filter,
@@ -143,10 +102,10 @@ public class MainController {
          * 렌탈완료 [complete(3)]
          * 렌탈숨기기 [hide(4)]
          * =================================
-         * 파라미터는 렌탈가능(1) or 렌탈완료(2)
-         * if status 전체(0) == 1,2,3
+         * 파라미터는 렌탈가능(1) or 렌탈중(2)
+         * if status 전체(0) == 1,2
          * else if status 렌탈가능(1) == 1
-         * else status 렌탈완료(2) == 2,3
+         * else status 렌탈완료(2) == 2
          */
 
         ArrayList<Integer> p_status = new ArrayList<>();
@@ -154,12 +113,10 @@ public class MainController {
         if (status == 0) {
             p_status.add(1);
             p_status.add(2);
-            p_status.add(3);
         } else if (status == 1) {
             p_status.add(1);
         } else {
             p_status.add(2);
-            p_status.add(3);
         }
 
 
@@ -230,7 +187,7 @@ public class MainController {
 
         Map<Integer, String> statusMap = new HashMap<>();
         statusMap.put(1, "렌탈가능");
-        statusMap.put(2, "렌탈완료");
+        statusMap.put(2, "렌탈중");
 
         for (Map.Entry<Integer, String> pair : statusMap.entrySet()) {
             JsonObject status = new JsonObject();
@@ -800,12 +757,15 @@ public class MainController {
                                                  @RequestParam (value = "towns") String[] towns,
                                                  @RequestParam (value ="rentalDailyFee") String rentalDailyFee,
                                                  @RequestParam (value = "rentalIdx") String rentalIdx,
-                                                 HttpServletRequest req) throws AppException, ParseException {
+                                                 HttpServletRequest req) throws AppException, ParseException, IOException {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
+
+        //삭제할 파일 배열
+        ArrayList<String> delFiles = null;
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
@@ -815,20 +775,35 @@ public class MainController {
         Long town3 = 0L;
         Long town4 = 0L;
 
-        //원래의 게시글을 찾아서
-
-        //---- 배열의 길이는 몇개가 올지 모르니깐
-        //이미지 전체 삭제 후 받은 이미지로 다시 저장
-        //타운 전체 삭제 후 받은 정보로 다시 저장
-        //카테고리 전체 삭제 후 받은 정보로 다시 저장
-        //title,content,status update
+        /**
+         * 원래의 게시글을 찾아서
+         * 배열의 길이는 몇개가 올지 모르니깐
+         * 새로온 파일배열에 기존이미지 이름이 없는 기존 파일들은 삭제
+         * 새로온 파일배열에 기존이미지 이름이 있으면 유지
+         * 새로온 파일배열에 새로운 파일이 있는건 추가
+         * 타운 전체 삭제 후 받은 정보로 다시 저장
+         * 카테고리 전체 삭제 후 받은 정보로 다시 저장
+         * title,content,status update
+         */
 
         Rental orgRental = rentalRepository.getOne(Long.valueOf(rentalIdx));
 
         List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(Long.valueOf(rentalIdx));
-        for (int i = 0; i < rentalImages.size(); i++) {
-            File file = new File(fileStorageLocation + rentalImages.get(i).getImageUrl());
 
+        for (int i = 0; i < rentalImages.size(); i++) {
+            for (int j = 0; j < images.size(); j++) {
+                if (!rentalImages.get(i).getImageUrl().equals(images.get(j).getOriginalFilename())) {
+                    delFiles.add(images.get(j).getOriginalFilename());
+                }
+            }
+        }
+
+        System.out.println("delFiles = " + delFiles);
+
+        for (int i = 0; i < delFiles.size(); i++) {
+            File file = new File(fileStorageLocation + File.separator + delFiles.get(i));
+
+            System.out.println("file = " + file);
             if (file.exists()) {
                 file.delete();
             }
@@ -884,10 +859,14 @@ public class MainController {
 
         for (int i = 0; i < images.size(); i++) {
             RentalImage rentalImage = new RentalImage();
-            ImageFile file = uploadService.upload(images.get(i));
+            if (images.get(i).getBytes() != null) {
+                ImageFile file = uploadService.upload(images.get(i));
+                rentalImage.setImageUrl(file.getFileName());
+            }
+
 
             rentalImage.setRental(orgRental);
-            rentalImage.setImageUrl(file.getFileName());
+
 
             rentalImageRepository.save(rentalImage);
         }
@@ -956,7 +935,7 @@ public class MainController {
 
         for (int i = 0; i < imgs.size(); i++) {
 
-            File file = new File(fileStorageLocation + imgs.get(i).getImageUrl());
+            File file = new File(fileStorageLocation + File.separator + imgs.get(i).getImageUrl());
 
             if (file.exists()) {
                 file.delete();

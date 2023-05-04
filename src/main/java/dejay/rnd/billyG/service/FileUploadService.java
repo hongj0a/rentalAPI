@@ -48,7 +48,6 @@ public class FileUploadService {
         String ext = fileName.substring(fileName.lastIndexOf(".") + 1);
 
         fileName = now + "_" + fileId + "." + ext;
-        System.out.println("fileName = " + fileName);
 
         String filePath = fileWriter.getFilePath(fileName, sourceFile);
 

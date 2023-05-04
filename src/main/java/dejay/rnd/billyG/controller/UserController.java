@@ -118,10 +118,16 @@ public class UserController {
             imageUrl = file.getFileName();
         }
 
-        if (nickName != null) {
+        if (multipartFile != null && nickName != null) {
             userNickName = nickName;
+            userService.setUserProfile(findUser.getUserIdx(), userNickName, imageUrl);
+        } else if (nickName == null && multipartFile != null) {
+            userService.setUserProfileImageUrl(findUser.getUserIdx(), imageUrl);
+        } else if (nickName != null && multipartFile == null){
+            userNickName = nickName;
+            userService.setUserNickName(findUser.getUserIdx(), userNickName);
         }
-        userService.setUserProfile(findUser.getUserIdx(), userNickName, imageUrl);
+
 
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
@@ -322,6 +328,13 @@ public class UserController {
             data.addProperty("disturbStartMinute", otherUser.getDoNotDisturbStartMinute());
             data.addProperty("disturbEndHour", otherUser.getDoNotDisturbEndHour());
             data.addProperty("disturbEndMinute", otherUser.getDoNotDisturbEndMinute());
+        } else if (otherUser.isDoNotDisturbTimeYn() == false && (otherUser.getDoNotDisturbStartHour() != null ||
+                otherUser.getDoNotDisturbStartMinute() != null || otherUser.getDoNotDisturbEndHour() != null ||
+                otherUser.getDoNotDisturbEndMinute() != null)) {
+            data.addProperty("disturbStartHour", otherUser.getDoNotDisturbStartHour());
+            data.addProperty("disturbStartMinute", otherUser.getDoNotDisturbStartMinute());
+            data.addProperty("disturbEndHour", otherUser.getDoNotDisturbEndHour());
+            data.addProperty("disturbEndMinute", otherUser.getDoNotDisturbEndMinute());
         }
         data.add("townList", townArr);
 
@@ -383,6 +396,11 @@ public class UserController {
 
                         rvs.addProperty("renterIdx", review.getTransaction().getUser().getUserIdx());
                         rvs.addProperty("renterImage", review.getTransaction().getUser().getProfileImageUrl());
+                        if (review.getTransaction().getUser().getUserIdx() == otherUser.getUserIdx()) {
+                            rvs.addProperty("isMine", true);
+                        } else {
+                            rvs.addProperty("isMine", false);
+                        }
                         rvs.addProperty("renterNickName", review.getTransaction().getUser().getNickName());
                         rvs.addProperty("renterLeadTown", review.getTransaction().getUser().getLeadTown());
                         rvs.addProperty("reviewRegDate", review.getCreateAt().getTime());
@@ -407,6 +425,11 @@ public class UserController {
 
                         rvs.addProperty("renterIdx", review.getTransaction().getUser().getUserIdx());
                         rvs.addProperty("renterImage", review.getTransaction().getUser().getProfileImageUrl());
+                        if (review.getTransaction().getUser().getUserIdx() == otherUser.getUserIdx()) {
+                            rvs.addProperty("isMine", true);
+                        } else {
+                            rvs.addProperty("isMine", false);
+                        }
                         rvs.addProperty("renterNickName", review.getTransaction().getUser().getNickName());
                         rvs.addProperty("renterLeadTown", review.getTransaction().getUser().getLeadTown());
                         rvs.addProperty("reviewRegDate", review.getCreateAt().getTime());
@@ -891,6 +914,10 @@ public class UserController {
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
+        int total = 0;
+        float avg;
+        String starPoint;
+
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
@@ -900,6 +927,7 @@ public class UserController {
         Review review = new Review();
 
         review.setReviewScore(Integer.valueOf(score.length));
+
         if (content != null) {
             review.setReviewContent(content);
         }
@@ -940,7 +968,7 @@ public class UserController {
 
             userCountRepositories.save(newCount);
         }
-        if (images.size() != 0 && images != null) {
+        if (images.size() != 0) {
             for (int i = 0; i < images.size(); i++) {
                 ReviewImage reviewImage = new ReviewImage();
                 ImageFile file = uploadService.upload(images.get(i));
@@ -952,6 +980,18 @@ public class UserController {
             }
         }
 
+        //리뷰 별점 계산
+        List<Review> reviews = reviewRepository.findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAtDesc(transaction.getRental().getUser().getUserIdx(), true, false);
+        for (int i = 0; i < reviews.size(); i++) {
+            total += reviews.get(i).getReviewScore();
+        }
+        avg = total / reviews.size();
+        starPoint = String.format("%.1f", avg);
+
+        User starUser = userRepository.getOne(transaction.getRental().getUser().getUserIdx());
+        starUser.setStarPoint(starPoint);
+        userService.updateUser(starUser);
+
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
     }
@@ -960,14 +1000,18 @@ public class UserController {
     public ResponseEntity<JsonObject> deleteReview(HttpServletRequest req,
                                                    @RequestBody ReviewDto reviewDto) throws ParseException {
         JsonObject data = new JsonObject();
+        int total = 0;
+        float avg;
+        String starPoint;
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
-
+        
         Review findReview = reviewRepository.getOne(reviewDto.getReviewIdx());
-
+        Transaction transaction = transactionRepository.getOne(findReview.getTransaction().getTransactionIdx());
+        
         findReview.setDeleteYn(true);
         findReview.setUpdator(findUser.getEmail());
         reviewService.deleteReview(findReview);
@@ -975,7 +1019,7 @@ public class UserController {
         List<ReviewImage> imgs = reviewImageRepository.findByReview_ReviewIdx(findReview.getReviewIdx());
         for (int i = 0; i < imgs.size(); i++) {
 
-            File file = new File(fileStorageLocation + imgs.get(i).getImageUrl());
+            File file = new File(fileStorageLocation + File.separator + imgs.get(i).getImageUrl());
 
             if (file.exists()) {
                 file.delete();
@@ -983,6 +1027,18 @@ public class UserController {
 
             reviewImageRepository.delete(imgs.get(i));
         }
+
+        //리뷰 별점 계산
+        List<Review> reviews = reviewRepository.findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAtDesc(transaction.getRental().getUser().getUserIdx(), true, false);
+        for (int i = 0; i < reviews.size(); i++) {
+            total += reviews.get(i).getReviewScore();
+        }
+        avg = total / reviews.size();
+        starPoint = String.format("%.1f", avg);
+
+        User starUser = userRepository.getOne(transaction.getRental().getUser().getUserIdx());
+        starUser.setStarPoint(starPoint);
+        userService.updateUser(starUser);
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }

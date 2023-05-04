@@ -97,7 +97,7 @@ public class User {
 
     @ColumnDefault("0")
     @Column (name = "star_point")
-    private Integer starPoint;
+    private String starPoint;
 
     @ColumnDefault("0")
     @Column (name = "do_not_disturb_time_yn")

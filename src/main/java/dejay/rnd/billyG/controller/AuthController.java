@@ -51,26 +51,38 @@ public class AuthController {
     public ResponseEntity<JsonObject> authorize(@RequestBody LoginDto loginDto, HttpServletRequest req) throws java.text.ParseException {
         JsonObject data = new JsonObject();
 
+        User isUser = userRepository.findByCiValue(loginDto.getCiValue());
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String email = loginDto.getEmail();
         String snsType = loginDto.getSnsType();
-        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         User userOne = userRepository.findByEmail(email);
-
         String star = "";
 
-        // 신규유저라면 회원가입 하고 바로 로그인
-        if (userOne == null) {
-            UserDto userDto = new UserDto();
-            userDto.setEmail(email);
-            userDto.setSnsType(snsType);
-            userDto.setCiValue(loginDto.getCiValue());
-            userDto.setName(loginDto.getName());
-            userDto.setPhoneNumber(loginDto.getPhoneNumber());
-            userService.signup(userDto);
+        if (isUser != null) {
+            if(isUser.getStatus() == 30) {
+                apiRes.setError(ErrCode.err_api_is_delete_user.code());
+                apiRes.setMessage(ErrCode.err_api_is_delete_user.msg());
+                return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+            } else if ( !isUser.getSnsName().equals( loginDto.getSnsType()) ) {
+                apiRes.setError(ErrCode.err_api_is_exist_user.code());
+                apiRes.setMessage(ErrCode.err_api_is_exist_user.msg());
+                return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+            }
+        } else {
+            //civalue가 없어서 신규회원이면 가입하고 로그인
+            // 신규유저라면 회원가입 하고 바로 로그인
+            if (userOne == null) {
+                UserDto userDto = new UserDto();
+                userDto.setEmail(email);
+                userDto.setSnsType(snsType);
+                userDto.setCiValue(loginDto.getCiValue());
+                userDto.setName(loginDto.getName());
+                userDto.setPhoneNumber(loginDto.getPhoneNumber());
+                userService.signup(userDto);
+            }
+            userOne = userRepository.findByEmail(email);
         }
-
-        userOne = userRepository.findByEmail(email);
 
         //1년이상 장기 미이용 고객 return 커스텀
         Calendar cal = Calendar.getInstance();

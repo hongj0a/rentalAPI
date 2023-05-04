@@ -40,7 +40,7 @@ public class ArbitrationManagement {
     @ColumnDefault("0")
     private boolean status;
 
-    @Column (name = "answer_content", columnDefinition = "TEXT")
+    @Column (name = "answer_content")
     private String answerContent;
 
     @ColumnDefault("0")

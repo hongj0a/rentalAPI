@@ -36,7 +36,6 @@ public class OneToOneInquiry {
     private Category category;
 
     @ManyToOne
-    @NotNull
     @JoinColumn (name = "adminIdx")
     private Admin admin;
 
@@ -49,7 +48,7 @@ public class OneToOneInquiry {
      * 1 : 답변완료
      */
     @Column
-    private Integer status;
+    private String status;
 
     @Column (columnDefinition = "TEXT")
     private String content;
