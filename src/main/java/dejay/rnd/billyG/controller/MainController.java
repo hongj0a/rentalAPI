@@ -31,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.file.Path;
 
 import java.nio.file.Paths;
@@ -764,8 +765,6 @@ public class MainController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
-        //삭제할 파일 배열
-        ArrayList<String> delFiles = null;
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
@@ -778,9 +777,10 @@ public class MainController {
         /**
          * 원래의 게시글을 찾아서
          * 배열의 길이는 몇개가 올지 모르니깐
-         * 새로온 파일배열에 기존이미지 이름이 없는 기존 파일들은 삭제
-         * 새로온 파일배열에 기존이미지 이름이 있으면 유지
-         * 새로온 파일배열에 새로운 파일이 있는건 추가
+         * 기존에 있던 디비 파일이름들 다 삭제
+         * 1. 이미지 이름만 있는 애들을 새로운 배열에 저장, 디비에 저장
+         * 2. 파일이 있는애들은 업로드하고, 디비에 저장
+         * 1,2번 2중포문이 돌면서 두 배열의 다른 값을 서버에서 이미지 삭제
          * 타운 전체 삭제 후 받은 정보로 다시 저장
          * 카테고리 전체 삭제 후 받은 정보로 다시 저장
          * title,content,status update
@@ -789,27 +789,53 @@ public class MainController {
         Rental orgRental = rentalRepository.getOne(Long.valueOf(rentalIdx));
 
         List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(Long.valueOf(rentalIdx));
+        ArrayList<String> existFiles = new ArrayList<>();
+
+        if (rentalImages.size() != 0) {
+            for (int i = 0; i < rentalImages.size(); i++) {
+                rentalImageRepository.delete(rentalImages.get(i));
+            }
+        }
+
+        //디비에 있는 이미지 이름들은 다 삭제
+        for (MultipartFile item: images)
+        {
+            RentalImage rentalImage = new RentalImage();
+
+            if (item.isEmpty())
+            {
+                //이미지 이름만 있는애들
+                rentalImage.setRental(orgRental);
+                rentalImage.setImageUrl(item.getOriginalFilename());
+                existFiles.add(item.getOriginalFilename());
+            }
+            else
+            {
+                //파일이 있는애들
+                ImageFile file = uploadService.upload(item);
+                rentalImage.setImageUrl(file.getFileName());
+                rentalImage.setRental(orgRental);
+
+            }
+            //이미지 이름들은 다 저장이되고
+            rentalImageRepository.save(rentalImage);
+        }
 
         for (int i = 0; i < rentalImages.size(); i++) {
-            for (int j = 0; j < images.size(); j++) {
-                if (!rentalImages.get(i).getImageUrl().equals(images.get(j).getOriginalFilename())) {
-                    delFiles.add(images.get(j).getOriginalFilename());
+            boolean toDelete = true;
+            for (int j = 0; j < existFiles.size(); j++) {
+                if (rentalImages.get(i).getImageUrl().equals(existFiles.get(j))) {
+                    toDelete = false;
+                }
+            }
+            if (toDelete) {
+                File file = new File(fileStorageLocation + File.separator + rentalImages.get(i));
+                if (file.exists()) {
+                    file.delete();
                 }
             }
         }
 
-        System.out.println("delFiles = " + delFiles);
-
-        for (int i = 0; i < delFiles.size(); i++) {
-            File file = new File(fileStorageLocation + File.separator + delFiles.get(i));
-
-            System.out.println("file = " + file);
-            if (file.exists()) {
-                file.delete();
-            }
-
-            rentalImageRepository.delete(rentalImages.get(i));
-        }
 
         List<RentalCategoryInfo> categoryInfos = rentalCategoryInfoRepository.findByRental_rentalIdx(Long.valueOf(rentalIdx));
         for (int i = 0; i < categoryInfos.size(); i++) {
@@ -857,19 +883,6 @@ public class MainController {
 
         rentalService.updateRental(orgRental);
 
-        for (int i = 0; i < images.size(); i++) {
-            RentalImage rentalImage = new RentalImage();
-            if (images.get(i).getBytes() != null) {
-                ImageFile file = uploadService.upload(images.get(i));
-                rentalImage.setImageUrl(file.getFileName());
-            }
-
-
-            rentalImage.setRental(orgRental);
-
-
-            rentalImageRepository.save(rentalImage);
-        }
 
         for (int i = 0; i < categories.length; i++) {
 

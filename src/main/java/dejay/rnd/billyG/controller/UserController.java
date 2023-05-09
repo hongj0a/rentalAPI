@@ -66,8 +66,9 @@ public class UserController {
     private final ReviewService reviewService;
     private final Path fileStorageLocation;
     private final UserEvaluationRepository userEvaluationRepository;
+    private final ArbitrationRepository arbitrationRepository;
 
-    public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService, UserEvaluationRepository userEvaluationRepository) {
+    public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService, UserEvaluationRepository userEvaluationRepository, ArbitrationRepository arbitrationRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.townService = townService;
@@ -89,6 +90,7 @@ public class UserController {
         this.fileStorageLocation = Paths.get(imageProperties.getDefaultPath())
                 .toAbsolutePath().normalize();
         this.userEvaluationRepository = userEvaluationRepository;
+        this.arbitrationRepository = arbitrationRepository;
     }
 
     @PostMapping("/signup")
@@ -1113,4 +1115,53 @@ public class UserController {
 
     }
 
+
+    @GetMapping("/getMyArbitrationList")
+    public ResponseEntity<JsonObject> getMyArbitrationList(Pageable pageable,
+                                                 HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+        JsonArray amArr = new JsonArray();
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+        AtomicReference<String> status = new AtomicReference<>("");
+
+        Page<ArbitrationManagement> amList = arbitrationRepository.findAllByUser_userIdxAndDeleteYnOrderByCreateAtDesc(findUser.getUserIdx(), false, pageable);
+        List<ArbitrationManagement> amSize = arbitrationRepository.findAllByUser_userIdxAndDeleteYn(findUser.getUserIdx(), false);
+
+        if (amList.getSize() != 0) {
+            amList.forEach(
+                    ams -> {
+                        JsonObject am = new JsonObject();
+
+                        am.addProperty("amIdx", ams.getAmIdx());
+
+                        switch (ams.getAmStatus()) {
+                            case 0:
+                                status.set("신청완료");
+                                break;
+                            case 1:
+                                status.set("중재중");
+                                break;
+                            default:
+                                status.set("중재완료");
+                                break;
+                        }
+
+                        am.addProperty("amStatus", status.get());
+                        am.addProperty("regDate", ams.getCreateAt().getTime());
+                        am.addProperty("content", ams.getAmContent());
+
+                        amArr.add(am);
+                    }
+            );
+        }
+
+
+        data.add("arbitrations", amArr);
+        data.addProperty("totalCount", amSize.size());
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+    }
 }

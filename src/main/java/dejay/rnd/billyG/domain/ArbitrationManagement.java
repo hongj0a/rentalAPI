@@ -26,30 +26,35 @@ public class ArbitrationManagement {
     private Long amIdx;
 
     @ManyToOne
-    @NotNull
-    @JoinColumn (name = "oneIdx")
-    private OneToOneInquiry oneToOneInquiry;
-
-    @ManyToOne
-    @NotNull
     @JoinColumn (name = "adminIdx")
     private Admin admin;
 
-    // 답변상태 1:완료 0:대기
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "transactionIdx")
+    private Transaction transaction;
+
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "userIdx")
+    private User user;
+
+
+    // 중재상태 0:중재신청 1:중재중 2:중재완료
     // 관리자가 답변을 남기고 노출을 시키는 시점에 완료로 변경
     @ColumnDefault("0")
-    private boolean status;
+    @Column (name = "am_status")
+    private Integer amStatus;
 
     @Column (name = "answer_content")
     private String answerContent;
 
+    @Column (name = "am_content")
+    private String amContent;
+
     @ColumnDefault("0")
     @Column (name = "delete_yn")
     private boolean deleteYn;
-
-    @Column (name = "active_yn")
-    @Builder.Default
-    private boolean activeYn = true;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
@@ -63,7 +68,7 @@ public class ArbitrationManagement {
     @Column (name = "delete_at")
     private Date deleteAt;
 
-    @Column
-    private String updator;
+    @Column (name = "complete_at")
+    private Date completeAt;
 
 }

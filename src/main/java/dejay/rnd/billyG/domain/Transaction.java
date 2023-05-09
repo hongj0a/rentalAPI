@@ -83,6 +83,9 @@ public class Transaction {
     @Column
     private String updator;
 
+    @Column (name = "transaction_num")
+    private String transactionNum;
+
     @ColumnDefault("0")
     @Column (name = "return_yn")
     private boolean returnYn;
