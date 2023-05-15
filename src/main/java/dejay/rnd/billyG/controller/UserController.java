@@ -6,19 +6,14 @@ import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.config.ImageProperties;
 import dejay.rnd.billyG.domain.*;
+import dejay.rnd.billyG.dto.*;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
-import dejay.rnd.billyG.dto.AlarmDto;
-import dejay.rnd.billyG.dto.OutDto;
-import dejay.rnd.billyG.dto.ReviewDto;
-import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.model.ImageFile;
+import dejay.rnd.billyG.repositoryImpl.TownRepositories;
 import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
-import dejay.rnd.billyG.service.FileUploadService;
-import dejay.rnd.billyG.service.ReviewService;
-import dejay.rnd.billyG.service.TownService;
-import dejay.rnd.billyG.service.UserService;
+import dejay.rnd.billyG.service.*;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -67,8 +62,10 @@ public class UserController {
     private final Path fileStorageLocation;
     private final UserEvaluationRepository userEvaluationRepository;
     private final ArbitrationRepository arbitrationRepository;
+    private final AmImageRepository amImageRepository;
+    private final ArbitrationService arbitrationService;
 
-    public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService, UserEvaluationRepository userEvaluationRepository, ArbitrationRepository arbitrationRepository) {
+    public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService, UserEvaluationRepository userEvaluationRepository, ArbitrationRepository arbitrationRepository, AmImageRepository amImageRepository, ArbitrationService arbitrationService) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.townService = townService;
@@ -91,6 +88,8 @@ public class UserController {
                 .toAbsolutePath().normalize();
         this.userEvaluationRepository = userEvaluationRepository;
         this.arbitrationRepository = arbitrationRepository;
+        this.amImageRepository = amImageRepository;
+        this.arbitrationService = arbitrationService;
     }
 
     @PostMapping("/signup")
@@ -319,10 +318,11 @@ public class UserController {
         data.addProperty("snsType", otherUser.getSnsName());
         data.addProperty("grade", otherUser.getUserLevel());
         data.addProperty("email", otherUser.getEmail());
+        data.addProperty("idEmail", otherUser.getIdEmail());
         data.addProperty("receptionEmail", otherUser.getIdEmail());
         data.addProperty("activityScore", otherUser.getActivityScore());
         data.addProperty("maxScore", grade.getGradeScore());
-        data.addProperty("starPoint", otherUser.getStarPoint());
+        data.addProperty("starPoint", Float.parseFloat(otherUser.getStarPoint()));
         data.addProperty("disturbTimeYn", otherUser.isDoNotDisturbTimeYn());
 
         if (otherUser.isDoNotDisturbTimeYn() == true) {
@@ -534,7 +534,7 @@ public class UserController {
     }
 
     @PostMapping("/setEmail")
-    public ResponseEntity<JsonObject> setEmail(@RequestParam(value="email", required = false) String email,
+    public ResponseEntity<JsonObject> setEmail(@RequestBody UserDto userDto,
                                                   HttpServletRequest req) throws ParseException {
         JsonObject data = new JsonObject();
 
@@ -542,7 +542,7 @@ public class UserController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
-        findUser.setIdEmail(email);
+        findUser.setIdEmail(userDto.getEmail());
         userService.updateUser(findUser);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
@@ -1149,6 +1149,7 @@ public class UserController {
                         }
 
                         am.addProperty("amStatus", status.get());
+                        am.addProperty("transactionIdx", ams.getTransaction().getTransactionIdx());
                         am.addProperty("regDate", ams.getCreateAt().getTime());
                         am.addProperty("content", ams.getAmContent());
 
@@ -1164,4 +1165,95 @@ public class UserController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
+
+    @GetMapping("/getMyArbitration")
+    public ResponseEntity<JsonObject> getMyArbitration(@RequestParam(value="amIdx") Long amIdx,
+                                                @RequestParam(value = "transactionIdx") Long transactionIdx,
+                                                HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+        JsonArray imageArr = new JsonArray();
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        Transaction getTr = transactionRepository.getOne(transactionIdx);
+
+        Rental findRental = rentalRepository.getOne(getTr.getRental().getRentalIdx());
+        ArbitrationManagement findAM = arbitrationRepository.getOne(amIdx);
+        List<AmImage> amImages = amImageRepository.findByArbitrationManagement_AmIdx(amIdx);
+        List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(getTr.getRental().getRentalIdx());
+
+        amImages.forEach(
+                img -> {
+                    JsonObject images = new JsonObject();
+                    images.addProperty("imageSeq", img.getImageIdx());
+                    images.addProperty("imageUrl", img.getImageUrl());
+
+                    imageArr.add(images);
+                }
+        );
+
+
+        data.add("images", imageArr);
+
+        data.addProperty("rentalSeq", findRental.getRentalIdx());
+        data.addProperty("rentalImage", rentalImages.get(0).getImageUrl());
+        data.addProperty("title", findRental.getTitle());
+        data.addProperty("transactionNum", getTr.getTransactionNum());
+        data.addProperty("dailyFee", findRental.getRentalPrice());
+        data.addProperty("renterNickName", getTr.getUser().getNickName());
+        data.addProperty("arbitrationContent", findAM.getAmContent());
+        data.addProperty("regDate", findAM.getCreateAt().getTime());
+        data.add("arbitrationImages", imageArr);
+
+        if (findAM.getAmStatus() == 2) {
+            data.addProperty("arbitrationStatus", "중재완료");
+            data.addProperty("arbitrationAnswer", findAM.getAnswerContent());
+        } else if (findAM.getAmStatus() == 1){
+            data.addProperty("arbitrationStatus", "중재중");
+            data.addProperty("arbitrationAnswer", "");
+        } else {
+            data.addProperty("arbitrationStatus", "신청완료");
+            data.addProperty("arbitrationAnswer", "");
+        }
+
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+    @PostMapping("/delArbitration")
+    public ResponseEntity<JsonObject> delArbitration(HttpServletRequest req,
+                                                   @RequestBody ArbitrationDto rmDto) throws ParseException {
+        JsonObject data = new JsonObject();
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        ArbitrationManagement findRM = arbitrationRepository.getOne(rmDto.getAmIdx());
+
+        findRM.setDeleteYn(true);
+        findRM.setUpdator(findUser.getEmail());
+        arbitrationService.deleteRM(findRM);
+
+        List<AmImage> imgs = amImageRepository.findByArbitrationManagement_AmIdx(rmDto.getAmIdx());
+        for (int i = 0; i < imgs.size(); i++) {
+
+            File file = new File(fileStorageLocation + File.separator + imgs.get(i).getImageUrl());
+
+            if (file.exists()) {
+                file.delete();
+            }
+
+            amImageRepository.delete(imgs.get(i));
+        }
+
+
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+    }
+
+
 }

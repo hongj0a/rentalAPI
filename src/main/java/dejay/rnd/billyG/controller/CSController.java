@@ -20,6 +20,7 @@ import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -84,7 +85,7 @@ public class CSController {
                     }
                     no.addProperty("noticeType", type);
                     no.addProperty("title", noti.getTitle());
-                    no.addProperty("content", noti.getContent());
+                    no.addProperty("content", StringEscapeUtils.unescapeHtml4(noti.getContent()));
                     no.addProperty("regDate", noti.getCreateAt().getTime());
 
                     noticeArr.add(no);

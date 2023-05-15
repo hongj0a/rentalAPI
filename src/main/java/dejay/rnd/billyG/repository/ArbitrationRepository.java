@@ -14,4 +14,6 @@ public interface ArbitrationRepository extends JpaRepository<ArbitrationManageme
     Page<ArbitrationManagement> findAllByUser_userIdxAndDeleteYnOrderByCreateAtDesc(Long userIdx, boolean deleteYn, Pageable pageable);
     List<ArbitrationManagement> findAllByUser_userIdxAndDeleteYn(Long userIdx, boolean deleteYn);
 
+    ArbitrationManagement getOne(Long amIdx);
+
 }

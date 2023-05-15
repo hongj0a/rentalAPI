@@ -65,6 +65,9 @@ public class ArbitrationManagement {
     //status 바뀌는 시점에 timestamp.
     private Date updateAt;
 
+    @Column
+    private String updator;
+
     @Column (name = "delete_at")
     private Date deleteAt;
 

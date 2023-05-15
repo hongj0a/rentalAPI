@@ -313,7 +313,7 @@ public class MainController {
 
         data.addProperty("userNickName", findRental.getUser().getNickName());
         data.addProperty("userIdx", findRental.getUser().getUserIdx());
-        data.addProperty("userStarPoint", findRental.getUser().getStarPoint());
+        data.addProperty("userStarPoint", Float.parseFloat(findRental.getUser().getStarPoint()));
         data.addProperty("activityScore", findRental.getUser().getActivityScore());
         data.addProperty("grade", grade.getGradeName());
         data.addProperty("maxScore", getGrade.getGradeScore());
