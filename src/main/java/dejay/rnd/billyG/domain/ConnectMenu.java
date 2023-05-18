@@ -15,32 +15,24 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "chat_room")
+@Table(name = "connect_menu")
 @Entity
 @DynamicInsert
-public class ChatRoom {
+public class ConnectMenu {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "chat_room_idx")
-    private Long chatRoomIdx;
+    @Column (name = "connect_idx")
+    private Long connectIdx;
 
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "rentalIdx")
-    private Rental rental;
+    @Column (name = "view_id")
+    private String viewId;
 
-    @ManyToOne
-    @JoinColumn (name = "transactionIdx")
-    private Transaction transaction;
+    @Column (name = "view_name")
+    private String viewName;
 
-    //0일 때 admin
-    @Column (name = "sender_idx")
-    private Long senderIdx;
-
-    @Column (name = "receiver_idx")
-    private Long receiverIdx;
-
+    @Column (name = "connect_cnt")
+    private Long connectCnt;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
@@ -50,7 +42,5 @@ public class ChatRoom {
     @Column (name = "update_at")
     private Date updateAt;
 
-    @Column
-    private String updator;
 
 }

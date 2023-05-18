@@ -395,6 +395,7 @@ public class UserController {
             findReviews.forEach(
                     review -> {
                         JsonObject rvs = new JsonObject();
+                        Town findLeadTown = townRepository.getOne(review.getTransaction().getUser().getLeadTown());
 
                         rvs.addProperty("renterIdx", review.getTransaction().getUser().getUserIdx());
                         rvs.addProperty("renterImage", review.getTransaction().getUser().getProfileImageUrl());
@@ -404,7 +405,7 @@ public class UserController {
                             rvs.addProperty("isMine", false);
                         }
                         rvs.addProperty("renterNickName", review.getTransaction().getUser().getNickName());
-                        rvs.addProperty("renterLeadTown", review.getTransaction().getUser().getLeadTown());
+                        rvs.addProperty("renterLeadTown", findLeadTown.getTownName());
                         rvs.addProperty("reviewRegDate", review.getCreateAt().getTime());
                         rvs.addProperty("reviewIdx", review.getReviewIdx());
                         rvs.addProperty("reviewContent", review.getReviewContent());
@@ -421,9 +422,11 @@ public class UserController {
             Page<Review> findReviews = reviewRepository.findByRenterIdxAndActiveYnAndDeleteYnOrderByCreateAtDesc(otherUser.getUserIdx(), true, false, pageable);
             List<Review> reviews = reviewRepository.findByRenterIdxAndActiveYnAndDeleteYnOrderByCreateAtDesc(otherUser.getUserIdx(), true, false);
 
+
             findReviews.forEach(
                     review -> {
                         JsonObject rvs = new JsonObject();
+                        Town findLeadTown = townRepository.getOne(review.getTransaction().getUser().getLeadTown());
 
                         rvs.addProperty("renterIdx", review.getTransaction().getUser().getUserIdx());
                         rvs.addProperty("renterImage", review.getTransaction().getUser().getProfileImageUrl());
@@ -433,7 +436,7 @@ public class UserController {
                             rvs.addProperty("isMine", false);
                         }
                         rvs.addProperty("renterNickName", review.getTransaction().getUser().getNickName());
-                        rvs.addProperty("renterLeadTown", review.getTransaction().getUser().getLeadTown());
+                        rvs.addProperty("renterLeadTown", findLeadTown.getTownName());
                         rvs.addProperty("reviewRegDate", review.getCreateAt().getTime());
                         rvs.addProperty("reviewIdx", review.getReviewIdx());
                         rvs.addProperty("reviewContent", review.getReviewContent());
@@ -1068,8 +1071,8 @@ public class UserController {
 
         LinkedHashSet<String> linkedHashSet = new LinkedHashSet<>();
 
-        for (int i = 0; i < grades.size(); i++) {
-            linkedHashSet.add(grades.get(i).getGradeName().substring(2));
+        for (int i = 0; i < mains.size(); i++) {
+            linkedHashSet.add(mains.get(i).getGradeName().substring(2));
         }
 
         String[] resultArr = linkedHashSet.toArray(new String[0]);

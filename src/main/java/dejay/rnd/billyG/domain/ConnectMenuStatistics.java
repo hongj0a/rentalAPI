@@ -3,7 +3,6 @@ package dejay.rnd.billyG.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 
@@ -15,40 +14,31 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "chat_content")
+@Table(name = "connect_menu_stattistics")
 @Entity
 @DynamicInsert
-public class ChatContent {
+public class ConnectMenuStatistics {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "chat_idx")
-    private Long chatIdx;
+    @Column (name = "cms_idx")
+    private Long cmsIdx;
 
     @ManyToOne
-    @NotNull
-    @JoinColumn (name = "chatRoomIdx")
-    private ChatRoom chatRoom;
+    @JoinColumn (name = "connectMenuIdx")
+    private ConnectMenu connectMenu;
 
     @ManyToOne
-    @NotNull
-    @JoinColumn (name = "userIdx")
-    private User user;
+    @JoinColumn (name = "leaveMenuIdx")
+    private LeaveMenu leaveMenu;
 
-    @ManyToOne
-    @JoinColumn (name = "adminIdx")
-    private Admin admin;
-
-    @Column
-    private String content;
-
-    @ColumnDefault("0")
-    @Column (name = "check_yn")
-    private boolean checkYn;
+    @Column (name = "today_cnt")
+    private Long todayCnt;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
     private Date createAt;
+
 
 }

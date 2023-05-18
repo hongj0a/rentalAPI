@@ -52,23 +52,9 @@ public class TransactionHistory {
     @Column (name = "return_at")
     private Date returnAt;
 
-    /**
-     *  * 렌탈오너 상태
-     *      * 0 : 매칭대기중
-     *      * 1 : 결제대기중
-     *      * 2 : 배송완료
-     *      * 3 : 반납완료...
-     */
     @Column (name = "owner_status")
     private Integer ownerStatus;
 
-    /**
-     *  * 렌터 상태
-     *      * 0 : 매칭대기중
-     *      * 1 : 결제대기중
-     *      * 2 : 배송완료
-     *      * 3 : 반납완료...
-     */
     @Column (name = "renter_status")
     private Integer renterStatus;
 
@@ -101,4 +87,11 @@ public class TransactionHistory {
 
     @Column (name = "complete_at")
     private Date completeAt;
+
+    /**
+     * renter 상태 업데이트 될 때 timestamp
+     * 예외) owner 60일 때 timestamp
+     */
+    @Column (name = "status_at")
+    private Date statusAt;
 }

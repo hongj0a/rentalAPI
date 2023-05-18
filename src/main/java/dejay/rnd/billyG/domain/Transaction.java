@@ -19,6 +19,12 @@ import java.util.Date;
 @Entity
 @DynamicInsert
 public class Transaction {
+    /**
+     * !!!!!!!!!!!!!!!!!!!!!!!!!!
+     * 오너가 렌탈매칭을 누를때 생성
+     * 오너 10, 렌터 20
+     * !!!!!!!!!!!!!!!!!!!!!!!!!!
+     */
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,25 +65,25 @@ public class Transaction {
 
     /**
      *  * 렌탈오너 상태
-     *      * 10 : 매칭대기
-     *      * 30 : 렌탈중
-     *      * 60 : 이의신청
+     *      * 10 : 렌탈매칭
+     *      * 30 : 렌탈취소 [cancel_yn(true)] , 렌탈중(renter 40,50 인 경우)
+     *      * 60 : 이의신청, 렌탈완료
      *      * 70 : 렌탈완료
      */
     @Column (name = "owner_status")
-    @ColumnDefault("0")
+    @ColumnDefault("10")
     private Integer ownerStatus;
 
     /**
      *  * 렌터 상태
-     *      * 10 : 매칭대기
-     *      * 20 : 매칭완료
-     *      * 40 : 물품인수
-     *      * 50 : 물품반납
+     *      * 10 : 매칭대기중
+     *      * 20 : 매칭완료, 매칭취소 [cancel_yn (true)]
+     *      * 40 : 물품인수 (50), 렌탈중
+     *      * 50 : 물품반납(60), 이의신청일 때 중재중
      *      * 70 : 렌탈완료
      */
     @Column (name = "renter_status")
-    @ColumnDefault("0")
+    @ColumnDefault("20")
     private Integer renterStatus;
 
     @Column
@@ -113,4 +119,11 @@ public class Transaction {
 
     @Column (name = "complete_at")
     private Date completeAt;
+
+    /**
+     * renter 상태 업데이트 될 때 timestamp
+     * 예외) owner 60일 때 timestamp
+     */
+    @Column (name = "status_at")
+    private Date statusAt;
 }

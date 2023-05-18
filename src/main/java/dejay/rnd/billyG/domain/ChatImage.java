@@ -3,7 +3,6 @@ package dejay.rnd.billyG.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 
@@ -15,40 +14,28 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "chat_content")
+@Table(name = "chat_image")
 @Entity
 @DynamicInsert
-public class ChatContent {
+public class ChatImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "chat_idx")
-    private Long chatIdx;
+    @Column (name = "image_idx")
+    private Long imageIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "chatRoomIdx")
-    private ChatRoom chatRoom;
+    @JoinColumn (name = "chatIdx")
+    private ChatContent chatContent;
 
-    @ManyToOne
-    @NotNull
-    @JoinColumn (name = "userIdx")
-    private User user;
-
-    @ManyToOne
-    @JoinColumn (name = "adminIdx")
-    private Admin admin;
-
-    @Column
-    private String content;
-
-    @ColumnDefault("0")
-    @Column (name = "check_yn")
-    private boolean checkYn;
+    @Column (length = 1000 , name = "image_url")
+    private String imageUrl;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
     private Date createAt;
+
 
 }
