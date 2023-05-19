@@ -37,6 +37,6 @@ out/
 .vscode/
 
 ## Properties
-main/resources/application-common.properties
-main/resources/application-db.properties
-main/resources/application-jwt.properties
+**/src/main/resources/application-common.properties
+**/src/main/resources/application-db.properties
+**/src/main/resources/application-jwt.properties
