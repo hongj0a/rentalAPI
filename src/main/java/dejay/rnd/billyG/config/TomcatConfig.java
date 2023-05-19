@@ -22,11 +22,9 @@ public class TomcatConfig implements WebMvcConfigurer {
             registry.addResourceHandler("/image/**")
                     .addResourceLocations("file:///C:/home/image/");
         } else if (osName.contains("mac")){
-            System.out.println("TomcatConfig.addResourceHandlers.elseIf");
             registry.addResourceHandler("/image/**")
                     .addResourceLocations("file:/Users/hongjin-yeong/Desktop/home/image/");
         } else {
-            System.out.println("TomcatConfig.addResourceHandlers.else");
             registry.addResourceHandler("/image/**")
                     .addResourceLocations("file:/home/image/");
         }
