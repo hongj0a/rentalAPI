@@ -42,7 +42,7 @@ public class AuthController {
      *  2. 신규회원 회원가입 후, access_token, refresh_token 발급 및 refresh_token db 저장
      *  3. 가입된 email이 있는데, 다른 snsType으로 로그인할 경우 fail
      *  4. ci_value (주민번호기반) 검사 -> 한 사람이 한 계정만 만들 수 있음
-     *  5. access_token 5 hour, refresh_token 30 days
+     *  5. access_token 12 hour, refresh_token 30 days -- 2023.05.22 정책변경
      *  6. refresh_token expired 시 재 로그인 요청
      *  7. access_token expired 시 refresh_token 으로 검증해서 access_token 재발급, 이 때 AT, RT 모두 갱신
      */

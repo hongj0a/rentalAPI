@@ -41,7 +41,6 @@ public class JwtFilter extends GenericFilterBean {
          //throw new AppException(ErrCode.err_api_unsubscribed_user, "자격 증명 오류 또는 유효하지 않은 토큰");
       }
 
-
       filterChain.doFilter(servletRequest, servletResponse);
 
    }

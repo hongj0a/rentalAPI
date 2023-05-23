@@ -28,7 +28,7 @@ public class TokenProvider implements InitializingBean {
    private final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
    private static final String AUTHORITIES_KEY = "auth";
    private final String secret;
-   private long accessTokenValidTime = Duration.ofMinutes(300).toMillis(); // 만료시간 5시간
+   private long accessTokenValidTime = Duration.ofMinutes(720).toMillis(); // 만료시간 12시간
    private long refreshTokenValidTime = Duration.ofDays(30).toMillis(); // 만료시간 30일
    private Key key;
 
@@ -53,12 +53,14 @@ public class TokenProvider implements InitializingBean {
       Date rTvalidity = new Date(now + this.refreshTokenValidTime);
 
 
+
       String accessToken = Jwts.builder()
               .setSubject(authentication.getName())
               .claim("auth", authorities)
               .setExpiration(aTvalidity)
               .signWith(key, SignatureAlgorithm.HS256)
               .compact();
+
 
       // Refresh Token 생성
       String refreshToken = Jwts.builder()

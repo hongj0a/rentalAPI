@@ -40,6 +40,9 @@ public class ChatContent {
     private Admin admin;
 
     @Column
+    private String type;
+
+    @Column
     private String content;
 
     @ColumnDefault("0")

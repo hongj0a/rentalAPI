@@ -40,4 +40,8 @@ public class BellSchedule {
     @Column (name = "create_at")
     private Date createAt;
 
+    @ColumnDefault("0")
+    @Column (name = "bell_yn")
+    private boolean bellYn;
+
 }

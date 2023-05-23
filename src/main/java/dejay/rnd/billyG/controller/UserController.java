@@ -554,6 +554,30 @@ public class UserController {
 
     }
 
+    @PostMapping("/setDoNotDisturb")
+    public ResponseEntity<JsonObject> setDoNotDisturb(@RequestBody AlarmDto alarmDto,
+                                               HttpServletRequest req) throws ParseException {
+        JsonObject data = new JsonObject();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        findUser.setDoNotDisturbTimeYn(alarmDto.isDoNotDisturbTimeYn());
+        if (alarmDto.isDoNotDisturbTimeYn() == true) {
+            findUser.setDoNotDisturbStartHour(alarmDto.getStartHour());
+            findUser.setDoNotDisturbStartMinute(alarmDto.getStartMinute());
+            findUser.setDoNotDisturbEndHour(alarmDto.getEndHour());
+            findUser.setDoNotDisturbEndMinute(alarmDto.getEndMinute());
+        }
+
+        findUser.setUpdator(findUser.getEmail());
+        userService.updateUser(findUser);
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+    }
+
     @PostMapping("/setAlarm")
     public ResponseEntity<JsonObject> setAlarm(@RequestBody AlarmDto alarmDto,
                                                HttpServletRequest req) throws ParseException {
@@ -1197,9 +1221,6 @@ public class UserController {
                     imageArr.add(images);
                 }
         );
-
-
-        data.add("images", imageArr);
 
         data.addProperty("rentalSeq", findRental.getRentalIdx());
         data.addProperty("rentalImage", rentalImages.get(0).getImageUrl());

@@ -3,7 +3,6 @@ package dejay.rnd.billyG.controller;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.querydsl.core.Tuple;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.config.ImageProperties;
 import dejay.rnd.billyG.domain.*;
@@ -31,7 +30,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.file.Path;
 
 import java.nio.file.Paths;
@@ -61,9 +59,10 @@ public class MainController {
     private final CategoryRepository categoryRepository;
     private final UserCountRepository userCountRepository;
     private final UserCountRepositories userCountRepositories;
+    private final BellScheduleRepositry bellScheduleRepository;
     private final Path fileStorageLocation;
 
-    public MainController(ImageProperties imageProperties, UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories) {
+    public MainController(ImageProperties imageProperties, UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, BellScheduleRepositry bellScheduleRepository) {
         this.userRepository = userRepository;
         this.townRepository = townRepository;
         this.townRepositories = townRepositories;
@@ -84,6 +83,7 @@ public class MainController {
         this.userCountRepositories = userCountRepositories;
         this.fileStorageLocation = Paths.get(imageProperties.getDefaultPath())
                 .toAbsolutePath().normalize();
+        this.bellScheduleRepository = bellScheduleRepository;
     }
 
     @GetMapping("/getMainList")
@@ -119,7 +119,6 @@ public class MainController {
         } else {
             p_status.add(2);
         }
-
 
         Integer totalCount = rentalRepositories.getTotalCount(p_status, keyword, towns, categories);
 
@@ -188,7 +187,7 @@ public class MainController {
 
         Map<Integer, String> statusMap = new HashMap<>();
         statusMap.put(1, "렌탈가능");
-        statusMap.put(2, "렌탈중");
+        statusMap.put(2, "렌탈완료");
 
         for (Map.Entry<Integer, String> pair : statusMap.entrySet()) {
             JsonObject status = new JsonObject();
@@ -1052,4 +1051,26 @@ public class MainController {
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
     }
+
+    @PostMapping(value = "/setSchedule")
+    public ResponseEntity<JsonObject> setSchedule(@RequestBody MainDto mainDto,
+                                                HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        Rental findRental = rentalRepository.getOne(mainDto.getRentalIdx());
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        BellSchedule bellSchedule = new BellSchedule();
+        bellSchedule.setRental(findRental);
+        bellSchedule.setUser(findUser);
+
+        bellScheduleRepository.save(bellSchedule);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
 }
