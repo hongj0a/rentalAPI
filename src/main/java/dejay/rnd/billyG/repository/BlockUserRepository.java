@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BlockUserRepository extends JpaRepository<BlockUser, Long> {
 
+    BlockUser findByReporterIdxAndUser_userIdxAndProcessingStatusNotIn(Long reporterIdx, Long userIdx, int[] processingStatus);
+
 }

@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 @EnableJpaRepositories
 @Repository
 public interface BellScheduleRepositry extends JpaRepository<BellSchedule, Long> {
+    BellSchedule findByUser_userIdxAndRental_rentalIdx(Long userIdx, Long rentalIdx);
 }

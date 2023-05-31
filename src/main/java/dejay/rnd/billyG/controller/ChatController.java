@@ -10,7 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/")
+@RequestMapping("/send")
 public class ChatController {
 
     private final ChatService chatService;
@@ -20,14 +20,14 @@ public class ChatController {
     }
 
 
-    @MessageMapping("/{roomIdx}")
-    @SendTo("/room/{roomIdx}")
+    @MessageMapping("/hello")
+    @SendTo("/room/chats")
     public ChatContent chatting(@DestinationVariable Long roomIdx, ChatContent message) {
 
 
         ChatRoom chatRoom = new ChatRoom();
         chatRoom.setChatRoomIdx(roomIdx);
-        chatRoom.setSenderIdx(message.getUser().getUserIdx());
+
 
         chatService.createChat(chatRoom);
         return ChatContent.builder()

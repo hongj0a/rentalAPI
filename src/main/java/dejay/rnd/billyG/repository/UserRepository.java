@@ -21,7 +21,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     User findByCiValue(String ciValue);
 
-    List<User> findAllByNickNameContainingAndStatus(String nickName, Integer status);
+    List<User> findAllByNickName(String nickName);
 
     User getOne(Long userIdx);
 }

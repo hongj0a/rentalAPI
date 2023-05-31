@@ -31,16 +31,16 @@ public class ChatContent {
     private ChatRoom chatRoom;
 
     @ManyToOne
-    @NotNull
     @JoinColumn (name = "userIdx")
     private User user;
+
+    @ColumnDefault("0")
+    @Column (name = "image_yn")
+    private boolean imageYn;
 
     @ManyToOne
     @JoinColumn (name = "adminIdx")
     private Admin admin;
-
-    @Column
-    private String type;
 
     @Column
     private String content;

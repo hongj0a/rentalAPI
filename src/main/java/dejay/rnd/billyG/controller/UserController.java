@@ -192,7 +192,8 @@ public class UserController {
                                                       HttpServletRequest req) throws AppException {
         JsonObject data = new JsonObject();
 
-        List<User> findUser = userService.findByNickName(nickName);
+        //List<User> findUser = userService.findByNickName(nickName);
+        List<User> findUser = userRepository.findAllByNickName(nickName);
 
         if (findUser.size() > 0) {
             RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
@@ -366,7 +367,7 @@ public class UserController {
 
         if (type == 1) {
             //렌탈중인 게시글
-            Page<Rental> etcRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotIn(otherUser.getUserIdx(), true, false, new int[]{4}, pageable);
+            Page<Rental> etcRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotInOrderByCreateAtDesc(otherUser.getUserIdx(), true, false, new int[]{4}, pageable);
             List<Rental> etc = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotIn(otherUser.getUserIdx(), true, false, new int[]{4});
             etcRentals.forEach(
                     etcs -> {
@@ -707,7 +708,6 @@ public class UserController {
         Page<Transaction> transactions;
         List<Transaction> tranSize;
         AtomicReference<String> str = new AtomicReference<>("");
-
 
         if (rentalFlag == 0) {
         //rental received

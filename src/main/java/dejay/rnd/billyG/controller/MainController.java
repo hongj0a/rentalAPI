@@ -14,6 +14,7 @@ import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.repositoryImpl.RentalRepositories;
 import dejay.rnd.billyG.repositoryImpl.TownRepositories;
 import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
+import dejay.rnd.billyG.service.BellScheduleService;
 import dejay.rnd.billyG.service.CategoryService;
 import dejay.rnd.billyG.service.FileUploadService;
 import dejay.rnd.billyG.service.RentalService;
@@ -60,9 +61,12 @@ public class MainController {
     private final UserCountRepository userCountRepository;
     private final UserCountRepositories userCountRepositories;
     private final BellScheduleRepositry bellScheduleRepository;
+    private final BellScheduleService bellScheduleService;
+    private final BlockUserRepository blockUserRepository;
+    private final BlockPostRepository blockPostRepository;
     private final Path fileStorageLocation;
 
-    public MainController(ImageProperties imageProperties, UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, BellScheduleRepositry bellScheduleRepository) {
+    public MainController(ImageProperties imageProperties, UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, BellScheduleRepositry bellScheduleRepository, BellScheduleService bellScheduleService, BlockUserRepository blockUserRepository, BlockPostRepository blockPostRepository) {
         this.userRepository = userRepository;
         this.townRepository = townRepository;
         this.townRepositories = townRepositories;
@@ -84,6 +88,9 @@ public class MainController {
         this.fileStorageLocation = Paths.get(imageProperties.getDefaultPath())
                 .toAbsolutePath().normalize();
         this.bellScheduleRepository = bellScheduleRepository;
+        this.bellScheduleService = bellScheduleService;
+        this.blockUserRepository = blockUserRepository;
+        this.blockPostRepository = blockPostRepository;
     }
 
     @GetMapping("/getMainList")
@@ -135,7 +142,8 @@ public class MainController {
                     }
 
                     rentalList.addProperty("title", rental.getTitle());
-                    rentalList.addProperty("regDate", rental.getCreateAt().getTime());
+                    rentalList.addProperty("content", rental.getContent());
+                    rentalList.addProperty("regDate", rental.getPullUpAt().getTime());
                     rentalList.addProperty("dailyRentalFee", rental.getRentalPrice());
 
                     //town 리스트 추출
@@ -286,7 +294,6 @@ public class MainController {
 
         Grade getGrade = gradeRepository.findTop1ByOrderByGradeScoreDesc();
 
-
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
@@ -295,6 +302,21 @@ public class MainController {
         UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
 
         Rental findRental = rentalRepository.getOne(rentalIdx);
+
+        BlockUser blockUser = blockUserRepository.findByReporterIdxAndUser_userIdxAndProcessingStatusNotIn(findUser.getUserIdx(), findRental.getUser().getUserIdx(),  new int[]{2});
+        if (blockUser != null) {
+            data.addProperty("blockUserHistory", true);
+        } else {
+            data.addProperty("blockUserHistory", false);
+        }
+
+        BlockPost blockPost = blockPostRepository.findByReporterIdxAndRental_rentalIdxAndProcessingStatusNotIn(findUser.getUserIdx(), findRental.getRentalIdx(), new int[]{2});
+        if (blockPost != null) {
+            data.addProperty("blockPostHistory", true);
+        } else {
+            data.addProperty("blockPostHistory", false);
+        }
+
         List<Review> reviews = reviewRepository.findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAtDesc(findRental.getUser().getUserIdx(), true, false);
 
         if (findRental.isDeleteYn() == true || findRental.getStatus() == 4 || findRental.isActiveYn() == false) {
@@ -309,7 +331,13 @@ public class MainController {
             data.addProperty("userProfileImage", "");
         }
 
+        BellSchedule findBell = bellScheduleRepository.findByUser_userIdxAndRental_rentalIdx(findUser.getUserIdx(), findRental.getRentalIdx());
 
+        if (findBell == null || findBell.isDeleteYn() == true) {
+            data.addProperty("bellButton", true);
+        } else if (findBell != null && findBell.isDeleteYn() == false) {
+            data.addProperty("bellButton", false);
+        }
         data.addProperty("userNickName", findRental.getUser().getNickName());
         data.addProperty("userIdx", findRental.getUser().getUserIdx());
         data.addProperty("userStarPoint", Float.parseFloat(findRental.getUser().getStarPoint()));
@@ -432,7 +460,7 @@ public class MainController {
         Rental findRental = rentalRepository.getOne(rentalIdx);
 
 
-        Page<Rental> etcRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotIn(findRental.getUser().getUserIdx(), true, false, new int[]{4}, pageable);
+        Page<Rental> etcRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotInOrderByCreateAtDesc(findRental.getUser().getUserIdx(), true, false, new int[]{4}, pageable);
         List<Rental> etc = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotIn(findRental.getUser().getUserIdx(), true, false, new int[]{4});
 
         etcRentals.forEach(
@@ -980,7 +1008,7 @@ public class MainController {
             p_status.add(4);
         }
 
-        Page<Rental> myRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusIn(findUser.getUserIdx(), true, false, p_status, pageable);
+        Page<Rental> myRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusInOrderByCreateAtDesc(findUser.getUserIdx(), true, false, p_status, pageable);
         List<Rental> my = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusIn(findUser.getUserIdx(), true, false, p_status);
 
         myRentals.forEach(
@@ -1056,19 +1084,30 @@ public class MainController {
     public ResponseEntity<JsonObject> setSchedule(@RequestBody MainDto mainDto,
                                                 HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
+        
         User findUser = userRepository.findByEmail(userEmail);
-
         Rental findRental = rentalRepository.getOne(mainDto.getRentalIdx());
-        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
-        BellSchedule bellSchedule = new BellSchedule();
-        bellSchedule.setRental(findRental);
-        bellSchedule.setUser(findUser);
+        BellSchedule findBell = bellScheduleRepository.findByUser_userIdxAndRental_rentalIdx(findUser.getUserIdx(), findRental.getRentalIdx());
 
-        bellScheduleRepository.save(bellSchedule);
+        if (findBell == null) {
+            BellSchedule bellSchedule = new BellSchedule();
+            bellSchedule.setRental(findRental);
+            bellSchedule.setUser(findUser);
+
+            bellScheduleRepository.save(bellSchedule);
+        } else if (findBell != null && findBell.isDeleteYn() == false ) {
+            findBell.setDeleteYn(true);
+            bellScheduleService.update(findBell);
+        } else if (findBell != null && findBell.isDeleteYn() == true) {
+            findBell.setDeleteYn(false);
+            bellScheduleService.update(findBell);
+        }
+
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
     }

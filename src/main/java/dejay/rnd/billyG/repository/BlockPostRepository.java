@@ -12,4 +12,6 @@ import java.util.List;
 @Repository
 public interface BlockPostRepository extends JpaRepository<BlockPost, Long> {
 
+    BlockPost findByReporterIdxAndRental_rentalIdxAndProcessingStatusNotIn(Long reporterIdx, Long rentalIdx, int[] processingStatus);
+
 }

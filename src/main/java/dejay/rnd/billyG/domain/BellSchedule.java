@@ -40,8 +40,15 @@ public class BellSchedule {
     @Column (name = "create_at")
     private Date createAt;
 
+    @Column (name = "update_at")
+    private Date updateAt;
+
     @ColumnDefault("0")
     @Column (name = "bell_yn")
     private boolean bellYn;
+
+    @ColumnDefault("0")
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
 
 }

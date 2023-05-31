@@ -26,16 +26,16 @@ public class ChatImage {
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "chatIdx")
+    @JoinColumn (name = "chatContentIdx")
     private ChatContent chatContent;
 
-    @Column (length = 1000 , name = "image_url")
+    @Column (name = "image_url")
+    @Lob
     private String imageUrl;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
     private Date createAt;
-
 
 }

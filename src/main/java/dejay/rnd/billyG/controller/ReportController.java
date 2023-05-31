@@ -51,6 +51,7 @@ public class ReportController {
     @GetMapping("/getReportList")
     public ResponseEntity<JsonObject> getReportList (@RequestParam(name = "reportType") String reportType,
                                                  HttpServletRequest req) throws AppException {
+
         JsonObject data = new JsonObject();
         JsonArray reportArr = new JsonArray();
 
@@ -72,6 +73,7 @@ public class ReportController {
 
     }
 
+    //기타는 idx 0으로. 프론트에서 하드코딩 하기로 협의
     @PostMapping("/report")
     public ResponseEntity<JsonObject> report(@RequestBody ReportDto reportDto,
                                                         HttpServletRequest req) throws ParseException {

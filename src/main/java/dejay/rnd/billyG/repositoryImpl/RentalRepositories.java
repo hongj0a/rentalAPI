@@ -118,7 +118,7 @@ public class RentalRepositories implements RentalRepositoryCustom {
                             .and(builder)
                             .and(rental.activeYn.eq(true))
                             .and(rental.deleteYn.eq(false)))
-                    .orderBy(rental.likeCnt.desc())
+                    .orderBy(rental.viewCnt.desc())
                     .offset(pageable.getOffset())
                     .limit(pageable.getPageSize())
                     .fetch();

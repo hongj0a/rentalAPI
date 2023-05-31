@@ -31,16 +31,26 @@ public class ChatRoom {
     private Rental rental;
 
     @ManyToOne
+    @NotNull
     @JoinColumn (name = "transactionIdx")
     private Transaction transaction;
 
-    //0일 때 admin
-    @Column (name = "sender_idx")
-    private Long senderIdx;
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "toIdx", referencedColumnName = "user_idx")
+    private User toUser;
 
-    @Column (name = "receiver_idx")
-    private Long receiverIdx;
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "fromIdx", referencedColumnName = "user_idx")
+    private User fromUser;
 
+
+    @Column(name = "last_chat_message")
+    private String lastChatMessage;
+
+    @Column(name = "visible_to")
+    private Integer visibleTo;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp

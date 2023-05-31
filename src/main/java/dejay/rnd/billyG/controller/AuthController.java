@@ -70,7 +70,7 @@ public class AuthController {
                 return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
             }
         } else {
-            //civalue가 없어서 신규회원이면 가입하고 로그인
+            // ciValue가 없어서 신규회원이면 가입하고 로그인
             // 신규유저라면 회원가입 하고 바로 로그인
             if (userOne == null) {
                 UserDto userDto = new UserDto();
