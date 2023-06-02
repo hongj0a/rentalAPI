@@ -31,7 +31,6 @@ public class ChatRoom {
     private Rental rental;
 
     @ManyToOne
-    @NotNull
     @JoinColumn (name = "transactionIdx")
     private Transaction transaction;
 
@@ -49,8 +48,13 @@ public class ChatRoom {
     @Column(name = "last_chat_message")
     private String lastChatMessage;
 
+    @ColumnDefault("0")
     @Column(name = "visible_to")
-    private Integer visibleTo;
+    private Long visibleTo;
+
+    @ColumnDefault("0")
+    @Column (name = "read_yn")
+    private boolean readYn;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
@@ -59,6 +63,9 @@ public class ChatRoom {
 
     @Column (name = "update_at")
     private Date updateAt;
+
+    @Column (name = "exit_at")
+    private Date exitAt;
 
     @Column
     private String updator;

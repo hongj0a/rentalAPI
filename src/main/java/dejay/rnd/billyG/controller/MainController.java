@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -458,7 +459,6 @@ public class MainController {
         User findUser = userRepository.findByEmail(userEmail);
 
         Rental findRental = rentalRepository.getOne(rentalIdx);
-
 
         Page<Rental> etcRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotInOrderByCreateAtDesc(findRental.getUser().getUserIdx(), true, false, new int[]{4}, pageable);
         List<Rental> etc = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotIn(findRental.getUser().getUserIdx(), true, false, new int[]{4});
@@ -990,7 +990,7 @@ public class MainController {
     //내 게시글 (공개게시글/숨김게시글) 조회
     @GetMapping("/getMyRental")
     public ResponseEntity<JsonObject> getMyRental(@RequestParam(value="status") int status, Pageable pageable,
-                                                    HttpServletRequest req) throws AppException, ParseException {
+                                                    HttpServletRequest req) throws AppException, ParseException, java.text.ParseException {
         JsonObject data = new JsonObject();
         JsonArray renArr = new JsonArray();
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
@@ -1010,7 +1010,11 @@ public class MainController {
 
         Page<Rental> myRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusInOrderByCreateAtDesc(findUser.getUserIdx(), true, false, p_status, pageable);
         List<Rental> my = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusIn(findUser.getUserIdx(), true, false, p_status);
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        Date date1 = dateFormat.parse(dateFormat.format(cal.getTime()));
 
+        cal.add(Calendar.DAY_OF_WEEK, -7);
         myRentals.forEach(
                 etcs -> {
                     JsonObject etcRental = new JsonObject();
@@ -1021,6 +1025,13 @@ public class MainController {
                     etcRental.addProperty("title", etcs.getTitle());
                     etcRental.addProperty("dailyFee", etcs.getRentalPrice());
                     etcRental.addProperty("regDate", etcs.getPullUpAt().getTime());
+                    Date date2 = etcs.getPullUpAt();
+                    if (date2.before(date1)) {
+                        etcRental.addProperty("pullUpYn", true);
+                    } else {
+                        etcRental.addProperty("pullUpYn", false);
+                    }
+
 
                     switch (etcs.getStatus()) {
                         case 2 :

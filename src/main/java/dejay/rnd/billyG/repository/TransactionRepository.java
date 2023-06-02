@@ -36,5 +36,5 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     Page<Transaction> findByUser_userIdxAndCancelYnOrderByCreateAtDesc(Long userIdx, boolean cancelYn, Pageable pageable);
     List<Transaction> findByUser_userIdxAndCancelYn(Long userIdx, boolean cancelYn);
 
-
+    List<Transaction> findByRental_rentalIdxAndUser_userIdxAndOwnerStatusNotIn(Long rentalIdx, Long userIdx, int[] ownerStatus);
 }

@@ -11,7 +11,6 @@ import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.model.ImageFile;
-import dejay.rnd.billyG.repositoryImpl.TownRepositories;
 import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
 import dejay.rnd.billyG.service.*;
 import dejay.rnd.billyG.util.UserMiningUtil;
@@ -64,7 +63,6 @@ public class UserController {
     private final ArbitrationRepository arbitrationRepository;
     private final AmImageRepository amImageRepository;
     private final ArbitrationService arbitrationService;
-
     public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService, UserEvaluationRepository userEvaluationRepository, ArbitrationRepository arbitrationRepository, AmImageRepository amImageRepository, ArbitrationService arbitrationService) {
         this.userService = userService;
         this.userRepository = userRepository;
@@ -90,6 +88,7 @@ public class UserController {
         this.arbitrationRepository = arbitrationRepository;
         this.amImageRepository = amImageRepository;
         this.arbitrationService = arbitrationService;
+
     }
 
     @PostMapping("/signup")
@@ -588,13 +587,6 @@ public class UserController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
-        findUser.setDoNotDisturbTimeYn(alarmDto.isDoNotDisturbTimeYn());
-        if (alarmDto.isDoNotDisturbTimeYn() == true) {
-            findUser.setDoNotDisturbStartHour(alarmDto.getStartHour());
-            findUser.setDoNotDisturbStartMinute(alarmDto.getStartMinute());
-            findUser.setDoNotDisturbEndHour(alarmDto.getEndHour());
-            findUser.setDoNotDisturbEndMinute(alarmDto.getEndMinute());
-        }
         findUser.setChatNoticeYn(alarmDto.isChatNoticeYn());
         findUser.setActivityNoticeYn(alarmDto.isActivityNoticeYn());
         findUser.setMarketingNoticeType(alarmDto.getMarketingNoticeType());
@@ -1278,6 +1270,7 @@ public class UserController {
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
+
 
 
 }

@@ -51,7 +51,9 @@ public class AuthController {
     public ResponseEntity<JsonObject> authorize(@RequestBody LoginDto loginDto, HttpServletRequest req) throws java.text.ParseException {
         JsonObject data = new JsonObject();
 
+        System.out.println("loginDto = " + loginDto.getCiValue());
         User isUser = userRepository.findByCiValue(loginDto.getCiValue());
+        System.out.println("isUser = " + isUser);
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String email = loginDto.getEmail();
@@ -71,16 +73,15 @@ public class AuthController {
             }
         } else {
             // ciValue가 없어서 신규회원이면 가입하고 로그인
-            // 신규유저라면 회원가입 하고 바로 로그인
-            if (userOne == null) {
-                UserDto userDto = new UserDto();
-                userDto.setEmail(email);
-                userDto.setSnsType(snsType);
-                userDto.setCiValue(loginDto.getCiValue());
-                userDto.setName(loginDto.getName());
-                userDto.setPhoneNumber(loginDto.getPhoneNumber());
-                userService.signup(userDto);
-            }
+
+            UserDto userDto = new UserDto();
+            userDto.setEmail(email);
+            userDto.setSnsType(snsType);
+            userDto.setCiValue(loginDto.getCiValue());
+            userDto.setName(loginDto.getName());
+            userDto.setPhoneNumber(loginDto.getPhoneNumber());
+            userService.signup(userDto);
+
             userOne = userRepository.findByEmail(email);
         }
 
