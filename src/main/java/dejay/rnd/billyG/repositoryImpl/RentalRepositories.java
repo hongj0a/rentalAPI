@@ -145,7 +145,7 @@ public class RentalRepositories implements RentalRepositoryCustom {
         return null;
     }
 
-    public Integer getTotalCount(ArrayList<Integer> status, String title, Long[] towns, Long[] categories) {
+    public List<Rental> getTotalCount(ArrayList<Integer> status, String title, Long[] towns, Long[] categories) {
 
         QRental rental = QRental.rental;
         QRentalCategoryInfo rentalCategoryInfo = QRentalCategoryInfo.rentalCategoryInfo;
@@ -164,15 +164,15 @@ public class RentalRepositories implements RentalRepositoryCustom {
                     .or(rental.town4.in(towns));
         }
         //0 처리..
-        List<Long> totalInfo = queryFactory.select(rental.rentalIdx).distinct().from(rental)
+        List<Rental> totalInfo = queryFactory.select(rental).distinct().from(rental)
                 .join(rental.rentalCategoryInfos, rentalCategoryInfo)
                 .where((rental.status.in(status)).and(rental.title.contains(title))
                         .and(builder)
                         .and(rental.activeYn.eq(true))
                         .and(rental.deleteYn.eq(false)))
                 .fetch();
-        Integer total = totalInfo.size();
-        return total;
+        //Integer total = totalInfo.size();
+        return totalInfo.stream().toList();
     }
 
 

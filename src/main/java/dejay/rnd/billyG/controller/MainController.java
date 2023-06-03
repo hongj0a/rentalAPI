@@ -66,8 +66,9 @@ public class MainController {
     private final BlockUserRepository blockUserRepository;
     private final BlockPostRepository blockPostRepository;
     private final Path fileStorageLocation;
+    private final ToBlockRepository toBlockRepository;
 
-    public MainController(ImageProperties imageProperties, UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, BellScheduleRepositry bellScheduleRepository, BellScheduleService bellScheduleService, BlockUserRepository blockUserRepository, BlockPostRepository blockPostRepository) {
+    public MainController(ImageProperties imageProperties, UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, BellScheduleRepositry bellScheduleRepository, BellScheduleService bellScheduleService, BlockUserRepository blockUserRepository, BlockPostRepository blockPostRepository, ToBlockRepository toBlockRepository) {
         this.userRepository = userRepository;
         this.townRepository = townRepository;
         this.townRepositories = townRepositories;
@@ -92,6 +93,7 @@ public class MainController {
         this.bellScheduleService = bellScheduleService;
         this.blockUserRepository = blockUserRepository;
         this.blockPostRepository = blockPostRepository;
+        this.toBlockRepository = toBlockRepository;
     }
 
     @GetMapping("/getMainList")
@@ -100,9 +102,13 @@ public class MainController {
                                               @RequestParam(required = false, value="keyword") String keyword,
                                               @RequestParam(required = false, value="categories") Long[] categories,
                                               @RequestParam(required = false, value="towns") Long[] towns, Pageable pageable,
-                                              HttpServletRequest req) throws AppException {
+                                              HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray rentalArr = new JsonArray();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
 
         /**
          * [렌탈 상태]
@@ -128,62 +134,81 @@ public class MainController {
             p_status.add(2);
         }
 
-        Integer totalCount = rentalRepositories.getTotalCount(p_status, keyword, towns, categories);
+        List<Rental> totalCount = rentalRepositories.getTotalCount(p_status, keyword, towns, categories);
+
+        List<ToBlock> findBlock = toBlockRepository.findByUser_userIdxAndDeleteYn(findUser.getUserIdx(), false);
+
+        ArrayList<Long> blocks = new ArrayList<>();
+        for (int i = 0; i < findBlock.size(); i++) {
+            blocks.add(findBlock.get(i).getBlockUser().getUserIdx());
+        }
+
+        ArrayList<Long> sizes = new ArrayList<>();
+        for (int j = 0; j < totalCount.size(); j++) {
+            if (!blocks.contains(totalCount.get(j).getUser().getUserIdx())) {
+                sizes.add(totalCount.get(j).getRentalIdx());
+            }
+        }
 
         Page<Rental> mains = rentalRepositories.findAll(p_status, filter, keyword, towns, categories, pageable);
         mains.forEach(
                 rental -> {
-                    JsonObject rentalList = new JsonObject();
-                    rentalList.addProperty("rentalSeq", rental.getRentalIdx());
 
-                    //썸네일추출
-                    List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(rental.getRentalIdx());
-                    if (rentalImages.size() != 0) {
-                        rentalList.addProperty("imageUrl", rentalImages.get(0).getImageUrl());
+                    if (!blocks.contains(rental.getUser().getUserIdx())) {
+                        JsonObject rentalList = new JsonObject();
+
+                        rentalList.addProperty("rentalSeq", rental.getRentalIdx());
+
+                        //썸네일추출
+                        List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(rental.getRentalIdx());
+                        if (rentalImages.size() != 0) {
+                            rentalList.addProperty("imageUrl", rentalImages.get(0).getImageUrl());
+                        }
+
+                        rentalList.addProperty("title", rental.getTitle());
+                        rentalList.addProperty("content", rental.getContent());
+                        rentalList.addProperty("regDate", rental.getPullUpAt().getTime());
+                        rentalList.addProperty("dailyRentalFee", rental.getRentalPrice());
+
+                        //town 리스트 추출
+                        List<String> tLst = new ArrayList<>();
+
+                        if (null != rental.getLeadTown()) {
+                            Town Ltown = townRepository.getOne(rental.getLeadTown());
+                            tLst.add(Ltown.getTownName());
+                        }
+
+                        if ( null != rental.getTown1() ) {
+                            Town town1 = townRepository.getOne(rental.getTown1());
+                            tLst.add(town1.getTownName());
+
+                        }
+
+                        if ( null != rental.getTown2() ) {
+                            Town town2 = townRepository.getOne(rental.getTown2());
+                            tLst.add(town2.getTownName());
+                        }
+
+                        if ( null != rental.getTown3() ) {
+                            Town town3 = townRepository.getOne(rental.getTown3());
+                            tLst.add(town3.getTownName());
+                        }
+
+                        if ( null != rental.getTown4() ) {
+                            Town town4 = townRepository.getOne(rental.getTown4());
+                            tLst.add(town4.getTownName());
+                        }
+
+                        Gson gson = new Gson();
+                        rentalList.add("towns", gson.toJsonTree(tLst));
+
+                        rentalArr.add(rentalList);
                     }
 
-                    rentalList.addProperty("title", rental.getTitle());
-                    rentalList.addProperty("content", rental.getContent());
-                    rentalList.addProperty("regDate", rental.getPullUpAt().getTime());
-                    rentalList.addProperty("dailyRentalFee", rental.getRentalPrice());
-
-                    //town 리스트 추출
-                    List<String> tLst = new ArrayList<>();
-
-                    if (null != rental.getLeadTown()) {
-                        Town Ltown = townRepository.getOne(rental.getLeadTown());
-                        tLst.add(Ltown.getTownName());
-                    }
-
-                    if ( null != rental.getTown1() ) {
-                        Town town1 = townRepository.getOne(rental.getTown1());
-                        tLst.add(town1.getTownName());
-
-                    }
-
-                    if ( null != rental.getTown2() ) {
-                        Town town2 = townRepository.getOne(rental.getTown2());
-                        tLst.add(town2.getTownName());
-                    }
-
-                    if ( null != rental.getTown3() ) {
-                        Town town3 = townRepository.getOne(rental.getTown3());
-                        tLst.add(town3.getTownName());
-                    }
-
-                    if ( null != rental.getTown4() ) {
-                        Town town4 = townRepository.getOne(rental.getTown4());
-                        tLst.add(town4.getTownName());
-                    }
-
-                    Gson gson = new Gson();
-                    rentalList.add("towns", gson.toJsonTree(tLst));
-
-                    rentalArr.add(rentalList);
                 }
         );
         data.add("rentals", rentalArr);
-        data.addProperty("totalCount", totalCount);
+        data.addProperty("totalCount", sizes.size());
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 

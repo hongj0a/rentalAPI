@@ -49,7 +49,6 @@ public class UserController {
     private final ReviewRepository reviewRepository;
     private final ReviewImageRepository reviewImageRepository;
     private final GradeRepository gradeRepository;
-
     private final TermsRepository termsRepository;
     private final CategoryRepository categoryRepository;
     private final StatusHistoryRepository statusHistoryRepository;
@@ -63,7 +62,9 @@ public class UserController {
     private final ArbitrationRepository arbitrationRepository;
     private final AmImageRepository amImageRepository;
     private final ArbitrationService arbitrationService;
-    public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService, UserEvaluationRepository userEvaluationRepository, ArbitrationRepository arbitrationRepository, AmImageRepository amImageRepository, ArbitrationService arbitrationService) {
+    private final ToBlockRepository toBlockRepository;
+    private final ToBlockService toBlockService;
+    public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService, UserEvaluationRepository userEvaluationRepository, ArbitrationRepository arbitrationRepository, AmImageRepository amImageRepository, ArbitrationService arbitrationService, ToBlockRepository toBlockRepository, ToBlockService toBlockService) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.townService = townService;
@@ -89,6 +90,8 @@ public class UserController {
         this.amImageRepository = amImageRepository;
         this.arbitrationService = arbitrationService;
 
+        this.toBlockRepository = toBlockRepository;
+        this.toBlockService = toBlockService;
     }
 
     @PostMapping("/signup")
@@ -1271,6 +1274,47 @@ public class UserController {
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
 
+
+    //나의 차단유저리스트 불러오기
+    //게시글 차단하면 게시글상세 접근불가, 제3자 프로필 접근불가
+    //채팅목록에서는 보일 수 있으나
+    //채팅상세에서 차단유저인지 플래그 리턴해주면 제3자프로필로 접근못함
+    //채팅 못함, 채팅내용은 확인할 수 있어야함
+    //채팅방내에서 차단플래그로 구분, 거래중일 땐 차단 못함
+    //채팅방내에 거래중인지 리턴플래그 필요
+    @GetMapping("/getMyBlockUserList")
+    public ResponseEntity<JsonObject> getMyBlockUserList(Pageable pageable,HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+        JsonArray buArr = new JsonArray();
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        List<ToBlock> total = toBlockRepository.findByUser_userIdxAndDeleteYn(findUser.getUserIdx(), false);
+        Page<ToBlock> blocks = toBlockRepository.findByUser_userIdxAndDeleteYnOrderByCreateAtDesc(findUser.getUserIdx(), false, pageable);
+
+        blocks.forEach(
+                block -> {
+                    JsonObject bl = new JsonObject();
+
+                    bl.addProperty("toBlockIdx", block.getToBlockIdx());
+                    bl.addProperty("toBlockUserIdx", block.getBlockUser().getUserIdx());
+                    bl.addProperty("toBlockUserNickName", block.getBlockUser().getNickName());
+                    bl.addProperty("toBlockUserImage", block.getBlockUser().getProfileImageUrl());
+
+                    buArr.add(bl);
+                }
+        );
+
+        data.add("personalBlocks", buArr);
+        data.addProperty("totalCount", total.size());
+
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
 
 
 }

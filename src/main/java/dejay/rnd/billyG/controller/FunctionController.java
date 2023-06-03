@@ -5,15 +5,14 @@ import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.LikeDto;
+import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
-import dejay.rnd.billyG.repository.LikeRepository;
-import dejay.rnd.billyG.repository.RentalRepository;
-import dejay.rnd.billyG.repository.SlangsRepository;
-import dejay.rnd.billyG.repository.UserRepository;
+import dejay.rnd.billyG.repository.*;
 
 import dejay.rnd.billyG.service.LikeService;
 import dejay.rnd.billyG.service.RentalService;
+import dejay.rnd.billyG.service.ToBlockService;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
@@ -34,14 +33,17 @@ public class FunctionController {
     private final UserRepository userRepository;
     private final LikeRepository likeRepository;
     private final SlangsRepository slangsRepository;
-
-    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository, SlangsRepository slangsRepository) {
+    private final ToBlockRepository toBlockRepository;
+    private final ToBlockService toBlockService;
+    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository, SlangsRepository slangsRepository, ToBlockRepository toBlockRepository, ToBlockService toBlockService) {
         this.rentalRepository = rentalRepository;
         this.rentalService = rentalService;
         this.likeService = likeService;
         this.userRepository = userRepository;
         this.likeRepository = likeRepository;
         this.slangsRepository = slangsRepository;
+        this.toBlockRepository = toBlockRepository;
+        this.toBlockService = toBlockService;
     }
 
     @PostMapping("/setLike")
@@ -114,4 +116,51 @@ public class FunctionController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
+
+    //좋아요처럼 변경
+    @PostMapping("/setBlockControl")
+    public ResponseEntity<JsonObject> setBlockControl(HttpServletRequest req,
+                                                      @RequestBody UserDto userDto) throws ParseException {
+        JsonObject data = new JsonObject();
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        ToBlock findOne;
+
+        if (userDto.isBlockYn() == true) {
+            //차단을 하겠다는 의미
+            //일단 차단을 했던 이력이 있는지 조회
+            //deleteyn true
+            findOne = toBlockRepository.findByUser_userIdxAndBlockUser_userIdxAndDeleteYn(findUser.getUserIdx(), userDto.getUserIdx(), true);
+
+            if (findOne != null) {
+                findOne.setDeleteYn(false);
+                toBlockService.setBlockInfoUpdate(findOne);
+            } else {
+                ToBlock toBlock = new ToBlock();
+                User findBlockUser = userRepository.getOne(userDto.getUserIdx());
+
+                toBlock.setBlockUser(findBlockUser);
+                toBlock.setUser(findUser);
+                toBlockService.insertBlockInfo(toBlock);
+            }
+        } else {
+            //차단을 풀겠다는 의미
+            //차단했던 이력 조회
+            //무조건 있어야함
+            findOne = toBlockRepository.findByUser_userIdxAndBlockUser_userIdxAndDeleteYn(findUser.getUserIdx(), userDto.getUserIdx(), false);
+            if (findOne != null) {
+                findOne.setDeleteYn(true);
+                toBlockService.setBlockInfoUpdate(findOne);
+            }
+        }
+
+
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+    }
+
+
 }

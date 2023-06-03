@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class UserDto {
 
+   private Long userIdx;
+
    @NotNull
    @Size(min = 3, max = 50)
    private String email;
@@ -52,6 +54,8 @@ public class UserDto {
 
    @Size(min = 3, max = 100)
    private String towns[];
+
+   private boolean blockYn;
 
    private Set<GradeDto> authorityDtoSet;
 

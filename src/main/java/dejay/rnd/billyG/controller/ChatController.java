@@ -27,6 +27,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 채팅방 상세에 채팅상대가 차단대상인지 조회해서
+ * 차단여부 플래그값 리턴해주기
+ */
 @Controller
 @RequestMapping("/api")
 public class ChatController {
