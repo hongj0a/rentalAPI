@@ -26,9 +26,12 @@ public class Alarm {
     private Long alarmIdx;
 
     @ManyToOne
-    @NotNull
     @JoinColumn (name = "userIdx")
     private User user;
+
+    @ManyToOne
+    @JoinColumn (name = "adminIdx")
+    private Admin admin;
 
     @ColumnDefault("0")
     @Column (name = "read_yn")

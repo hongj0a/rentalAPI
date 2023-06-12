@@ -52,6 +52,10 @@ public class ChatRoom {
     @Column(name = "visible_to")
     private Long visibleTo;
 
+    @ColumnDefault("1")
+    @Column (name = "first_yn")
+    private boolean firstYn;
+
     @ColumnDefault("0")
     @Column (name = "read_yn")
     private boolean readYn;

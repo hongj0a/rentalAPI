@@ -180,7 +180,7 @@ public class UserService {
         User findUser = userRepositories.findOne(userIdx);
         findUser.setRefreshToken(refreshToken);
         findUser.setUpdateAt(now_date);
-        findUser.setIdEmail(findUser.getEmail());
+        findUser.setEmail(findUser.getEmail());
     }
 
     @Transactional

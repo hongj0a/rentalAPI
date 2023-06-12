@@ -1,7 +1,7 @@
 package dejay.rnd.billyG.repository;
 
 import dejay.rnd.billyG.domain.ChatContent;
-import dejay.rnd.billyG.domain.ChatRoom;
+import dejay.rnd.billyG.domain.ChatImage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,9 +12,7 @@ import java.util.List;
 
 @EnableJpaRepositories
 @Repository
-public interface ChatContentRepository extends JpaRepository<ChatContent, Long> {
+public interface ChatImageRepository extends JpaRepository<ChatImage, Long> {
 
-    Page<ChatContent> findByChatRoom_chatRoomIdxOrderByCreateAtDesc(Long chatRoomIdx, Pageable pageable);
-
-    List<ChatContent> findByChatRoom_chatRoomIdx(Long chatRoomIdx);
+    List<ChatImage> findByChatContent_ChatIdx(Long chatContentIdx);
 }

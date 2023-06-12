@@ -13,12 +13,12 @@ import java.util.List;
 @Repository
 public interface ChatRepository extends JpaRepository<ChatRoom, Long> {
 
-    Page<ChatRoom> findByFromUser_userIdxOrToUser_userIdxAndVisibleToNotInOrUpdatorIsNotNullOrderByUpdateAtDesc(Long fromIdx, Long toIdx, Long[] visibleTo, Pageable pageable);
+    //Page<ChatRoom> findByFromUser_userIdxAndVisibleToNotInAndUpdatorIsNotNullOrderByUpdateAtDesc(Long fromIdx, Long toIdx, Long[] visibleTo,  Pageable pageable);
 
-    List<ChatRoom> findByFromUser_userIdxOrToUser_userIdxAndVisibleToNotInOrUpdatorIsNotNull(Long fromIdx, Long toIdx, Long[] visibleTo);
+    //List<ChatRoom> findByFromUser_userIdxAndVisibleToNotInAndUpdatorIsNotNull(Long fromIdx, Long[] visibleTo);
 
-    ChatRoom findByFromUser_userIdxAndVisibleToNotInAndRental_rentalIdxAndUpdatorIsNotNull(Long fromIdx, Long[] visibleTo, Long rentalIdx);
+    //ChatRoom findByFromUser_userIdxAndToUser_userIdxAndVisibleToNotInAndRental_rentalIdxAndUpdatorIsNotNull(Long fromIdx, Long toIdx, Long[] visibleTo, Long rentalIdx);
 
     ChatRoom findByRental_rentalIdxAndVisibleToIn(Long rentalIdx, Long[] visibleTo);
-    ChatRoom getOne(Long chatRoomIdx);
+    ChatRoom findByChatRoomIdx(Long chatRoomIdx);
 }

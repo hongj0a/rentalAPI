@@ -51,22 +51,19 @@ public class AuthController {
     public ResponseEntity<JsonObject> authorize(@RequestBody LoginDto loginDto, HttpServletRequest req) throws java.text.ParseException {
         JsonObject data = new JsonObject();
 
-        System.out.println("loginDto = " + loginDto.getCiValue());
-        User isUser = userRepository.findByCiValue(loginDto.getCiValue());
-        System.out.println("isUser = " + isUser);
+        //User isUser = userRepository.findByCiValue(loginDto.getCiValue());
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String email = loginDto.getEmail();
         String snsType = loginDto.getSnsType();
         User userOne = userRepository.findByEmail(email);
-        String star = "";
 
-        if (isUser != null) {
-            if(isUser.getStatus() == 30) {
+        if (userOne != null) {
+            if(userOne.getStatus() == 30) {
                 apiRes.setError(ErrCode.err_api_is_delete_user.code());
                 apiRes.setMessage(ErrCode.err_api_is_delete_user.msg());
                 return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
-            } else if ( !isUser.getSnsName().equals( loginDto.getSnsType()) ) {
+            } else if ( !userOne.getSnsName().equals( loginDto.getSnsType()) ) {
                 apiRes.setError(ErrCode.err_api_is_exist_user.code());
                 apiRes.setMessage(ErrCode.err_api_is_exist_user.msg());
                 return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
@@ -99,6 +96,7 @@ public class AuthController {
             apiRes.setMessage(ErrCode.err_long_time_no_use_user.msg());
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
         }
+
         
         //로그인
         TokenDto tokenDto = userService.login(email, snsType);
@@ -106,6 +104,8 @@ public class AuthController {
         data.addProperty("accessToken",tokenDto.getAccessToken());
         data.addProperty("refreshToken", tokenDto.getRefreshToken());
         data.addProperty("userSeq", userOne.getUserIdx());
+
+        data.addProperty("userStatus", userOne.getStatus());
 
         // user 테이블에 Refreshtoken update
         userService.setRefreshToken(userOne.getUserIdx(), tokenDto.getRefreshToken());
@@ -202,6 +202,8 @@ public class AuthController {
                 data.addProperty("refreshToken", tokenDto.getRefreshToken());
                 data.addProperty("userSeq", findUser.getUserIdx());
 
+
+                data.addProperty("userStatus", findUser.getStatus());
                 userService.setRefreshToken(findUser.getUserIdx(), tokenDto.getRefreshToken());
 
                 if (findUser.getNickName() == null || ("").equals(findUser.getNickName())) {

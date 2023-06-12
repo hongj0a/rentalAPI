@@ -157,8 +157,14 @@ public class CSController {
 
                     faq.addProperty("faqIdx", faqs.getFaqIdx());
                     faq.addProperty("faqTypeName", faqs.getCategory().getName());
-                    faq.addProperty("title", faqs.getTitle());
-                    faq.addProperty("content", faqs.getContent());
+                    //faq.addProperty("title", faqs.getTitle());
+                    faq.addProperty("faqQuestion", faqs.getContent());
+
+                    if (faqs.getAnswer() != null) {
+                        faq.addProperty("answer", StringEscapeUtils.unescapeHtml4(faqs.getAnswer()));
+                    } else {
+                        faq.addProperty("answer", "");
+                    }
 
                     faqArr.add(faq);
                 }
@@ -199,18 +205,17 @@ public class CSController {
                     }
 
                     oto.addProperty("title", ones.getTitle());
-                    if (ones.equals("1")) {
+                    if (ones.getStatus().equals("2")) {
                         statusStr = "답변완료";
                         //Answer answer = answerRepository.findByOneToOneInquiry_OneIdx(ones.getOneIdx());
-                        oto.addProperty("answerIdx", ones.getAnswerContent());
+                        oto.addProperty("answerContent", StringEscapeUtils.unescapeHtml4(ones.getAnswerContent()));
                     } else {
-                        oto.addProperty("answerIdx", 0);
                         oto.addProperty("answerContent", "");
                     }
                     oto.addProperty("status", statusStr);
 
-                    List<InquiryImage> findimg = inquiryImageRepository.findByOneToOneInquiry_oneIdx(ones.getOneIdx());
-                    findimg.forEach(
+                    List<InquiryImage> findImg = inquiryImageRepository.findByOneToOneInquiry_oneIdx(ones.getOneIdx());
+                    findImg.forEach(
                             img -> {
                                 JsonObject iObj = new JsonObject();
                                 iObj.addProperty("imageSeq", img.getImageIdx());

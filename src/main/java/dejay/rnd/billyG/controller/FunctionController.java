@@ -10,6 +10,7 @@ import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.repository.*;
 
+import dejay.rnd.billyG.service.FcmService;
 import dejay.rnd.billyG.service.LikeService;
 import dejay.rnd.billyG.service.RentalService;
 import dejay.rnd.billyG.service.ToBlockService;
@@ -35,7 +36,8 @@ public class FunctionController {
     private final SlangsRepository slangsRepository;
     private final ToBlockRepository toBlockRepository;
     private final ToBlockService toBlockService;
-    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository, SlangsRepository slangsRepository, ToBlockRepository toBlockRepository, ToBlockService toBlockService) {
+    private final FcmService fcmService;
+    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository, SlangsRepository slangsRepository, ToBlockRepository toBlockRepository, ToBlockService toBlockService, FcmService fcmService) {
         this.rentalRepository = rentalRepository;
         this.rentalService = rentalService;
         this.likeService = likeService;
@@ -44,6 +46,7 @@ public class FunctionController {
         this.slangsRepository = slangsRepository;
         this.toBlockRepository = toBlockRepository;
         this.toBlockService = toBlockService;
+        this.fcmService = fcmService;
     }
 
     @PostMapping("/setLike")
@@ -162,5 +165,11 @@ public class FunctionController {
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
 
+
+    @PostMapping("/send")
+    public void sendTopicMessage() throws Exception {
+        //topic user_id
+        fcmService.sendTopicMessage("test123123","test title", "푸시테스테테트트틋트새트새틋.!!!",null);
+    }
 
 }

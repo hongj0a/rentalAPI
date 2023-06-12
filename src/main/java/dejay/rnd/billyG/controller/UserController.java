@@ -17,6 +17,7 @@ import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -1165,8 +1166,11 @@ public class UserController {
                             case 1:
                                 status.set("중재중");
                                 break;
-                            default:
+                            case 2:
                                 status.set("중재완료");
+                                break;
+                            default:
+                                //예외처리
                                 break;
                         }
 
@@ -1229,7 +1233,7 @@ public class UserController {
 
         if (findAM.getAmStatus() == 2) {
             data.addProperty("arbitrationStatus", "중재완료");
-            data.addProperty("arbitrationAnswer", findAM.getAnswerContent());
+            data.addProperty("arbitrationAnswer", StringEscapeUtils.unescapeHtml4(findAM.getAnswerContent()));
         } else if (findAM.getAmStatus() == 1){
             data.addProperty("arbitrationStatus", "중재중");
             data.addProperty("arbitrationAnswer", "");

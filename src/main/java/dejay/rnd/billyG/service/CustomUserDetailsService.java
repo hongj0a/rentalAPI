@@ -30,7 +30,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     private org.springframework.security.core.userdetails.User createUser(String username, User user) {
-        if (user.getStatus() != 10) {
+        if (user.getStatus() == 999) {
             throw new RuntimeException(username + " -> 활성화되어 있지 않습니다.");
         }
 

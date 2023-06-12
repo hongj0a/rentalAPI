@@ -45,7 +45,8 @@ public class OneToOneInquiry {
     /**
      * 답변상태
      * 0 : 답변대기
-     * 1 : 답변완료
+     * 1 : 처리중
+     * 2 : 답변완료
      */
     @Column
     private String status;

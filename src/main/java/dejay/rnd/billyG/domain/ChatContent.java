@@ -54,4 +54,8 @@ public class ChatContent {
     @Column (name = "create_at")
     private Date createAt;
 
+    @ColumnDefault("0")
+    @Column (name = "system_yn")
+    private boolean systemYn;
+
 }

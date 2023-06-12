@@ -9,13 +9,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 @EnableJpaRepositories
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
-    Transaction getOne(Long transactionIdx);
+    Transaction findByTransactionIdx(Long transactionIdx);
+
+    List<Transaction> findByCreateAtEquals(Date createAt);
 
     List<Transaction> findByRental_rentalIdxAndOwnerStatusOrderByCreateAtDesc(Long rentalIdx, Integer ownerStatus);
     Page<Transaction> findByRental_rentalIdxAndOwnerStatusOrderByCreateAtDesc(Long rentalIdx, Integer ownerStatus, Pageable pageable);
@@ -36,5 +39,5 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     Page<Transaction> findByUser_userIdxAndCancelYnOrderByCreateAtDesc(Long userIdx, boolean cancelYn, Pageable pageable);
     List<Transaction> findByUser_userIdxAndCancelYn(Long userIdx, boolean cancelYn);
 
-    List<Transaction> findByRental_rentalIdxAndUser_userIdxAndOwnerStatusNotIn(Long rentalIdx, Long userIdx, int[] ownerStatus);
+    List<Transaction> findByRental_rentalIdxAndUser_userIdxAndCancelYnAndOwnerStatusNotIn(Long rentalIdx, Long userIdx, boolean cancelYn, int[] ownerStatus);
 }
