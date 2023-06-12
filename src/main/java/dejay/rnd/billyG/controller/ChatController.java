@@ -175,8 +175,7 @@ public class ChatController {
                 findTr.setOwnerStatus(findTr.getOwnerStatus() + 10);
                 findTr.setRenterStatus(findTr.getRenterStatus() + 10);
                 findTr.setStatusAt(FrontUtil.getNowDate());
-                status = String.valueOf(findTr.getOwnerStatus()+10);
-                contentDto.setStatus(status);
+                contentDto.setStatus(String.valueOf(findTr.getOwnerStatus()));
             } else if (contentDto.getStep() == 2) {
 
                 history.setOwnerStatus(70);

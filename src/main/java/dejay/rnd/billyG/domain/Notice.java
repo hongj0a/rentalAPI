@@ -79,4 +79,10 @@ public class Notice {
 
     @Column (name = "active_at")
     private Date activeAt;
+
+    @Column (name = "start_at")
+    private Date startAt;
+
+    @Column (name = "end_at")
+    private Date endAt;
 }
