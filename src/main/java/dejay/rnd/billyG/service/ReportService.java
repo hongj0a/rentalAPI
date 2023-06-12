@@ -4,6 +4,7 @@ import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.repository.BlockPostRepository;
 import dejay.rnd.billyG.repository.BlockReviewRepository;
 import dejay.rnd.billyG.repository.BlockUserRepository;
+import dejay.rnd.billyG.util.FrontUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +20,6 @@ public class ReportService {
     private final BlockPostRepository blockPostRepository;
     private final BlockUserRepository blockUserRepository;
     private final BlockReviewRepository blockReviewRepository;
-    LocalDateTime date = LocalDateTime.now();
-    Date now_date = Timestamp.valueOf(date);
 
     @Transactional
     public void insertBlockPost(Rental rental, Category blockType, String reason, Long userIdx){
@@ -30,7 +29,7 @@ public class ReportService {
         blockPost.setCategory(blockType);;
         blockPost.setReason(reason);
         blockPost.setReporterIdx(userIdx);
-        blockPost.setCreateAt(now_date);
+        blockPost.setCreateAt(FrontUtil.getNowDate());
 
         blockPostRepository.save(blockPost);
 
@@ -44,7 +43,7 @@ public class ReportService {
         blockUser.setCategory(blockType);;
         blockUser.setReason(reason);
         blockUser.setReporterIdx(userIdx);
-        blockUser.setCreateAt(now_date);
+        blockUser.setCreateAt(FrontUtil.getNowDate());
 
         blockUserRepository.save(blockUser);
 
@@ -58,7 +57,7 @@ public class ReportService {
         blockReview.setCategory(blockType);;
         blockReview.setReason(reason);
         blockReview.setReporterIdx(userIdx);
-        blockReview.setCreateAt(now_date);
+        blockReview.setCreateAt(FrontUtil.getNowDate());
 
         blockReviewRepository.save(blockReview);
 

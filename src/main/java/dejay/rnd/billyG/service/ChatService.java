@@ -4,6 +4,7 @@ import dejay.rnd.billyG.domain.ChatContent;
 import dejay.rnd.billyG.domain.ChatRoom;
 import dejay.rnd.billyG.repository.ChatContentRepository;
 import dejay.rnd.billyG.repository.ChatRepository;
+import dejay.rnd.billyG.util.FrontUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,8 +19,6 @@ import java.util.Date;
 public class ChatService {
     private final ChatRepository chatRoomRepository;
     private final ChatContentRepository chatContentRepository;
-    LocalDateTime date = LocalDateTime.now();
-    Date now_date = Timestamp.valueOf(date);
 
     @Transactional
     public ChatRoom createChat(ChatRoom chatRoom) {
@@ -33,12 +32,12 @@ public class ChatService {
 
     @Transactional
     public void updateExit(ChatRoom chatRoom) {
-        chatRoom.setExitAt(now_date);
-        chatRoom.setUpdateAt(now_date);
+        chatRoom.setExitAt(FrontUtil.getNowDate());
+        chatRoom.setUpdateAt(FrontUtil.getNowDate());
     }
 
     @Transactional
     public void updateChatRoom(ChatRoom chatRoom) {
-        chatRoom.setUpdateAt(now_date);
+        chatRoom.setUpdateAt(FrontUtil.getNowDate());
     }
 }

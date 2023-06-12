@@ -11,6 +11,7 @@ import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
 import dejay.rnd.billyG.repository.UserCountRepository;
 import dejay.rnd.billyG.repositoryImpl.UserRepositories;
 import dejay.rnd.billyG.repository.UserRepository;
+import dejay.rnd.billyG.util.FrontUtil;
 import dejay.rnd.billyG.util.SecurityUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -45,13 +46,9 @@ public class UserService {
         this.userCountRepository = userCountRepository;
         this.userCountRepositories = userCountRepositories;
     }
-    LocalDateTime date = LocalDateTime.now();
-    Date now_date = Timestamp.valueOf(date);
 
     @Transactional
     public UserDto signup(UserDto userDto) {
-        LocalDateTime date = LocalDateTime.now();
-        Date now_date = Timestamp.valueOf(date);
 
         Grade grade = Grade.builder()
                 .gradeIdx(1L)
@@ -70,9 +67,9 @@ public class UserService {
                 .phoneNum(userDto.getPhoneNumber())
                 .ciValue(userDto.getCiValue())
                 .grades(Collections.singleton(grade))
-                .levelupAt(now_date)
-                .lastLoginDate(now_date)
-                .activeAt(now_date)
+                .levelupAt(FrontUtil.getNowDate())
+                .lastLoginDate(FrontUtil.getNowDate())
+                .activeAt(FrontUtil.getNowDate())
                 .build();
         return UserDto.from(userRepository.save(user));
     }
@@ -84,7 +81,7 @@ public class UserService {
         User findUser = userRepositories.findOne(userIdx);
         findUser.setSnsName(snsType);
         findUser.setSnsType(passwordEncoder.encode(snsType));
-        findUser.setUpdateAt(now_date);
+        findUser.setUpdateAt(FrontUtil.getNowDate());
     }
 
     @Transactional
@@ -179,7 +176,7 @@ public class UserService {
 
         User findUser = userRepositories.findOne(userIdx);
         findUser.setRefreshToken(refreshToken);
-        findUser.setUpdateAt(now_date);
+        findUser.setUpdateAt(FrontUtil.getNowDate());
         findUser.setEmail(findUser.getEmail());
     }
 
@@ -189,14 +186,14 @@ public class UserService {
         User findUser = userRepositories.findOne(userIdx);
         findUser.setProfileImageUrl(image_name);
         findUser.setNickName(nickname);
-        findUser.setUpdateAt(now_date);
+        findUser.setUpdateAt(FrontUtil.getNowDate());
     }
     @Transactional
     public void setUserProfileImageUrl(Long userIdx, String image_name) {
 
         User findUser = userRepositories.findOne(userIdx);
         findUser.setProfileImageUrl(image_name);
-        findUser.setUpdateAt(now_date);
+        findUser.setUpdateAt(FrontUtil.getNowDate());
     }
 
     @Transactional
@@ -204,11 +201,11 @@ public class UserService {
 
         User findUser = userRepositories.findOne(userIdx);
         findUser.setNickName(nickname);
-        findUser.setUpdateAt(now_date);
+        findUser.setUpdateAt(FrontUtil.getNowDate());
     }
     @Transactional
     public void updateUser(User user) {
-        user.setUpdateAt(now_date);
+        user.setUpdateAt(FrontUtil.getNowDate());
         user.setUpdator(user.getEmail());
     }
 
@@ -216,7 +213,7 @@ public class UserService {
     public void updateCiValue(String phoneNum, User user) {
 
         user.setPhoneNum(phoneNum);
-        user.setUpdateAt(now_date);
+        user.setUpdateAt(FrontUtil.getNowDate());
     }
 
 

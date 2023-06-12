@@ -6,6 +6,7 @@ import dejay.rnd.billyG.domain.ToBlock;
 import dejay.rnd.billyG.domain.User;
 import dejay.rnd.billyG.repository.LikeRepository;
 import dejay.rnd.billyG.repository.ToBlockRepository;
+import dejay.rnd.billyG.util.FrontUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,20 +20,17 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class ToBlockService {
     private final ToBlockRepository toBlockRepository;
-    LocalDateTime date = LocalDateTime.now();
-    Date now_date = Timestamp.valueOf(date);
-
     @Transactional
     public void insertBlockInfo(ToBlock toBlock){
 
-        toBlock.setCreateAt(now_date);
+        toBlock.setCreateAt(FrontUtil.getNowDate());
         toBlockRepository.save(toBlock);
 
     }
 
     @Transactional
     public void setBlockInfoUpdate(ToBlock toBlock) {
-        toBlock.setDeleteAt(now_date);
+        toBlock.setDeleteAt(FrontUtil.getNowDate());
     }
 
 }

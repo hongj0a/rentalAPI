@@ -14,6 +14,7 @@ import dejay.rnd.billyG.repositoryImpl.TransactionRepositories;
 import dejay.rnd.billyG.service.ChatService;
 import dejay.rnd.billyG.service.FileUploadService;
 import dejay.rnd.billyG.service.TransactionService;
+import dejay.rnd.billyG.util.FrontUtil;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
@@ -76,10 +77,12 @@ public class ChatController {
 
     @Transactional(rollbackFor = Exception.class)
     @MessageMapping(value = "/chat/message")
-    public void message(@Payload ChatContentDto contentDto){
+    public void message(@Payload ChatContentDto contentDto) throws java.text.ParseException {
         LocalDateTime date = LocalDateTime.now();
-        Date thisDate = Timestamp.valueOf(date);
         long now_date = Timestamp.valueOf(date).getTime();
+
+        System.out.println("status = " + contentDto.getStatus());
+        System.out.println("contentDto.getStep() = " + contentDto.getStep());
 
         contentDto.setStep(contentDto.getStep());
 
@@ -89,11 +92,14 @@ public class ChatController {
         User findUser = userRepository.findByUserIdx(contentDto.getUserIdx());
         ChatRoom findRoom = chatRepository.findByChatRoomIdx(contentDto.getChatRoomIdx());
         User renter = userRepository.findByUserIdx(findRoom.getFromUser().getUserIdx());
-        List<Transaction> trs = transactionRepository.findByCreateAtEquals(thisDate);
-        int len = (int) (Math.log10(trs.size()) + 1);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        String parseDate = dateFormat.format(thisDate);
+        String parseDate = dateFormat.format(FrontUtil.getNowDate());
+        Date beforeDate = dateFormat.parse(parseDate);
+
+        //취소된거래도 번호카운트에 포함시키는지?
+        List<Transaction> trs = transactionRepository.findByCreateAtGreaterThanEqualAndCreateAtLessThanEqual(beforeDate, FrontUtil.getNowDate());
+        int len = (int) (Math.log10(trs.size()) + 1);
 
         //system message인 경우
         if (contentDto.isSystemYn() == true) {
@@ -105,7 +111,12 @@ public class ChatController {
 
             chatService.insert(chat);
             contentDto.setSystemYn(true);
+            if (contentDto.getTransactionIdx() != 0) {
+                Transaction transaction = transactionRepository.findByTransactionIdx(contentDto.getTransactionIdx());
+                contentDto.setStatus(String.valueOf(transaction.getOwnerStatus()));
+            }
             contentDto.setRegDate(now_date);
+
         } else if (contentDto.isSystemYn() == false){
             //채팅 메시지가 있는경우
             if (findUser != null && contentDto.getMessage() != null) {
@@ -117,9 +128,15 @@ public class ChatController {
 
                 findRoom.setLastChatMessage(contentDto.getMessage());
                 findRoom.setUpdator(findUser.getEmail());
-                findRoom.setUpdateAt(thisDate);
 
                 chatService.updateChatRoom(findRoom);
+
+                if (contentDto.getTransactionIdx() != 0) {
+                    Transaction transaction = transactionRepository.findByTransactionIdx(contentDto.getTransactionIdx());
+                    contentDto.setStatus(String.valueOf(transaction.getOwnerStatus()));
+                } else {
+                    contentDto.setStatus(String.valueOf(10));
+                }
 
                 contentDto.setMessageSeq(chatContent.getChatIdx());
                 contentDto.setNickName(findUser.getNickName());
@@ -129,46 +146,47 @@ public class ChatController {
         }
 
 
-        if (contentDto.getTransactionIdx() != 0 ) {
+        if (contentDto.getTransactionIdx() != 0 && contentDto.isSystemYn() != true) {
             //변경되는 내용 다시저장
             Transaction findTr = transactionRepository.findByTransactionIdx(contentDto.getTransactionIdx());
 
             if (contentDto.getStep()== 0 ) {
 
-                if (contentDto.isSystemYn() == false) {
-                    findTr.setCancelYn(true);
-                    findTr.setCancelAt(thisDate);
-                    findTr.setStatusAt(thisDate);
+                findTr.setCancelYn(true);
+                findTr.setCancelAt(FrontUtil.getNowDate());
+                findTr.setStatusAt(FrontUtil.getNowDate());
 
-                    history.setCancelAt(thisDate);
-                    history.setStatusAt(thisDate);
-                    history.setCancelYn(true);
+                history.setCancelAt(FrontUtil.getNowDate());
+                history.setStatusAt(FrontUtil.getNowDate());
+                history.setCancelYn(true);
 
-                    contentDto.setStatus(String.valueOf(10));
-                }
+                findRoom.setFirstYn(true);
+                chatService.updateChatRoom(findRoom);
+                contentDto.setStatus(String.valueOf(10));
+                contentDto.setTransactionIdx(0L);
 
             } else if (contentDto.getStep()==1) {
 
                 history.setOwnerStatus(findTr.getOwnerStatus() + 10);
                 history.setRenterStatus(findTr.getRenterStatus() + 10);
-                history.setUpdateAt(thisDate);
-                history.setStatusAt(thisDate);
+                history.setUpdateAt(FrontUtil.getNowDate());
+                history.setStatusAt(FrontUtil.getNowDate());
 
                 findTr.setOwnerStatus(findTr.getOwnerStatus() + 10);
                 findTr.setRenterStatus(findTr.getRenterStatus() + 10);
-                findTr.setStatusAt(thisDate);
+                findTr.setStatusAt(FrontUtil.getNowDate());
                 status = String.valueOf(findTr.getOwnerStatus()+10);
                 contentDto.setStatus(status);
             } else if (contentDto.getStep() == 2) {
 
                 history.setOwnerStatus(70);
                 history.setRenterStatus(70);
-                history.setUpdateAt(thisDate);
-                history.setStatusAt(thisDate);
+                history.setUpdateAt(FrontUtil.getNowDate());
+                history.setStatusAt(FrontUtil.getNowDate());
 
                 findTr.setOwnerStatus(70);
                 findTr.setRenterStatus(70);
-                findTr.setStatusAt(thisDate);
+                findTr.setStatusAt(FrontUtil.getNowDate());
 
                 findRoom.setFirstYn(true);
                 chatService.updateChatRoom(findRoom);
@@ -182,7 +200,7 @@ public class ChatController {
             history.setTransactionIdx(findTr.getTransactionIdx());
 
 
-        } else if (contentDto.getTransactionIdx() == 0) {
+        } else if (contentDto.getTransactionIdx() == 0 && contentDto.isSystemYn() != true) {
             //null, 새로 만들어야 하는 시점. 히스토리도 똑같이 입력
                 if (contentDto.getStep()==1) {
 
@@ -223,7 +241,7 @@ public class ChatController {
                             tr.setTransactionNum(parseDate + trs.size() +1);
                             break;
                     }
-                    tr.setStatusAt(thisDate);
+                    tr.setStatusAt(FrontUtil.getNowDate());
 
                     Transaction transaction = transactionService.insertTransaction(tr);
 
@@ -233,8 +251,8 @@ public class ChatController {
                     history.setRenterStatus(transaction.getRenterStatus());
                     history.setCancelYn(false);
                     history.setRentalIdx(findRoom.getRental().getRentalIdx());
-                    history.setStatusAt(thisDate);
-                    history.setUpdateAt(thisDate);
+                    history.setStatusAt(FrontUtil.getNowDate());
+                    history.setUpdateAt(FrontUtil.getNowDate());
                     history.setUserIdx(renter.getUserIdx());
 
                     contentDto.setStatus(String.valueOf(20));
@@ -243,12 +261,13 @@ public class ChatController {
 
         }
 
-        history.setCreateAt(thisDate);
+        history.setCreateAt(FrontUtil.getNowDate());
         history.setUpdator(findUser.getEmail());
 
         //최종 히스토리 set
         transactionService.insertHistory(history);
 
+        System.out.println("contentDto 최종!!!!!! === " + contentDto.getStatus());
         template.convertAndSend("/sub/isRoomExistCheck" + contentDto.getChatRoomIdx(), contentDto);
     }
 

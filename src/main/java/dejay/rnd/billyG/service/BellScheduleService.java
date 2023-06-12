@@ -5,6 +5,7 @@ import dejay.rnd.billyG.domain.Likes;
 import dejay.rnd.billyG.domain.User;
 import dejay.rnd.billyG.repository.BellScheduleRepositry;
 import dejay.rnd.billyG.repositoryImpl.AlarmRepositories;
+import dejay.rnd.billyG.util.FrontUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,11 +20,9 @@ import java.util.Date;
 public class BellScheduleService {
     private final BellScheduleRepositry bellScheduleRepositry;
 
-    LocalDateTime date = LocalDateTime.now();
-    Date now_date = Timestamp.valueOf(date);
-
     @Transactional
     public void update(BellSchedule bellSchedule) {
-        bellSchedule.setUpdateAt(now_date);
+
+        bellSchedule.setUpdateAt(FrontUtil.getNowDate());
     }
 }

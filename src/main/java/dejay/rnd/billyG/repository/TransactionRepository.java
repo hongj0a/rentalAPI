@@ -18,7 +18,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     Transaction findByTransactionIdx(Long transactionIdx);
 
-    List<Transaction> findByCreateAtEquals(Date createAt);
+    List<Transaction> findByCreateAtGreaterThanEqualAndCreateAtLessThanEqual(Date date, Date createAt);
 
     List<Transaction> findByRental_rentalIdxAndOwnerStatusOrderByCreateAtDesc(Long rentalIdx, Integer ownerStatus);
     Page<Transaction> findByRental_rentalIdxAndOwnerStatusOrderByCreateAtDesc(Long rentalIdx, Integer ownerStatus, Pageable pageable);

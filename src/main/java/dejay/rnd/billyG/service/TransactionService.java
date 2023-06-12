@@ -8,6 +8,7 @@ import dejay.rnd.billyG.repository.TransactionHistoryRepository;
 import dejay.rnd.billyG.repository.TransactionRepository;
 import dejay.rnd.billyG.repositoryImpl.RentalRepositories;
 import dejay.rnd.billyG.repositoryImpl.UserRepositories;
+import dejay.rnd.billyG.util.FrontUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +23,6 @@ import java.util.Date;
 public class TransactionService {
     private final TransactionHistoryRepository transactionHistoryRepository;
     private final TransactionRepository transactionRepository;
-    LocalDateTime date = LocalDateTime.now();
-    Date now_date = Timestamp.valueOf(date);
 
     @Transactional
     public TransactionHistory insertHistory(TransactionHistory transactionHistory) {
@@ -38,7 +37,7 @@ public class TransactionService {
 
     @Transactional
     public void updateTransacion(Transaction transaction) {
-        transaction.setUpdateAt(now_date);
+        transaction.setUpdateAt(FrontUtil.getNowDate());
     }
 
 }

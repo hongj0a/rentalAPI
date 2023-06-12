@@ -4,6 +4,7 @@ import dejay.rnd.billyG.domain.Rental;
 import dejay.rnd.billyG.repository.RentalRepository;
 import dejay.rnd.billyG.repositoryImpl.RentalRepositories;
 import dejay.rnd.billyG.repositoryImpl.UserRepositories;
+import dejay.rnd.billyG.util.FrontUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,11 +17,7 @@ import java.util.Date;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class RentalService {
-    private final UserRepositories userRepositories;
-    private final RentalRepositories rentalRepositories;
     private final RentalRepository rentalRepository;
-    LocalDateTime date = LocalDateTime.now();
-    Date now_date = Timestamp.valueOf(date);
 
     @Transactional
     public Rental insertRental(Rental rental) {
@@ -29,22 +26,22 @@ public class RentalService {
 
     @Transactional
     public void updateRental(Rental rental) {
-        rental.setUpdateAt(now_date);
+        rental.setUpdateAt(FrontUtil.getNowDate());
     }
 
     @Transactional
     public void deleteRental(Rental rental) {
-        rental.setDeleteAt(now_date);
+        rental.setDeleteAt(FrontUtil.getNowDate());
     }
     @Transactional
     public void pullUpRental(Rental rental) {
-        rental.setPullUpAt(now_date);
+        rental.setPullUpAt(FrontUtil.getNowDate());
     }
 
     @Transactional
     public void updateViewCnt(Rental rental){
         rental.setViewCnt(rental.getViewCnt()+1);
-        rental.setUpdateAt(now_date);
+        rental.setUpdateAt(FrontUtil.getNowDate());
     }
 
     @Transactional
@@ -54,6 +51,6 @@ public class RentalService {
         } else {
             rental.setLikeCnt(rental.getLikeCnt()-1);
         }
-        rental.setUpdateAt(now_date);
+        rental.setUpdateAt(FrontUtil.getNowDate());
     }
 }

@@ -2,6 +2,7 @@ package dejay.rnd.billyG.service;
 
 import dejay.rnd.billyG.domain.Review;
 import dejay.rnd.billyG.repository.ReviewRepository;
+import dejay.rnd.billyG.util.FrontUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +16,6 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepository;
-    LocalDateTime date = LocalDateTime.now();
-    Date now_date = Timestamp.valueOf(date);
 
     @Transactional
     public Review insertReview(Review review) {
@@ -25,7 +24,7 @@ public class ReviewService {
 
     @Transactional
     public void deleteReview(Review review) {
-        review.setUpdateAt(now_date);
+        review.setUpdateAt(FrontUtil.getNowDate());
     }
 
 

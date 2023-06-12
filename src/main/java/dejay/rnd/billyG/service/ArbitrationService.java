@@ -4,6 +4,7 @@ import dejay.rnd.billyG.domain.ArbitrationManagement;
 import dejay.rnd.billyG.domain.Review;
 import dejay.rnd.billyG.repository.ArbitrationRepository;
 import dejay.rnd.billyG.repository.ReviewRepository;
+import dejay.rnd.billyG.util.FrontUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,12 +18,10 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class ArbitrationService {
     private final ArbitrationRepository arbitrationRepository;
-    LocalDateTime date = LocalDateTime.now();
-    Date now_date = Timestamp.valueOf(date);
-
     @Transactional
     public void deleteRM(ArbitrationManagement am) {
-        am.setUpdateAt(now_date);
+
+        am.setUpdateAt(FrontUtil.getNowDate());
     }
 
 
