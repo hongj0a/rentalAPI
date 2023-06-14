@@ -22,19 +22,19 @@ public class Alarm {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "alarm_idx")
+    @Column(name = "alarm_idx")
     private Long alarmIdx;
 
     @ManyToOne
-    @JoinColumn (name = "userIdx")
+    @JoinColumn(name = "userIdx")
     private User user;
 
     @ManyToOne
-    @JoinColumn (name = "adminIdx")
+    @JoinColumn(name = "adminIdx")
     private Admin admin;
 
     @ColumnDefault("0")
-    @Column (name = "read_yn")
+    @Column(name = "read_yn")
     private boolean readYn;
 
     @Column
@@ -42,28 +42,15 @@ public class Alarm {
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
-    @Column (name = "create_at")
+    @Column(name = "create_at")
     private Date createAt;
 
-    @Column (name = "update_at")
-    private Date updateAt;
+    @Column(name = "target_idx")
+    private Long targetIdx;
 
-    @ColumnDefault("0")
-    @Column (name = "delete_yn")
-    private boolean deleteYn;
+    @Column
+    private Integer type;
 
-    @Column (name = "delete_at")
-    private Date deleteAt;
-
-    @Column (name = "rental_idx")
-    private Long rentalIdx;
-
-    @Column (name = "review_idx")
-    private Long reviewIdx;
-
-    @Column (name = "chat_idx")
-    private Long chatIdx;
-
-    @Column (name = "host_idx")
+    @Column(name = "host_idx")
     private Long hostIdx;
 }

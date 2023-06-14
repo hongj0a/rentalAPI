@@ -14,6 +14,7 @@ import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.service.FileUploadService;
 import dejay.rnd.billyG.service.OneToOneInquiryService;
+import dejay.rnd.billyG.util.FrontUtil;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
@@ -311,4 +312,20 @@ public class CSController {
     }
 
 
+    @GetMapping("/isNoticeCheck")
+    public ResponseEntity<JsonObject> isNoticeCheck(HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+
+        Notice findNotice = noticeRepository.findByStartAtLessThanEqualAndEndAtGreaterThanEqualAndViewType(FrontUtil.getNowDate(), FrontUtil.getNowDate(), "20");
+
+        if (findNotice != null) {
+
+            data.addProperty("title", findNotice.getTitle());
+            data.addProperty("content", StringEscapeUtils.unescapeHtml4(findNotice.getContent()));
+            data.addProperty("regDate", findNotice.getCreateAt().getTime());
+
+        }
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+    }
 }

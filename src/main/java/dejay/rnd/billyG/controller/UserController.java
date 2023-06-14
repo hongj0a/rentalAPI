@@ -65,7 +65,10 @@ public class UserController {
     private final ArbitrationService arbitrationService;
     private final ToBlockRepository toBlockRepository;
     private final ToBlockService toBlockService;
-    public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService, UserEvaluationRepository userEvaluationRepository, ArbitrationRepository arbitrationRepository, AmImageRepository amImageRepository, ArbitrationService arbitrationService, ToBlockRepository toBlockRepository, ToBlockService toBlockService) {
+    private final BlockReviewRepository blockReviewRepository;
+    private final PushService pushService;
+    private final TransactionService transactionService;
+    public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService, UserEvaluationRepository userEvaluationRepository, ArbitrationRepository arbitrationRepository, AmImageRepository amImageRepository, ArbitrationService arbitrationService, ToBlockRepository toBlockRepository, ToBlockService toBlockService, BlockReviewRepository blockReviewRepository, PushService pushService, TransactionService transactionService) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.townService = townService;
@@ -93,6 +96,9 @@ public class UserController {
 
         this.toBlockRepository = toBlockRepository;
         this.toBlockService = toBlockService;
+        this.blockReviewRepository = blockReviewRepository;
+        this.pushService = pushService;
+        this.transactionService = transactionService;
     }
 
     @PostMapping("/signup")
@@ -290,6 +296,7 @@ public class UserController {
         }
 
         Grade grade = gradeRepository.findTop1ByOrderByGradeScoreDesc();
+        Grade findGrade = gradeRepository.getOne(otherUser.getUserLevel());
 
         //필수니깐 없을수가 없음
         Town findLeadTown = townRepository.getOne(otherUser.getLeadTown());
@@ -320,7 +327,13 @@ public class UserController {
         data.addProperty("name", otherUser.getName());
         data.addProperty("phoneNumber", otherUser.getPhoneNum());
         data.addProperty("snsType", otherUser.getSnsName());
-        data.addProperty("grade", otherUser.getUserLevel());
+
+        if (otherUser.getUserIdx() == userIdx) {
+            data.addProperty("isMine", true);
+        } else {
+            data.addProperty("isMine", false);
+        }
+        data.addProperty("grade", findGrade.getGradeName());
         data.addProperty("email", otherUser.getEmail());
         data.addProperty("idEmail", otherUser.getIdEmail());
         data.addProperty("receptionEmail", otherUser.getIdEmail());
@@ -349,6 +362,7 @@ public class UserController {
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
     }
+
     @GetMapping("/getOtherUserDetailPageList")
     public ResponseEntity<JsonObject> getOtherUserDetailPageList(@RequestParam (value = "userIdx") Long userIdx,
                                                             @RequestParam (value = "type") int type,
@@ -399,6 +413,7 @@ public class UserController {
             findReviews.forEach(
                     review -> {
                         JsonObject rvs = new JsonObject();
+                        BlockReview blockReview;
                         Town findLeadTown = townRepository.getOne(review.getTransaction().getUser().getLeadTown());
 
                         rvs.addProperty("renterIdx", review.getTransaction().getUser().getUserIdx());
@@ -414,6 +429,14 @@ public class UserController {
                         rvs.addProperty("reviewIdx", review.getReviewIdx());
                         rvs.addProperty("reviewContent", review.getReviewContent());
                         rvs.addProperty("reviewStarPoint", review.getReviewScore());
+
+                        blockReview = blockReviewRepository.findByReporterIdxAndReview_reviewIdxAndProcessingStatusNotIn(otherUser.getUserIdx(), review.getReviewIdx(), new int[]{2});
+
+                        if (blockReview != null) {
+                            rvs.addProperty("blockReviewHistory", true);
+                        } else if (blockReview == null){
+                            rvs.addProperty("blockReviewHistory", false);
+                        }
 
                         reviewArr.add(rvs);
                     }
@@ -458,6 +481,7 @@ public class UserController {
 
     }
 
+
     @GetMapping("/getReview")
     public ResponseEntity<JsonObject> getReview(@RequestParam (value = "reviewIdx") Long reviewIdx,
                                                  HttpServletRequest req) throws AppException, ParseException {
@@ -472,10 +496,19 @@ public class UserController {
 
         Review review = reviewRepository.getOne(reviewIdx);
 
+        BlockReview blockReview = blockReviewRepository.findByReporterIdxAndReview_reviewIdxAndProcessingStatusNotIn(findUser.getUserIdx(), review.getReviewIdx(), new int[]{2});
+
+
         if (findUser.getUserIdx() == review.getRenterIdx()) {
             data.addProperty("isMine", true);
         } else {
             data.addProperty("isMine", false);
+        }
+
+        if (blockReview != null) {
+            data.addProperty("blockReviewHistory", true);
+        } else if (blockReview == null){
+            data.addProperty("blockReviewHistory", false);
         }
 
         data.addProperty("userIdx", review.getTransaction().getUser().getUserIdx());
@@ -666,8 +699,8 @@ public class UserController {
 
         LinkedHashMap<Integer, String> statusMap = new LinkedHashMap<>();
         statusMap.put(10, "매칭대기");
-        statusMap.put(20, "매칭완료");
-        statusMap.put(30, "렌탈중");
+        statusMap.put(20, "렌탈매칭");
+        statusMap.put(30, "매칭완료");
         statusMap.put(40, "물품인수");
         statusMap.put(50, "물품반납");
         statusMap.put(60, "이의신청");
@@ -741,55 +774,14 @@ public class UserController {
                         trs.addProperty("imageUrl", img.get(0).getImageUrl());
                     }
                     trs.addProperty("title", tr.getRental().getTitle());
-                    if (tr.getOwnerStatus() >= tr.getRenterStatus()) {
-                        /**
-                         * 10 : 매칭대기
-                         * 30 : 렌탈중
-                         * 60 : 이의신청
-                         * 70 : 렌탈완료
-                         */
-                        switch (tr.getOwnerStatus()) {
-                            case 10 :
-                                str.set("매칭대기");
-                                break;
-                            case 30 :
-                                str.set("렌탈중");
-                                break;
-                            case 60 :
-                                str.set("이의신청");
-                                break;
-                            default :
-                                str.set("렌탈완료");
-                                break;
-                        }
-                        trs.addProperty("status", str.get());
+                    if (rentalFlag == 1) {
+                        //렌탈보냄, 오너상태
+                        trs.addProperty("status", tr.getOwnerStatus());
                     } else {
-                        /**
-                         * 10 : 매칭대기
-                         * 20 : 매칭완료
-                         * 40 : 물품인수
-                         * 50 : 물품반납
-                         * 70 : 렌탈완료
-                         */
-                        switch (tr.getOwnerStatus()) {
-                            case 10 :
-                                str.set("매칭대기");
-                                break;
-                            case 20 :
-                                str.set("매칭완료");
-                                break;
-                            case 40 :
-                                str.set("물품인수");
-                                break;
-                            case 50 :
-                                str.set("물품반납");
-                                break;
-                            default :
-                                str.set("렌탈완료");
-                                break;
-                        }
-                        trs.addProperty("status", str.get());
+                        trs.addProperty("status", tr.getRenterStatus());
                     }
+
+
                     trs.addProperty("dailyRentalFee", tr.getRental().getRentalPrice());
 
                     renArr.add(trs);
@@ -826,6 +818,8 @@ public class UserController {
 
                     my.addProperty("rentalSeq", li.getRental().getRentalIdx());
                     my.addProperty("title", li.getRental().getTitle());
+                    my.addProperty("userNickName", li.getRental().getUser().getNickName());
+
 
                     List<RentalImage> images = rentalImageRepository.findByRental_rentalIdx(li.getRental().getRentalIdx());
                     if (images.size() != 0) {
@@ -1016,6 +1010,9 @@ public class UserController {
         User starUser = userRepository.getOne(transaction.getRental().getUser().getUserIdx());
         starUser.setStarPoint(starPoint);
         userService.updateUser(starUser);
+
+        pushService.sendPush(new Long[]{transaction.getRental().getUser().getUserIdx()}, findUser.getUserIdx(),
+                transaction.getRental().getRentalIdx(), 20,"새로운 평가 등록", findUser.getNickName()+"님이 회원님의 "+transaction.getRental().getTitle()+" 게시물에 대한 새로운 평가를 등록하였습니다.");
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
@@ -1276,6 +1273,82 @@ public class UserController {
 
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+    }
+    @GetMapping("/getArbitration")
+    public ResponseEntity<JsonObject> getArbitration(@RequestParam(value = "transactionIdx") Long transactionIdx,
+                                                       HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        Transaction getTr = transactionRepository.findByTransactionIdx(transactionIdx);
+
+        Rental findRental = rentalRepository.getOne(getTr.getRental().getRentalIdx());
+        List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(getTr.getRental().getRentalIdx());
+
+        data.addProperty("rentalSeq", findRental.getRentalIdx());
+        data.addProperty("rentalImage", rentalImages.get(0).getImageUrl());
+        data.addProperty("title", findRental.getTitle());
+        data.addProperty("transactionNum", getTr.getTransactionNum());
+        data.addProperty("transactionIdx", getTr.getTransactionIdx());
+        data.addProperty("dailyFee", findRental.getRentalPrice());
+        data.addProperty("renterNickName", getTr.getUser().getNickName());
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+
+    @Transactional(rollbackFor = Exception.class)
+    @PostMapping(value = "/setArbitration", consumes = {"multipart/form-data"})
+    public ResponseEntity<JsonObject> setArbitration(@RequestParam (value = "images") List<MultipartFile> images,
+                                                @RequestParam (value = "content") String content,
+                                                @RequestParam (value = "transactionIdx") Long transactionIdx,
+                                                HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+        Transaction findTr = transactionRepository.findByTransactionIdx(transactionIdx);
+
+        ArbitrationManagement am = new ArbitrationManagement();
+        am.setTransaction(findTr);
+        am.setUser(findUser);
+        am.setAmContent(content);
+
+        ArbitrationManagement arbitrationManagement = arbitrationRepository.save(am);
+
+        for (int i = 0; i < images.size(); i++) {
+            AmImage amImage = new AmImage();
+            ImageFile file = uploadService.upload(images.get(i));
+
+            amImage.setArbitrationManagement(arbitrationManagement);
+            amImage.setImageUrl(file.getFileName());
+
+            amImageRepository.save(amImage);
+        }
+
+        findTr.setOwnerStatus(60);
+        findTr.setRenterStatus(60);
+        transactionService.updateTransacion(findTr);
+
+        TransactionHistory th = new TransactionHistory();
+        th.setOwnerStatus(60);
+        th.setRenterStatus(60);
+        transactionService.insertHistory(th);
+
+        //렌탈오너에게
+        pushService.sendPush(new Long[]{findTr.getRental().getUser().getUserIdx()}, null, arbitrationManagement.getAmIdx(),
+                60, "이의신청 접수완료", findTr.getUser().getNickName()+" 님과의 렌탈거래에 대한 이의신청이 접수되었습니다.");
+
+        //렌탈러에게
+        pushService.sendPush(new Long[]{findTr.getUser().getUserIdx()}, null, arbitrationManagement.getAmIdx(),
+                60, "이의신청으로 인한 거래중재중", findTr.getRental().getTitle()+ " 거래에 대해 렌탈오너가 이의를 제기 했습니다. ");
+
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
     }
 
 

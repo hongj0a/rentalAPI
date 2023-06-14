@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Date;
 import java.util.List;
 
 public interface NoticeRepository extends JpaRepository<Notice,Pageable> {
@@ -12,4 +13,6 @@ public interface NoticeRepository extends JpaRepository<Notice,Pageable> {
 
     Page<Notice> findByDeleteYn(Boolean deleteYn,Pageable pageable);
     List<Notice> findAllByDeleteYn(boolean deleteYn);
+
+    Notice findByStartAtLessThanEqualAndEndAtGreaterThanEqualAndViewType(Date startDate, Date endDate, String viewType);
 }

@@ -7,6 +7,7 @@ import dejay.rnd.billyG.dto.TokenDto;
 import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.except.NotFoundMemberException;
 import dejay.rnd.billyG.jwt.TokenProvider;
+import dejay.rnd.billyG.repository.GradeRepository;
 import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
 import dejay.rnd.billyG.repository.UserCountRepository;
 import dejay.rnd.billyG.repositoryImpl.UserRepositories;
@@ -36,8 +37,9 @@ public class UserService {
     private final UserRepositories userRepositories;
     private final UserCountRepository userCountRepository;
     private final UserCountRepositories userCountRepositories;
+    private final GradeRepository gradeRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManagerBuilder authenticationManagerBuilder, TokenProvider tokenProvider, UserRepositories userRepositories, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManagerBuilder authenticationManagerBuilder, TokenProvider tokenProvider, UserRepositories userRepositories, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, GradeRepository gradeRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
@@ -45,13 +47,15 @@ public class UserService {
         this.userRepositories = userRepositories;
         this.userCountRepository = userCountRepository;
         this.userCountRepositories = userCountRepositories;
+        this.gradeRepository = gradeRepository;
     }
 
     @Transactional
     public UserDto signup(UserDto userDto) {
+        Grade findGrade = gradeRepository.findByGradeScoreLessThanEqual(30L);
 
         Grade grade = Grade.builder()
-                .gradeIdx(1L)
+                .gradeIdx(Long.valueOf(findGrade.getMenuNum()))
                 .build();
 
         User user = User.builder()
@@ -62,7 +66,7 @@ public class UserService {
                 .name(userDto.getName())
                 .activityScore(0)
                 .starPoint("0")
-                .userLevel(1L)
+                .userLevel(Long.valueOf(findGrade.getMenuNum()))
                 .status(10)
                 .phoneNum(userDto.getPhoneNumber())
                 .ciValue(userDto.getCiValue())
@@ -126,11 +130,14 @@ public class UserService {
         // authenticate 매서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByㅎUsername 메서드가 실행
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         // 3. 인증 정보를 기반으로 JWT 토큰 생성
+        System.out.println("UserService.login@@@@");
         TokenDto tokenInfo = tokenProvider.createToken(authentication);
 
         //last_login_date update
         User findUser = userRepository.findByEmail(memberId);
+        findUser.setRefreshToken(tokenInfo.getRefreshToken());
         findUser.setLastLoginDate(now_date);
+        updateUser(findUser);
 
         //login_count_update
         //usercount에 있는지 조회, 있으면 update, 없으면 insert if문으로
@@ -172,12 +179,8 @@ public class UserService {
     public List<User> findByNickName(String nickName) { return userRepositories.findByNickName(nickName); }
 
     @Transactional
-    public void setRefreshToken(Long userIdx, String refreshToken) {
-
-        User findUser = userRepositories.findOne(userIdx);
-        findUser.setRefreshToken(refreshToken);
-        findUser.setUpdateAt(FrontUtil.getNowDate());
-        findUser.setEmail(findUser.getEmail());
+    public void setRefreshToken(User user) {
+        user.setUpdateAt(FrontUtil.getNowDate());
     }
 
     @Transactional

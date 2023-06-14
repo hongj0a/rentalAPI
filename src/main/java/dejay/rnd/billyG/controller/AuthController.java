@@ -107,9 +107,6 @@ public class AuthController {
 
         data.addProperty("userStatus", userOne.getStatus());
 
-        // user 테이블에 Refreshtoken update
-        userService.setRefreshToken(userOne.getUserIdx(), tokenDto.getRefreshToken());
-
         if (userOne.getNickName() == null || ("").equals(userOne.getNickName())) {
             data.addProperty("isNicknameEmpty", true);
         } else {
@@ -183,6 +180,7 @@ public class AuthController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         //유효한 토큰인지 확인
         //유효하다면 true. 만료됐거나 유효하지 않은 토큰이면 false.
+
         boolean tokenFlag = tokenProvider.validateToken(token.getRefreshToken());
 
         if (tokenFlag == false) {
@@ -190,21 +188,19 @@ public class AuthController {
             apiRes.setMessage(ErrCode.err_api_not_found_token.msg());
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
         }
+
         String userEmail = UserMiningUtil.getUserInfo(token.getRefreshToken());
         User findUser = userRepository.findByEmail(userEmail);
 
         if (findUser != null) {
             if (findUser.getRefreshToken().equals(token.getRefreshToken())) {
-                System.out.println("AuthController.refreshTokenValidation");
                 TokenDto tokenDto = userService.login(findUser.getEmail(), findUser.getSnsName());
                 data.addProperty("grantType", tokenDto.getGrantType());
                 data.addProperty("accessToken",tokenDto.getAccessToken());
                 data.addProperty("refreshToken", tokenDto.getRefreshToken());
                 data.addProperty("userSeq", findUser.getUserIdx());
 
-
                 data.addProperty("userStatus", findUser.getStatus());
-                userService.setRefreshToken(findUser.getUserIdx(), tokenDto.getRefreshToken());
 
                 if (findUser.getNickName() == null || ("").equals(findUser.getNickName())) {
                     data.addProperty("isNicknameEmpty", true);

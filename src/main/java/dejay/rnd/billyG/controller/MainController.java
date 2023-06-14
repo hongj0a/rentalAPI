@@ -221,7 +221,7 @@ public class MainController {
 
         Map<Integer, String> statusMap = new HashMap<>();
         statusMap.put(1, "렌탈가능");
-        statusMap.put(2, "렌탈완료");
+        statusMap.put(2, "렌탈진행중");
 
         for (Map.Entry<Integer, String> pair : statusMap.entrySet()) {
             JsonObject status = new JsonObject();
@@ -357,7 +357,7 @@ public class MainController {
             data.addProperty("userProfileImage", "");
         }
 
-        BellSchedule findBell = bellScheduleRepository.findByUser_userIdxAndRental_rentalIdx(findUser.getUserIdx(), findRental.getRentalIdx());
+        BellSchedule findBell = bellScheduleRepository.findByUser_userIdxAndRental_rentalIdxAndDeleteYn(findUser.getUserIdx(), findRental.getRentalIdx(), false);
 
         if (findBell == null || findBell.isDeleteYn() == true) {
             data.addProperty("bellButton", true);
@@ -401,17 +401,9 @@ public class MainController {
             data.addProperty("likeFlag", false);
         }
 
-        String status;
-        if (findRental.getStatus() == 1) {
-            status = "렌탈가능";
-        } else if (findRental.getStatus() == 2) {
-            status = "렌탈중";
-        } else {
-            status = "렌탈완료";
-        }
 
         data.addProperty("rentalSeq", findRental.getRentalIdx());
-        data.addProperty("rentalStatus", status);
+        data.addProperty("rentalStatus", findRental.getStatus());
         data.addProperty("viewCount", findRental.getViewCnt());
         data.addProperty("likeCount", findRental.getLikeCnt());
         data.addProperty("title", findRental.getTitle());
@@ -556,7 +548,7 @@ public class MainController {
         Date currentTime = java.sql.Timestamp.valueOf(LocalDateTime.now());
         Date beforeTime = java.sql.Timestamp.valueOf(LocalDateTime.now().minusHours(720));
 
-        List<Alarm> alarms = alarmRepository.findByHostIdxAndDeleteYnAndCreateAtGreaterThanEqualAndCreateAtLessThanEqualOrderByCreateAtDesc(findUser.getUserIdx(), false, beforeTime, currentTime);
+        List<Alarm> alarms = alarmRepository.findByHostIdxAndCreateAtGreaterThanEqualAndCreateAtLessThanEqualOrderByCreateAtDesc(findUser.getUserIdx(),  beforeTime, currentTime);
 
         alarms.forEach(
                 ar -> {
@@ -576,16 +568,8 @@ public class MainController {
                     bell.addProperty("content", ar.getContent());
                     bell.addProperty("regDate", ar.getCreateAt().getTime());
                     bell.addProperty("readYn", ar.isReadYn());
-
-                    if (ar.getChatIdx() != null) {
-                        bell.addProperty("chatIdx", ar.getChatIdx());
-                    }
-                    if (ar.getRentalIdx() != null) {
-                        bell.addProperty("rentalIdx", ar.getRentalIdx());
-                    }
-                    if (ar.getReviewIdx() != null) {
-                        bell.addProperty("reviewIdx", ar.getReviewIdx());
-                    }
+                    bell.addProperty("targetIdx", ar.getTargetIdx());
+                    bell.addProperty("type", ar.getType());
 
                     alarmArr.add(bell);
                 }
@@ -1060,7 +1044,7 @@ public class MainController {
 
                     switch (etcs.getStatus()) {
                         case 2 :
-                            etcRental.addProperty("status", "렌탈중");
+                            etcRental.addProperty("status", "렌탈진행중");
                             etcRental.addProperty("editable", false);
                             break;
                         case 4:
@@ -1128,12 +1112,13 @@ public class MainController {
         User findUser = userRepository.findByEmail(userEmail);
         Rental findRental = rentalRepository.getOne(mainDto.getRentalIdx());
 
-        BellSchedule findBell = bellScheduleRepository.findByUser_userIdxAndRental_rentalIdx(findUser.getUserIdx(), findRental.getRentalIdx());
+        BellSchedule findBell = bellScheduleRepository.findByUser_userIdxAndRental_rentalIdxAndDeleteYn(findUser.getUserIdx(), findRental.getRentalIdx(),false);
 
         if (findBell == null) {
             BellSchedule bellSchedule = new BellSchedule();
             bellSchedule.setRental(findRental);
             bellSchedule.setUser(findUser);
+            bellSchedule.setDeleteYn(false);
 
             bellScheduleRepository.save(bellSchedule);
         } else if (findBell != null && findBell.isDeleteYn() == false ) {

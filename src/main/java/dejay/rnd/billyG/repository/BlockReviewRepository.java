@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BlockReviewRepository extends JpaRepository<BlockReview, Long> {
 
+    BlockReview findByReporterIdxAndReview_reviewIdxAndProcessingStatusNotIn(Long reporterIdx, Long reviewIdx, int[] processingStatus);
+
 }

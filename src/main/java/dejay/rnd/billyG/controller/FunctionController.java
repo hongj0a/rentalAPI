@@ -5,14 +5,17 @@ import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.LikeDto;
+import dejay.rnd.billyG.dto.PushDto;
 import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.repository.*;
 
 import dejay.rnd.billyG.service.LikeService;
+import dejay.rnd.billyG.service.PushService;
 import dejay.rnd.billyG.service.RentalService;
 import dejay.rnd.billyG.service.ToBlockService;
+import dejay.rnd.billyG.util.FrontUtil;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
@@ -35,7 +38,8 @@ public class FunctionController {
     private final SlangsRepository slangsRepository;
     private final ToBlockRepository toBlockRepository;
     private final ToBlockService toBlockService;
-    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository, SlangsRepository slangsRepository, ToBlockRepository toBlockRepository, ToBlockService toBlockService) {
+    private final PushService pushService;
+    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository, SlangsRepository slangsRepository, ToBlockRepository toBlockRepository, ToBlockService toBlockService, PushService pushService) {
         this.rentalRepository = rentalRepository;
         this.rentalService = rentalService;
         this.likeService = likeService;
@@ -44,6 +48,7 @@ public class FunctionController {
         this.slangsRepository = slangsRepository;
         this.toBlockRepository = toBlockRepository;
         this.toBlockService = toBlockService;
+        this.pushService = pushService;
     }
 
     @PostMapping("/setLike")
@@ -65,7 +70,10 @@ public class FunctionController {
                 if ( findLike.isDeleteYn() == true && findLike.getUser().getUserIdx() == findUser.getUserIdx()) {
                     likeService.updateLikeInfo(findLike, findUser);
                     data.addProperty("likeFlag", true);
-                    //likeService.insertLikeInfo(findRental,findUser);
+
+                    pushService.sendPush(new Long[]{findRental.getUser().getUserIdx()}, findUser.getUserIdx(), findRental.getRentalIdx(), 10,
+                            "새로운 좋아요", findUser.getNickName()+"님이 회원님의 "+findRental.getTitle()+" 게시물을 좋아합니다.");
+
                 } else if ( findLike.isDeleteYn() == false && findLike.getUser().getUserIdx() == findUser.getUserIdx()){
                     apiRes.setStatus(9999);
                     apiRes.setMessage("이미 좋아요 한 게시물");
@@ -73,6 +81,8 @@ public class FunctionController {
                 }
 
             } else {
+                pushService.sendPush(new Long[]{findRental.getUser().getUserIdx()}, findUser.getUserIdx(), findRental.getRentalIdx(), 10,
+                        "새로운 좋아요", findUser.getNickName()+"님이 회원님의 "+findRental.getTitle()+" 게시물을 좋아합니다.");
                 likeService.insertLikeInfo(findRental,findUser);
             }
             rentalService.updateLikeCnt(findRental, true);

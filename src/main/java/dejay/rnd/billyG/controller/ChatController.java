@@ -11,9 +11,7 @@ import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.repositoryImpl.ChatRepositories;
 import dejay.rnd.billyG.repositoryImpl.TransactionRepositories;
-import dejay.rnd.billyG.service.ChatService;
-import dejay.rnd.billyG.service.FileUploadService;
-import dejay.rnd.billyG.service.TransactionService;
+import dejay.rnd.billyG.service.*;
 import dejay.rnd.billyG.util.FrontUtil;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,6 +47,7 @@ public class ChatController {
     private final ChatRepository chatRepository;
     private final RentalImageRepository rentalImageRepository;
     private final RentalRepository rentalRepository;
+    private final RentalService rentalService;
     private final ChatContentRepository chatContentRepository;
     private final SimpMessagingTemplate template;
     private final FileUploadService uploadService;
@@ -57,14 +56,18 @@ public class ChatController {
     private final ChatRepositories chatRepositories;
     private final TransactionService transactionService;
     private final TransactionRepositories transactionRepositories;
+    private final BellScheduleRepositry bellScheduleRepositry;
+    private final PushService pushService;
+    private final LikeRepository likeRepository;
 
 
-    public ChatController(ChatService chatService, UserRepository userRepository, ChatRepository chatRepository, RentalImageRepository rentalImageRepository, RentalRepository rentalRepository, ChatContentRepository chatContentRepository, SimpMessagingTemplate template, FileUploadService uploadService, TransactionRepository transactionRepository, ChatImageRepository chatImageRepository, ChatRepositories chatRepositories, TransactionService transactionService, TransactionRepositories transactionRepositories) {
+    public ChatController(ChatService chatService, UserRepository userRepository, ChatRepository chatRepository, RentalImageRepository rentalImageRepository, RentalRepository rentalRepository, RentalService rentalService, ChatContentRepository chatContentRepository, SimpMessagingTemplate template, FileUploadService uploadService, TransactionRepository transactionRepository, ChatImageRepository chatImageRepository, ChatRepositories chatRepositories, TransactionService transactionService, TransactionRepositories transactionRepositories, BellScheduleRepositry bellScheduleRepositry, PushService pushService, LikeRepository likeRepository) {
         this.chatService = chatService;
         this.userRepository = userRepository;
         this.chatRepository = chatRepository;
         this.rentalImageRepository = rentalImageRepository;
         this.rentalRepository = rentalRepository;
+        this.rentalService = rentalService;
         this.chatContentRepository = chatContentRepository;
         this.template = template;
         this.uploadService = uploadService;
@@ -73,6 +76,9 @@ public class ChatController {
         this.chatRepositories = chatRepositories;
         this.transactionService = transactionService;
         this.transactionRepositories = transactionRepositories;
+        this.bellScheduleRepositry = bellScheduleRepositry;
+        this.pushService = pushService;
+        this.likeRepository = likeRepository;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -81,27 +87,36 @@ public class ChatController {
         LocalDateTime date = LocalDateTime.now();
         long now_date = Timestamp.valueOf(date).getTime();
 
-        System.out.println("status = " + contentDto.getStatus());
-        System.out.println("contentDto.getStep() = " + contentDto.getStep());
-
         contentDto.setStep(contentDto.getStep());
 
-        String status = "";
         TransactionHistory history = new TransactionHistory();
+
+        //일반 메시지일때 보내는사람 userIdx, 받는사람 rentalIdx
+        //userIdx가 chatroomIdx에 sender? reciever? 확인해서
+        //sender이면 reciever에게 메시지 푸시
+        //receiver이면 sender에게 메시지 푸시
 
         User findUser = userRepository.findByUserIdx(contentDto.getUserIdx());
         ChatRoom findRoom = chatRepository.findByChatRoomIdx(contentDto.getChatRoomIdx());
+        Rental findRental = rentalRepository.findByRentalIdx(findRoom.getRental().getRentalIdx());
         User renter = userRepository.findByUserIdx(findRoom.getFromUser().getUserIdx());
+
+        if (findUser.getUserIdx() == findRoom.getToUser().getUserIdx()) {
+            pushService.sendPush(new Long[]{findRoom.getFromUser().getUserIdx()}, findUser.getUserIdx(), findRoom.getChatRoomIdx(),
+                    50, "새로운 메시지", "새로운 메시지가 있습니다.");
+        } else {
+            pushService.sendPush(new Long[]{findRoom.getToUser().getUserIdx()}, findUser.getUserIdx(), findRoom.getChatRoomIdx(),
+                    50, "새로운 메시지", "새로운 메시지가 있습니다.");
+        }
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         String parseDate = dateFormat.format(FrontUtil.getNowDate());
         Date beforeDate = dateFormat.parse(parseDate);
 
-        //취소된거래도 번호카운트에 포함시키는지?
         List<Transaction> trs = transactionRepository.findByCreateAtGreaterThanEqualAndCreateAtLessThanEqual(beforeDate, FrontUtil.getNowDate());
         int len = (int) (Math.log10(trs.size()) + 1);
 
-        //system message인 경우
+        //system 메시지인 경우
         if (contentDto.isSystemYn() == true) {
             ChatContent chat = new ChatContent();
             chat.setChatRoom(findRoom);
@@ -118,7 +133,7 @@ public class ChatController {
             contentDto.setRegDate(now_date);
 
         } else if (contentDto.isSystemYn() == false){
-            //채팅 메시지가 있는경우
+            //채팅 메시지가 있는경우, 새로운 메시지 알림
             if (findUser != null && contentDto.getMessage() != null) {
                 ChatContent chat = new ChatContent();
                 chat.setUser(findUser);
@@ -144,7 +159,6 @@ public class ChatController {
                 contentDto.setRegDate(now_date);
             }
         }
-
 
         if (contentDto.getTransactionIdx() != 0 && contentDto.isSystemYn() != true) {
             //변경되는 내용 다시저장
@@ -175,22 +189,62 @@ public class ChatController {
                 findTr.setOwnerStatus(findTr.getOwnerStatus() + 10);
                 findTr.setRenterStatus(findTr.getRenterStatus() + 10);
                 findTr.setStatusAt(FrontUtil.getNowDate());
+
+
+                if (findTr.getOwnerStatus() == 30) {
+                    //렌탈러가 매칭완료를 눌렀을 때 렌탈오너에게
+                    pushService.sendPush(new Long[]{findTr.getRental().getUser().getUserIdx()}, findTr.getUser().getUserIdx(), findRoom.getChatRoomIdx(),
+                            50, "렌탈매칭 완료", findTr.getUser().getNickName() + " 님과 렌탈매칭 되었습니다.");
+                }
+
+                //if (findTr.getOwnerStatus() ==)
+
                 contentDto.setStatus(String.valueOf(findTr.getOwnerStatus()));
             } else if (contentDto.getStep() == 2) {
 
                 history.setOwnerStatus(70);
                 history.setRenterStatus(70);
                 history.setUpdateAt(FrontUtil.getNowDate());
+                history.setCompleteAt(FrontUtil.getNowDate());
                 history.setStatusAt(FrontUtil.getNowDate());
 
                 findTr.setOwnerStatus(70);
                 findTr.setRenterStatus(70);
+                findTr.setCompleteAt(FrontUtil.getNowDate());
                 findTr.setStatusAt(FrontUtil.getNowDate());
 
                 findRoom.setFirstYn(true);
                 chatService.updateChatRoom(findRoom);
 
+                findRental.setStatus(1);
+                rentalService.updateRental(findRental);
+
+                //push service로 중복되는 로직 옮기기
+                //렌탈가능시 알림받기 유저들에게 렌탈가능 알림
+                List<BellSchedule> bells = bellScheduleRepositry.findAllByRental_rentalIdxAndDeleteYn(findRental.getRentalIdx(), false);
+                Long[] hosts = new Long[bells.size()];
+
+                for (int i = 0; i < hosts.length; i++) {
+                    hosts[i] = bells.get(i).getUser().getUserIdx();
+                }
+
+                pushService.sendPush(hosts, findUser.getUserIdx(), findRental.getRentalIdx(),
+                        10, "[알림] 렌탈가능 물품", "알림 설정하신 " + findRental.getTitle() + " 상품이 렌탈 가능한 상태로 변경되었습니다.");
+
+                //해당게시글 좋아요 누른사람들에게 렌탈가능 알림
+                List<Likes> likes = likeRepository.findAllByRental_rentalIdxAndDeleteYn(findRental.getRentalIdx(), false);
+                Long[] users = new Long[likes.size()];
+
+                for (int i = 0; i < users.length; i++) {
+                    users[i] = likes.get(i).getUser().getUserIdx();
+                }
+
+                pushService.sendPush(users, findUser.getUserIdx(), findRental.getRentalIdx(),
+                        10, "게시글 상태 변경", "회원님께서 좋아요한 게시글 "+findRental.getTitle()+" 상품이 렌탈가능 합니다.");
+
+                contentDto.setTransactionIdx(0L);
                 contentDto.setStatus(String.valueOf(10));
+
             }
 
             transactionService.updateTransacion(findTr);
@@ -209,6 +263,9 @@ public class ChatController {
                     tr.setCancelYn(false);
                     tr.setRental(findRoom.getRental());
                     tr.setUser(renter);
+
+                    findRental.setStatus(2);
+                    rentalService.updateRental(findRental);
 
                     switch (len) {
                         case 0 :
@@ -256,6 +313,10 @@ public class ChatController {
 
                     contentDto.setStatus(String.valueOf(20));
                     contentDto.setTransactionIdx(tr.getTransactionIdx());
+
+                    //렌탈오너가 렌탈매칭을 눌렀을 때 렌탈러에게
+                    pushService.sendPush(new Long[]{transaction.getUser().getUserIdx()}, transaction.getRental().getUser().getUserIdx(), findRoom.getChatRoomIdx(),
+                            50, "렌탈매칭 완료", transaction.getRental().getTitle()+ " 물품에 대한 렌탈이 매칭 되었습니다.");
             }
 
         }
