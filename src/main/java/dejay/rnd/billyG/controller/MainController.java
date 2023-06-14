@@ -600,7 +600,6 @@ public class MainController {
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
-
         for (int i = 0; i < towns.length; i++) {
             System.out.println("towns[i] = " + towns[i]);
         }
@@ -666,6 +665,8 @@ public class MainController {
 
             rentalCategoryInfoRepository.save(rentalCategoryInfo);
         }
+
+
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
     }

@@ -32,64 +32,6 @@ public class RentalRepositories implements RentalRepositoryCustom {
     private final JPAQueryFactory queryFactory;
     private final RentalRepository rentalRepository;
 
-    /*@Transactional
-    public List<Rental> findByMainAllTest() {
-        QRental rental = QRental.rental;
-        QRentalCategoryInfo rentalCategoryInfo = QRentalCategoryInfo.rentalCategoryInfo;
-        QTransaction transaction = QTransaction.transaction;
-
-        return queryFactory.select(rental)
-                .from(rental)
-                .leftJoin(rental.rentalCategoryInfos, rentalCategoryInfo)
-                .fetchJoin()
-                .leftJoin(rental.transactionInfos, transaction)
-                .distinct()
-                .fetch();
-
-        *//*return queryFactory.select(Projections.fields(Rental.class, new CaseBuilder()
-                        .when(rental.status.in(1))
-                        .then(1)
-                        .when(rental.status.in(2))
-                        .then(2)
-                        .when(rental.status.in(3))
-                        .then(3)
-                        .when(rental.status.in(4))
-                        .then(4)
-                        .otherwise(rental.status).as("status")
-
-                , rental.rentalIdx
-                , rental.deposit
-                , rental.rentalPrice
-                , rental.content
-                , rental.tradingMethod
-                , rental.likeCnt
-                , rental.viewCnt
-                , rental.updateAt
-                , rental.completeAt
-                , rental.activeYn
-                , rental.deleteYn
-                , rental.deleteAt
-                , rental.updator
-                , rental.pullUpAt
-                , rental.pullUpCnt
-                , rental.leadTown
-                , rental.town1
-                , rental.town2
-                , rental.town3
-                , rental.town4
-                , rental.createAt
-                , rental.title
-                , rental.user
-                , rentalCategoryInfo
-                , transaction
-                , rental.activeYn))
-                .from(rental)
-                .leftJoin(rental.rentalCategoryInfos, rentalCategoryInfo)
-                .leftJoin(rental.transactionInfos, transaction)
-                .distinct()
-                .fetch();*//*
-    }*/
-
     @Override
     public Page<Rental> findAll(ArrayList<Integer> status, Integer filter, String title, Long[] towns, Long[] categories, Pageable pageable){
         QRental rental = QRental.rental;

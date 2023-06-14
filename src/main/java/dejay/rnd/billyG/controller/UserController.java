@@ -33,6 +33,9 @@ import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 
@@ -289,10 +292,12 @@ public class UserController {
 
         if (userIdx != 0) {
             otherUser = userRepository.getOne(userIdx);
+            data.addProperty("isMine", false);
         } else {
             String acToken = req.getHeader("Authorization").substring(7);
             String userEmail = UserMiningUtil.getUserInfo(acToken);
             otherUser = userRepository.findByEmail(userEmail);
+            data.addProperty("isMine", true);
         }
 
         Grade grade = gradeRepository.findTop1ByOrderByGradeScoreDesc();
@@ -327,12 +332,6 @@ public class UserController {
         data.addProperty("name", otherUser.getName());
         data.addProperty("phoneNumber", otherUser.getPhoneNum());
         data.addProperty("snsType", otherUser.getSnsName());
-
-        if (otherUser.getUserIdx() == userIdx) {
-            data.addProperty("isMine", true);
-        } else {
-            data.addProperty("isMine", false);
-        }
         data.addProperty("grade", findGrade.getGradeName());
         data.addProperty("email", otherUser.getEmail());
         data.addProperty("idEmail", otherUser.getIdEmail());
@@ -929,7 +928,7 @@ public class UserController {
                                                 @RequestParam (value ="historyIdx") String historyIdx,
                                                 HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
-
+        Executor executor = Executors.newFixedThreadPool(30);
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
@@ -1011,8 +1010,18 @@ public class UserController {
         starUser.setStarPoint(starPoint);
         userService.updateUser(starUser);
 
-        pushService.sendPush(new Long[]{transaction.getRental().getUser().getUserIdx()}, findUser.getUserIdx(),
-                transaction.getRental().getRentalIdx(), 20,"새로운 평가 등록", findUser.getNickName()+"님이 회원님의 "+transaction.getRental().getTitle()+" 게시물에 대한 새로운 평가를 등록하였습니다.");
+        CompletableFuture.runAsync(() -> {
+            try {
+                //렌탈오너가 렌탈매칭을 눌렀을 때 렌탈러에게
+                pushService.sendPush(new Long[]{transaction.getRental().getUser().getUserIdx()}, findUser.getUserIdx(),
+                        transaction.getRental().getRentalIdx(), 20,"새로운 평가 등록", findUser.getNickName()+"님이 회원님의 "+transaction.getRental().getTitle()+" 게시물에 대한 새로운 평가를 등록하였습니다.");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName() + ": hi");
+        }, executor);
+
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
@@ -1339,13 +1348,31 @@ public class UserController {
         th.setRenterStatus(60);
         transactionService.insertHistory(th);
 
-        //렌탈오너에게
-        pushService.sendPush(new Long[]{findTr.getRental().getUser().getUserIdx()}, null, arbitrationManagement.getAmIdx(),
-                60, "이의신청 접수완료", findTr.getUser().getNickName()+" 님과의 렌탈거래에 대한 이의신청이 접수되었습니다.");
+        Executor executor = Executors.newFixedThreadPool(30);
 
-        //렌탈러에게
-        pushService.sendPush(new Long[]{findTr.getUser().getUserIdx()}, null, arbitrationManagement.getAmIdx(),
-                60, "이의신청으로 인한 거래중재중", findTr.getRental().getTitle()+ " 거래에 대해 렌탈오너가 이의를 제기 했습니다. ");
+        CompletableFuture.runAsync(() -> {
+            try {
+                //렌탈오너에게
+                pushService.sendPush(new Long[]{findTr.getRental().getUser().getUserIdx()}, findTr.getUser().getUserIdx(), arbitrationManagement.getAmIdx(),
+                        60, "이의신청 접수완료", findTr.getUser().getNickName()+" 님과의 렌탈거래에 대한 이의신청이 접수되었습니다.");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName() + ": hi");
+        }, executor);
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                //렌탈러에게
+                pushService.sendPush(new Long[]{findTr.getUser().getUserIdx()}, findTr.getRental().getUser().getUserIdx(), arbitrationManagement.getAmIdx(),
+                        60, "이의신청으로 인한 거래중재중", findTr.getRental().getTitle()+ " 거래에 대해 렌탈오너가 이의를 제기 했습니다. ");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName() + ": hi");
+        }, executor);
+
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 

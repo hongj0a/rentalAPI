@@ -24,6 +24,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 
 @RestController
@@ -55,6 +58,7 @@ public class FunctionController {
     public ResponseEntity<JsonObject> setLike(@RequestBody LikeDto likeDto,
                                               HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
+        Executor executor = Executors.newFixedThreadPool(30);
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
@@ -71,8 +75,17 @@ public class FunctionController {
                     likeService.updateLikeInfo(findLike, findUser);
                     data.addProperty("likeFlag", true);
 
-                    pushService.sendPush(new Long[]{findRental.getUser().getUserIdx()}, findUser.getUserIdx(), findRental.getRentalIdx(), 10,
-                            "새로운 좋아요", findUser.getNickName()+"님이 회원님의 "+findRental.getTitle()+" 게시물을 좋아합니다.");
+                    CompletableFuture.runAsync(() -> {
+                        try {
+                            //렌탈오너가 렌탈매칭을 눌렀을 때 렌탈러에게
+                            pushService.sendPush(new Long[]{findRental.getUser().getUserIdx()}, findUser.getUserIdx(), findRental.getRentalIdx(), 10,
+                                    "새로운 좋아요", findUser.getNickName()+"님이 회원님의 "+findRental.getTitle()+" 게시물을 좋아합니다.");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        System.out.println(Thread.currentThread().getName() + ": hi");
+                    }, executor);
+
 
                 } else if ( findLike.isDeleteYn() == false && findLike.getUser().getUserIdx() == findUser.getUserIdx()){
                     apiRes.setStatus(9999);
@@ -81,8 +94,17 @@ public class FunctionController {
                 }
 
             } else {
-                pushService.sendPush(new Long[]{findRental.getUser().getUserIdx()}, findUser.getUserIdx(), findRental.getRentalIdx(), 10,
-                        "새로운 좋아요", findUser.getNickName()+"님이 회원님의 "+findRental.getTitle()+" 게시물을 좋아합니다.");
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        //렌탈오너가 렌탈매칭을 눌렀을 때 렌탈러에게
+                        pushService.sendPush(new Long[]{findRental.getUser().getUserIdx()}, findUser.getUserIdx(), findRental.getRentalIdx(), 10,
+                                "새로운 좋아요", findUser.getNickName()+"님이 회원님의 "+findRental.getTitle()+" 게시물을 좋아합니다.");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(Thread.currentThread().getName() + ": hi");
+                }, executor);
+
                 likeService.insertLikeInfo(findRental,findUser);
             }
             rentalService.updateLikeCnt(findRental, true);
