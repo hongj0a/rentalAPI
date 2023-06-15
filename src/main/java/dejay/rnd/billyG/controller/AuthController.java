@@ -116,7 +116,7 @@ public class AuthController {
         //공지사항알림 플래그
         //마케팅알림 플래그
         //방해금지 플래그, y일 때 시간
-        data.addProperty("marketingNoticeType", userOne.isMarketingNoticeYn());
+        data.addProperty("marketingNoticeYn", userOne.isMarketingNoticeYn());
         data.addProperty("noticeNoticeYn", userOne.isNoticeNoticeYn());
         data.addProperty("doNotDisturbTimeYn", userOne.isDoNotDisturbTimeYn());
         if (userOne.isDoNotDisturbTimeYn() == true) {
@@ -230,7 +230,7 @@ public class AuthController {
                 //공지사항알림 플래그
                 //마케팅알림 플래그
                 //방해금지 플래그, y일 때 시간
-                data.addProperty("marketingNoticeType", findUser.isMarketingNoticeYn());
+                data.addProperty("marketingNoticeYn", findUser.isMarketingNoticeYn());
                 data.addProperty("noticeNoticeYn", findUser.isNoticeNoticeYn());
                 data.addProperty("doNotDisturbTimeYn", findUser.isDoNotDisturbTimeYn());
                 if (findUser.isDoNotDisturbTimeYn() == true) {

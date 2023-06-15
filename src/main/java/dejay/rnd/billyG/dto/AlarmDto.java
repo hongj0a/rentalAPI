@@ -10,8 +10,9 @@ import lombok.*;
 @NoArgsConstructor
 public class AlarmDto {
     private boolean chatNoticeYn;
-    private int marketingNoticeType;
+    private boolean marketingNoticeYn;
     private boolean activityNoticeYn;
+    private boolean noticeNoticeYn;
     private boolean doNotDisturbTimeYn;
     private boolean isAfterNoon;
     private int startHour;
