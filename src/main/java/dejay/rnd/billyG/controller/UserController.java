@@ -566,8 +566,9 @@ public class UserController {
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         data.addProperty("chatNoticeYn", findUser.isChatNoticeYn());
-        data.addProperty("marketingNoticeType", findUser.isMarketingNoticeYn());
+        data.addProperty("marketingNoticeYn", findUser.isMarketingNoticeYn());
         data.addProperty("activityNoticeYn", findUser.isActivityNoticeYn());
+        data.addProperty("noticeNoticeYn", findUser.isNoticeNoticeYn());
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
     }
