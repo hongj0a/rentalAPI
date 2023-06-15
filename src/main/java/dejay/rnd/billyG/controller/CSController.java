@@ -46,8 +46,9 @@ public class CSController {
     private final FileUploadService uploadService;
     private final InquiryImageRepository inquiryImageRepository;
     private final Path fileStorageLocation;
+    private final TermsRepository termsRepository;
 
-    public CSController(ImageProperties imageProperties, NoticeRepository noticeRepository, CategoryRepository categoryRepository, FaqRepository faqRepository, OneToOneInquiryRepository oneToOneInquiryRepository, UserRepository userRepository, OneToOneInquiryService oneToOneInquiryService, FileUploadService uploadService, InquiryImageRepository inquiryImageRepository) {
+    public CSController(ImageProperties imageProperties, NoticeRepository noticeRepository, CategoryRepository categoryRepository, FaqRepository faqRepository, OneToOneInquiryRepository oneToOneInquiryRepository, UserRepository userRepository, OneToOneInquiryService oneToOneInquiryService, FileUploadService uploadService, InquiryImageRepository inquiryImageRepository, TermsRepository termsRepository) {
         this.noticeRepository = noticeRepository;
         this.categoryRepository = categoryRepository;
         this.faqRepository = faqRepository;
@@ -58,6 +59,7 @@ public class CSController {
         this.inquiryImageRepository = inquiryImageRepository;
         this.fileStorageLocation = Paths.get(imageProperties.getDefaultPath())
                 .toAbsolutePath().normalize();
+        this.termsRepository = termsRepository;
     }
 
     @GetMapping("/getNotice")
@@ -328,4 +330,47 @@ public class CSController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
+
+
+    @GetMapping("/getTerms")
+    public ResponseEntity<JsonObject> getUseTerms(@RequestParam (value = "type") Integer type,
+                                                  @RequestParam (value = "termsIdx", required = false) Long termsIdx,
+                                                  HttpServletRequest req) throws AppException {
+        JsonObject data = new JsonObject();
+        JsonArray termsArr = new JsonArray();
+
+        List<Terms> terms = termsRepository.findByReservationDateLessThanEqualAndDeleteYnAndTypeOrderByCreateAtDesc(FrontUtil.getNowDate(),false, type);
+
+
+        for (int i = 0; i < terms.size(); i++) {
+            JsonObject tr = new JsonObject();
+            if (termsIdx != null) {
+                if (terms.get(i).getTermsIdx() == termsIdx) {
+                    tr.addProperty("title", terms.get(i).getTitle());
+                    tr.addProperty("content", StringEscapeUtils.unescapeHtml4(terms.get(i).getContent()));
+                    tr.addProperty("termsIdx", terms.get(i).getTermsIdx());
+                    tr.addProperty("createAt", String.valueOf(terms.get(i).getCreateAt()));
+                }
+            } else {
+                tr.addProperty("title", terms.get(0).getTitle());
+                tr.addProperty("content", StringEscapeUtils.unescapeHtml4(terms.get(0).getContent()));
+                tr.addProperty("termsIdx", terms.get(0).getTermsIdx());
+                tr.addProperty("createAt", String.valueOf(terms.get(0).getCreateAt()));
+            }
+            tr.addProperty("termsIdx", terms.get(i).getTermsIdx());
+            tr.addProperty("title", terms.get(i).getTitle());
+            tr.addProperty("createAt", String.valueOf(terms.get(i).getCreateAt()));
+
+            termsArr.add(tr);
+        }
+
+        data.add("terms", termsArr);
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
+
+
+
 }

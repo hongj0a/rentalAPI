@@ -84,6 +84,7 @@ public class ReportController {
         User findUser = userRepository.findByEmail(userEmail);
         Category findBT = categoryRepository.getOne(reportDto.getBlockTypeIdx());
 
+        System.out.println("findBT.getName() = " + findBT.getName());
         Rental findRental = new Rental();
         User reportUser = new User();
         Review findReview = new Review();
@@ -96,8 +97,10 @@ public class ReportController {
             case 6:
                 reportUser = userRepository.getOne(reportDto.getKeyIdx());
                 break;
-            default:
+            case 7:
                 findReview = reviewRepository.getOne(reportDto.getKeyIdx());
+                break;
+            default:
                 break;
         }
 
@@ -131,7 +134,7 @@ public class ReportController {
                     }
 
                     break;
-                default:
+                case 7:
                     reportService.insertBlockReview(findReview, findBT, reportDto.getBlockContent(), findUser.getUserIdx());
 
                     if (userCount != null) {
@@ -144,6 +147,8 @@ public class ReportController {
 
                         userCountRepositories.save(newCount);
                     }
+                    break;
+                default:
                     break;
             }
 

@@ -111,8 +111,13 @@ public class User {
     @Column (name = "activity_notice_yn")
     private boolean activityNoticeYn;
 
-    @Column (name = "marketing_notice_type")
-    private Integer marketingNoticeType;
+    @ColumnDefault("0")
+    @Column (name = "marketing_notice_yn")
+    private boolean marketingNoticeYn;
+
+    @ColumnDefault("0")
+    @Column (name = "notice_notice_yn")
+    private boolean noticeNoticeYn;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp

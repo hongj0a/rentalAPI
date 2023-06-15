@@ -14,10 +14,8 @@ import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.repositoryImpl.RentalRepositories;
 import dejay.rnd.billyG.repositoryImpl.TownRepositories;
 import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
-import dejay.rnd.billyG.service.BellScheduleService;
-import dejay.rnd.billyG.service.CategoryService;
-import dejay.rnd.billyG.service.FileUploadService;
-import dejay.rnd.billyG.service.RentalService;
+import dejay.rnd.billyG.repositoryImpl.UserRepositories;
+import dejay.rnd.billyG.service.*;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
@@ -37,6 +35,9 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import static java.time.LocalTime.now;
 
@@ -67,8 +68,10 @@ public class MainController {
     private final BlockPostRepository blockPostRepository;
     private final Path fileStorageLocation;
     private final ToBlockRepository toBlockRepository;
+    private final UserRepositories userRepositories;
+    private final PushService pushService;
 
-    public MainController(ImageProperties imageProperties, UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, BellScheduleRepositry bellScheduleRepository, BellScheduleService bellScheduleService, BlockUserRepository blockUserRepository, BlockPostRepository blockPostRepository, ToBlockRepository toBlockRepository) {
+    public MainController(ImageProperties imageProperties, UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, BellScheduleRepositry bellScheduleRepository, BellScheduleService bellScheduleService, BlockUserRepository blockUserRepository, BlockPostRepository blockPostRepository, ToBlockRepository toBlockRepository, UserRepositories userRepositories, PushService pushService) {
         this.userRepository = userRepository;
         this.townRepository = townRepository;
         this.townRepositories = townRepositories;
@@ -94,6 +97,8 @@ public class MainController {
         this.blockUserRepository = blockUserRepository;
         this.blockPostRepository = blockPostRepository;
         this.toBlockRepository = toBlockRepository;
+        this.userRepositories = userRepositories;
+        this.pushService = pushService;
     }
 
     @GetMapping("/getMainList")
@@ -546,7 +551,7 @@ public class MainController {
         User findUser = userRepository.findByEmail(userEmail);
 
         Date currentTime = java.sql.Timestamp.valueOf(LocalDateTime.now());
-        Date beforeTime = java.sql.Timestamp.valueOf(LocalDateTime.now().minusHours(720));
+        Date beforeTime = java.sql.Timestamp.valueOf(LocalDateTime.now().minusDays(30));
 
         List<Alarm> alarms = alarmRepository.findByHostIdxAndCreateAtGreaterThanEqualAndCreateAtLessThanEqualOrderByCreateAtDesc(findUser.getUserIdx(),  beforeTime, currentTime);
 
@@ -554,15 +559,21 @@ public class MainController {
                 ar -> {
                     JsonObject bell = new JsonObject();
                     bell.addProperty("alarmSeq", ar.getAlarmIdx());
-                    bell.addProperty("sendUserIdx", ar.getUser().getUserIdx());
-                    if (ar.getUser().getNickName() != null) {
-                        bell.addProperty("sendUserNickName", ar.getUser().getNickName());
-                    } else {
-                        bell.addProperty("sendUserNickName", "");
+                    if (ar.getUser() != null) {
+                        bell.addProperty("sendUserIdx", ar.getUser().getUserIdx());
+                        if (ar.getUser().getNickName() != null) {
+                            bell.addProperty("sendUserNickName", ar.getUser().getNickName());
+                        } else {
+                            bell.addProperty("sendUserNickName", "");
+                        }
+                        if (ar.getUser().getProfileImageUrl() != null) {
+                            bell.addProperty("sendUserProfile", ar.getUser().getProfileImageUrl());
+                        } else {
+                            bell.addProperty("sendUserProfile", "");
+                        }
                     }
-                    if (ar.getUser().getProfileImageUrl() != null) {
-                        bell.addProperty("sendUserProfile", ar.getUser().getProfileImageUrl());
-                    } else {
+                    if (ar.getAdmin() != null) {
+                        bell.addProperty("sendUserIdx", 0);
                         bell.addProperty("sendUserProfile", "");
                     }
                     bell.addProperty("content", ar.getContent());
@@ -593,6 +604,7 @@ public class MainController {
                                                 @RequestParam (value ="rentalDailyFee") String rentalDailyFee,
                                                 HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
+        Executor executor = Executors.newFixedThreadPool(30);
 
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
@@ -600,8 +612,9 @@ public class MainController {
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
+        Long[] newTwns = new Long[towns.length];
         for (int i = 0; i < towns.length; i++) {
-            System.out.println("towns[i] = " + towns[i]);
+            newTwns[i] = Long.valueOf(towns[i]);
         }
         Long leadTown = 0L;
         Long town1 = 0L;
@@ -666,6 +679,26 @@ public class MainController {
             rentalCategoryInfoRepository.save(rentalCategoryInfo);
         }
 
+        List<User> users = userRepositories.findUsers(newTwns);
+        if (users.size() != 0) {
+            Long[] hosts = new Long[users.size()];
+
+            for (int i = 0; i < hosts.length; i++) {
+                hosts[i] = users.get(i).getUserIdx();
+            }
+
+
+            CompletableFuture.runAsync(() -> {
+                try {
+                    pushService.sendPush(hosts, findUser.getUserIdx(), findRental.getRentalIdx(),
+                            10, "[알림] 렌탈가능 물품", "회원님의 동네로 등록된 새게시글이 있습니다.");
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName() + ": hi");
+            }, executor);
+        }
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 

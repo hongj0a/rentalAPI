@@ -113,6 +113,18 @@ public class AuthController {
             data.addProperty("isNicknameEmpty", false);
         }
 
+        //공지사항알림 플래그
+        //마케팅알림 플래그
+        //방해금지 플래그, y일 때 시간
+        data.addProperty("marketingNoticeType", userOne.isMarketingNoticeYn());
+        data.addProperty("noticeNoticeYn", userOne.isNoticeNoticeYn());
+        data.addProperty("doNotDisturbTimeYn", userOne.isDoNotDisturbTimeYn());
+        if (userOne.isDoNotDisturbTimeYn() == true) {
+            data.addProperty("disturbStartHour", userOne.getDoNotDisturbStartHour());
+            data.addProperty("disturbStartMinute", userOne.getDoNotDisturbStartMinute());
+            data.addProperty("disturbEndHour", userOne.getDoNotDisturbEndHour());
+            data.addProperty("disturbEndMinute", userOne.getDoNotDisturbEndMinute());
+        }
         //user town's Information empty check
         //lead_town값 필수, 관심동네 선택
         if (userOne.getLeadTown() == null || ("").equals(userOne.getLeadTown())) {
@@ -214,6 +226,19 @@ public class AuthController {
                     data.addProperty("isLeadTownEmpty", false);
                 }
                 data.addProperty("imageUrl", "http://192.168.1.242:8080/image/");
+
+                //공지사항알림 플래그
+                //마케팅알림 플래그
+                //방해금지 플래그, y일 때 시간
+                data.addProperty("marketingNoticeType", findUser.isMarketingNoticeYn());
+                data.addProperty("noticeNoticeYn", findUser.isNoticeNoticeYn());
+                data.addProperty("doNotDisturbTimeYn", findUser.isDoNotDisturbTimeYn());
+                if (findUser.isDoNotDisturbTimeYn() == true) {
+                    data.addProperty("disturbStartHour", findUser.getDoNotDisturbStartHour());
+                    data.addProperty("disturbStartMinute", findUser.getDoNotDisturbStartMinute());
+                    data.addProperty("disturbEndHour", findUser.getDoNotDisturbEndHour());
+                    data.addProperty("disturbEndMinute", findUser.getDoNotDisturbEndMinute());
+                }
             } else {
                 apiRes.setError(ErrCode.err_api_not_found_token.code());
                 apiRes.setMessage(ErrCode.err_api_not_found_token.msg());

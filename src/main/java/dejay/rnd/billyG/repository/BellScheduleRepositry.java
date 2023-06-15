@@ -12,5 +12,5 @@ import java.util.List;
 public interface BellScheduleRepositry extends JpaRepository<BellSchedule, Long> {
     BellSchedule findByUser_userIdxAndRental_rentalIdxAndDeleteYn(Long userIdx, Long rentalIdx, boolean deleteYn);
 
-    List<BellSchedule> findAllByRental_rentalIdxAndDeleteYn(Long rentalIdx, boolean deleteYn);
+    List<BellSchedule> findAllByRental_rentalIdxAndDeleteYnAndUser_ActivityNoticeYn(Long rentalIdx, boolean deleteYn, boolean activityNoticeYn);
 }

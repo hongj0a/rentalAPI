@@ -37,7 +37,7 @@ public class Alarm {
     @Column(name = "read_yn")
     private boolean readYn;
 
-    @Column
+    @Column(length = 2000)
     private String content;
 
     @Temporal(value = TemporalType.TIMESTAMP)

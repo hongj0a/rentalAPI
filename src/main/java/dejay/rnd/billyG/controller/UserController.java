@@ -566,7 +566,7 @@ public class UserController {
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         data.addProperty("chatNoticeYn", findUser.isChatNoticeYn());
-        data.addProperty("marketingNoticeType", findUser.getMarketingNoticeType());
+        data.addProperty("marketingNoticeType", findUser.isMarketingNoticeYn());
         data.addProperty("activityNoticeYn", findUser.isActivityNoticeYn());
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
@@ -625,7 +625,7 @@ public class UserController {
 
         findUser.setChatNoticeYn(alarmDto.isChatNoticeYn());
         findUser.setActivityNoticeYn(alarmDto.isActivityNoticeYn());
-        findUser.setMarketingNoticeType(alarmDto.getMarketingNoticeType());
+        findUser.setMarketingNoticeYn(alarmDto.isActivityNoticeYn());
 
         findUser.setUpdator(findUser.getEmail());
         userService.updateUser(findUser);
@@ -634,26 +634,6 @@ public class UserController {
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
 
-    @GetMapping("/getUseTerms")
-    public ResponseEntity<JsonObject> getUseTerms(HttpServletRequest req) throws AppException, ParseException {
-        JsonObject data = new JsonObject();
-
-        String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
-
-        LocalDateTime date = LocalDateTime.now();
-        Date now_date = Timestamp.valueOf(date);
-
-        Terms getTerm = termsRepository.findTopByReservationDateLessThanEqualOrderByReservationDateDesc(now_date);
-
-        data.addProperty("title", getTerm.getTitle());
-        data.addProperty("content", getTerm.getContent());
-
-        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
-        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
-
-    }
 
 
     @Transactional(rollbackFor = Exception.class)
@@ -1010,18 +990,18 @@ public class UserController {
         starUser.setStarPoint(starPoint);
         userService.updateUser(starUser);
 
-        CompletableFuture.runAsync(() -> {
-            try {
-                //렌탈오너가 렌탈매칭을 눌렀을 때 렌탈러에게
-                pushService.sendPush(new Long[]{transaction.getRental().getUser().getUserIdx()}, findUser.getUserIdx(),
-                        transaction.getRental().getRentalIdx(), 20,"새로운 평가 등록", findUser.getNickName()+"님이 회원님의 "+transaction.getRental().getTitle()+" 게시물에 대한 새로운 평가를 등록하였습니다.");
+        if (transaction.getRental().getUser().isActivityNoticeYn() == true) {
+            CompletableFuture.runAsync(() -> {
+                try {
+                    pushService.sendPush(new Long[]{transaction.getRental().getUser().getUserIdx()}, findUser.getUserIdx(),
+                            transaction.getRental().getRentalIdx(), 20,"새로운 평가 등록", findUser.getNickName()+"님이 회원님의 "+transaction.getRental().getTitle()+" 게시물에 대한 새로운 평가를 등록하였습니다.");
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            System.out.println(Thread.currentThread().getName() + ": hi");
-        }, executor);
-
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName() + ": hi");
+            }, executor);
+        }
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
@@ -1326,6 +1306,7 @@ public class UserController {
         am.setTransaction(findTr);
         am.setUser(findUser);
         am.setAmContent(content);
+        am.setAmStatus(0);
 
         ArbitrationManagement arbitrationManagement = arbitrationRepository.save(am);
 
@@ -1350,29 +1331,33 @@ public class UserController {
 
         Executor executor = Executors.newFixedThreadPool(30);
 
-        CompletableFuture.runAsync(() -> {
-            try {
-                //렌탈오너에게
-                pushService.sendPush(new Long[]{findTr.getRental().getUser().getUserIdx()}, findTr.getUser().getUserIdx(), arbitrationManagement.getAmIdx(),
-                        60, "이의신청 접수완료", findTr.getUser().getNickName()+" 님과의 렌탈거래에 대한 이의신청이 접수되었습니다.");
+        if (findTr.getRental().getUser().isActivityNoticeYn() == true) {
+            CompletableFuture.runAsync(() -> {
+                try {
+                    //렌탈오너에게
+                    pushService.sendPush(new Long[]{findTr.getRental().getUser().getUserIdx()}, findTr.getUser().getUserIdx(), arbitrationManagement.getAmIdx(),
+                            60, "이의신청 접수완료", findTr.getUser().getNickName()+" 님과의 렌탈거래에 대한 이의신청이 접수되었습니다.");
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            System.out.println(Thread.currentThread().getName() + ": hi");
-        }, executor);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName() + ": hi");
+            }, executor);
+        }
 
-        CompletableFuture.runAsync(() -> {
-            try {
-                //렌탈러에게
-                pushService.sendPush(new Long[]{findTr.getUser().getUserIdx()}, findTr.getRental().getUser().getUserIdx(), arbitrationManagement.getAmIdx(),
-                        60, "이의신청으로 인한 거래중재중", findTr.getRental().getTitle()+ " 거래에 대해 렌탈오너가 이의를 제기 했습니다. ");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            System.out.println(Thread.currentThread().getName() + ": hi");
-        }, executor);
 
+        if (findTr.getUser().isActivityNoticeYn() == true) {
+            CompletableFuture.runAsync(() -> {
+                try {
+                    //렌탈러에게
+                    pushService.sendPush(new Long[]{findTr.getUser().getUserIdx()}, findTr.getRental().getUser().getUserIdx(), arbitrationManagement.getAmIdx(),
+                            60, "이의신청으로 인한 거래중재중", findTr.getRental().getTitle()+ " 거래에 대해 렌탈오너가 이의를 제기 했습니다. ");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName() + ": hi");
+            }, executor);
+        }
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
