@@ -66,6 +66,10 @@ public class UserCount {
     @Column (name = "view_cnt")
     private Long viewCnt;
 
+    @ColumnDefault("0")
+    @Column (name = "all_like_cnt")
+    private Long allLikeCnt;
+
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")

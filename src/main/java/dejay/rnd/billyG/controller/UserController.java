@@ -626,7 +626,7 @@ public class UserController {
 
         findUser.setChatNoticeYn(alarmDto.isChatNoticeYn());
         findUser.setActivityNoticeYn(alarmDto.isActivityNoticeYn());
-        findUser.setMarketingNoticeYn(alarmDto.isActivityNoticeYn());
+        findUser.setMarketingNoticeYn(alarmDto.isMarketingNoticeYn());
         findUser.setNoticeNoticeYn(alarmDto.isNoticeNoticeYn());
 
         findUser.setUpdator(findUser.getEmail());

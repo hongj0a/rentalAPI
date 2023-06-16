@@ -359,6 +359,7 @@ public class CSController {
             }
             tr.addProperty("termsIdx", terms.get(i).getTermsIdx());
             tr.addProperty("title", terms.get(i).getTitle());
+            tr.addProperty("content", terms.get(i).getContent());
             tr.addProperty("createAt", String.valueOf(terms.get(i).getCreateAt()));
 
             termsArr.add(tr);
