@@ -38,8 +38,9 @@ public class UserService {
     private final UserCountRepository userCountRepository;
     private final UserCountRepositories userCountRepositories;
     private final GradeRepository gradeRepository;
+    private final UserCountService userCountService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManagerBuilder authenticationManagerBuilder, TokenProvider tokenProvider, UserRepositories userRepositories, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, GradeRepository gradeRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManagerBuilder authenticationManagerBuilder, TokenProvider tokenProvider, UserRepositories userRepositories, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, GradeRepository gradeRepository, UserCountService userCountService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
@@ -48,6 +49,7 @@ public class UserService {
         this.userCountRepository = userCountRepository;
         this.userCountRepositories = userCountRepositories;
         this.gradeRepository = gradeRepository;
+        this.userCountService = userCountService;
     }
 
     @Transactional
@@ -144,6 +146,7 @@ public class UserService {
         UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
         if (userCount != null) {
             userCount.setLoginCnt(userCount.getLoginCnt()+1);
+            userCountService.updateCnt(userCount);
 
         } else {
             UserCount newCount = new UserCount();

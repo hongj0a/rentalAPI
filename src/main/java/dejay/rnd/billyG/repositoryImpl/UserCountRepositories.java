@@ -2,6 +2,7 @@ package dejay.rnd.billyG.repositoryImpl;
 
 import dejay.rnd.billyG.domain.User;
 import dejay.rnd.billyG.domain.UserCount;
+import dejay.rnd.billyG.util.FrontUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +19,8 @@ public class UserCountRepositories {
     @PersistenceContext
     private final EntityManager em;
 
-    LocalDateTime date = LocalDateTime.now();
-    Date now_date = Timestamp.valueOf(date);
-
     public void save(UserCount userCount){
-        userCount.setCreateAt(now_date);
+        userCount.setCreateAt(FrontUtil.getNowDate());
         em.persist(userCount);
     }
 }

@@ -71,7 +71,8 @@ public class UserController {
     private final BlockReviewRepository blockReviewRepository;
     private final PushService pushService;
     private final TransactionService transactionService;
-    public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService, UserEvaluationRepository userEvaluationRepository, ArbitrationRepository arbitrationRepository, AmImageRepository amImageRepository, ArbitrationService arbitrationService, ToBlockRepository toBlockRepository, ToBlockService toBlockService, BlockReviewRepository blockReviewRepository, PushService pushService, TransactionService transactionService) {
+    private final UserCountService userCountService;
+    public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService, UserEvaluationRepository userEvaluationRepository, ArbitrationRepository arbitrationRepository, AmImageRepository amImageRepository, ArbitrationService arbitrationService, ToBlockRepository toBlockRepository, ToBlockService toBlockService, BlockReviewRepository blockReviewRepository, PushService pushService, TransactionService transactionService, UserCountService userCountService) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.townService = townService;
@@ -102,6 +103,7 @@ public class UserController {
         this.blockReviewRepository = blockReviewRepository;
         this.pushService = pushService;
         this.transactionService = transactionService;
+        this.userCountService = userCountService;
     }
 
     @PostMapping("/signup")
@@ -950,6 +952,7 @@ public class UserController {
 
         if (userCount != null) {
             userCount.setGiveReviewCnt(userCount.getGiveReviewCnt()+1);
+            userCountService.updateCnt(userCount);
 
         } else {
             UserCount newCount = new UserCount();

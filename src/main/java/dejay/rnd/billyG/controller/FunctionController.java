@@ -5,17 +5,12 @@ import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.LikeDto;
-import dejay.rnd.billyG.dto.PushDto;
 import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.repository.*;
 
-import dejay.rnd.billyG.service.LikeService;
-import dejay.rnd.billyG.service.PushService;
-import dejay.rnd.billyG.service.RentalService;
-import dejay.rnd.billyG.service.ToBlockService;
-import dejay.rnd.billyG.util.FrontUtil;
+import dejay.rnd.billyG.service.*;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
@@ -42,7 +37,9 @@ public class FunctionController {
     private final ToBlockRepository toBlockRepository;
     private final ToBlockService toBlockService;
     private final PushService pushService;
-    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository, SlangsRepository slangsRepository, ToBlockRepository toBlockRepository, ToBlockService toBlockService, PushService pushService) {
+    private final UserCountRepository userCountRepository;
+    private final UserCountService userCountService;
+    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository, SlangsRepository slangsRepository, ToBlockRepository toBlockRepository, ToBlockService toBlockService, PushService pushService, UserCountRepository userCountRepository, UserCountService userCountService) {
         this.rentalRepository = rentalRepository;
         this.rentalService = rentalService;
         this.likeService = likeService;
@@ -52,6 +49,8 @@ public class FunctionController {
         this.toBlockRepository = toBlockRepository;
         this.toBlockService = toBlockService;
         this.pushService = pushService;
+        this.userCountRepository = userCountRepository;
+        this.userCountService = userCountService;
     }
 
     @PostMapping("/setLike")
@@ -65,6 +64,7 @@ public class FunctionController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
+        UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
         Rental findRental = rentalRepository.getOne(likeDto.getRentalIdx());
         Likes findLike = likeRepository.findByRental_rentalIdxAndUser_userIdx(findRental.getRentalIdx(), findUser.getUserIdx());
 
@@ -111,6 +111,17 @@ public class FunctionController {
             }
             rentalService.updateLikeCnt(findRental, true);
             //좋아요 테이블에 row 추가
+            if (userCount != null) {
+                userCount.setAllLikeCnt(userCount.getAllLikeCnt()+1);
+                userCountService.updateCnt(userCount);
+
+            } else {
+                UserCount newCount = new UserCount();
+                newCount.setUser(findUser);
+                newCount.setAllLikeCnt(1L);
+
+                userCountRepository.save(newCount);
+            }
 
         } else {
             //좋아요취소
@@ -124,6 +135,10 @@ public class FunctionController {
                 return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
             }
 
+            if (userCount != null) {
+                userCount.setAllLikeCnt(userCount.getAllLikeCnt()-1);
+                userCountService.updateCnt(userCount);
+            }
 
         }
 

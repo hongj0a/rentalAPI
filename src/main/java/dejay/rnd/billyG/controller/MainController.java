@@ -70,8 +70,9 @@ public class MainController {
     private final ToBlockRepository toBlockRepository;
     private final UserRepositories userRepositories;
     private final PushService pushService;
+    private final UserCountService userCountService;
 
-    public MainController(ImageProperties imageProperties, UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, BellScheduleRepositry bellScheduleRepository, BellScheduleService bellScheduleService, BlockUserRepository blockUserRepository, BlockPostRepository blockPostRepository, ToBlockRepository toBlockRepository, UserRepositories userRepositories, PushService pushService) {
+    public MainController(ImageProperties imageProperties, UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, BellScheduleRepositry bellScheduleRepository, BellScheduleService bellScheduleService, BlockUserRepository blockUserRepository, BlockPostRepository blockPostRepository, ToBlockRepository toBlockRepository, UserRepositories userRepositories, PushService pushService, UserCountService userCountService) {
         this.userRepository = userRepository;
         this.townRepository = townRepository;
         this.townRepositories = townRepositories;
@@ -99,6 +100,7 @@ public class MainController {
         this.toBlockRepository = toBlockRepository;
         this.userRepositories = userRepositories;
         this.pushService = pushService;
+        this.userCountService = userCountService;
     }
 
     @GetMapping("/getMainList")
@@ -383,6 +385,7 @@ public class MainController {
 
             if (userCount != null) {
                 userCount.setViewCnt(userCount.getViewCnt()+1);
+                userCountService.updateCnt(userCount);
 
             } else {
                 UserCount newCount = new UserCount();

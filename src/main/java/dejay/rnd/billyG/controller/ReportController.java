@@ -111,6 +111,7 @@ public class ReportController {
 
                     if (userCount != null) {
                         userCount.setBlockPostCnt(userCount.getBlockPostCnt()+1);
+                        userCountService.updateCnt(userCount);
 
                     } else {
                         UserCount newCount = new UserCount();
@@ -124,6 +125,7 @@ public class ReportController {
                     reportService.insertBlockUser(reportUser, findBT, reportDto.getBlockContent(), findUser.getUserIdx());
                     if (userCount != null) {
                         userCount.setBlockPostCnt(userCount.getBlockUserCnt()+1);
+                        userCountService.updateCnt(userCount);
 
                     } else {
                         UserCount newCount = new UserCount();
@@ -139,7 +141,7 @@ public class ReportController {
 
                     if (userCount != null) {
                         userCount.setBlockPostCnt(userCount.getBlockReviewCnt()+1);
-
+                        userCountService.updateCnt(userCount);
                     } else {
                         UserCount newCount = new UserCount();
                         newCount.setUser(findUser);
