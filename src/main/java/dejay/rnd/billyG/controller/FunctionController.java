@@ -64,8 +64,9 @@ public class FunctionController {
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
-        UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
+
         Rental findRental = rentalRepository.getOne(likeDto.getRentalIdx());
+        UserCount userCount = userCountRepository.findByUser_UserIdx(findRental.getUser().getUserIdx());
         Likes findLike = likeRepository.findByRental_rentalIdxAndUser_userIdx(findRental.getRentalIdx(), findUser.getUserIdx());
 
         if (likeDto.getLikeFlag() == 1) {

@@ -224,6 +224,7 @@ public class ChatController {
 
                 findRoom.setFirstYn(true);
                 chatService.updateChatRoom(findRoom);
+
                 contentDto.setStatus(String.valueOf(10));
                 contentDto.setTransactionIdx(0L);
 
@@ -237,9 +238,6 @@ public class ChatController {
                 findTr.setOwnerStatus(findTr.getOwnerStatus() + 10);
                 findTr.setRenterStatus(findTr.getRenterStatus() + 10);
                 findTr.setStatusAt(FrontUtil.getNowDate());
-
-
-
 
                 if (findTr.getOwnerStatus() == 30 && findTr.getRental().getUser().isActivityNoticeYn() == true) {
 
