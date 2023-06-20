@@ -9,6 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AlarmDto {
+    private Long alarmIdx;
     private boolean chatNoticeYn;
     private boolean marketingNoticeYn;
     private boolean activityNoticeYn;

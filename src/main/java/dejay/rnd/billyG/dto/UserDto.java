@@ -60,7 +60,6 @@ public class UserDto {
    private Set<GradeDto> authorityDtoSet;
 
    public static UserDto from(User user) {
-      System.out.println("!@#!@#!@#!@#user.toString() = " + user.toString());
       if(user == null) return null;
 
       return UserDto.builder()

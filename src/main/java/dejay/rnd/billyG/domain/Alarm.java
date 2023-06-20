@@ -48,9 +48,18 @@ public class Alarm {
     @Column(name = "target_idx")
     private Long targetIdx;
 
+    @Column(name = "target_idx2")
+    private Long targetIdx2;
+
     @Column
     private Integer type;
 
     @Column(name = "host_idx")
     private Long hostIdx;
+
+    @Column (name = "update_at")
+    private Date updateAt;
+
+    @Column
+    private String updator;
 }

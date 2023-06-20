@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.config.ImageProperties;
 import dejay.rnd.billyG.domain.*;
+import dejay.rnd.billyG.dto.AlarmDto;
 import dejay.rnd.billyG.dto.MainDto;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
@@ -16,6 +17,7 @@ import dejay.rnd.billyG.repositoryImpl.TownRepositories;
 import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
 import dejay.rnd.billyG.repositoryImpl.UserRepositories;
 import dejay.rnd.billyG.service.*;
+import dejay.rnd.billyG.util.FrontUtil;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
@@ -583,6 +585,7 @@ public class MainController {
                     bell.addProperty("regDate", ar.getCreateAt().getTime());
                     bell.addProperty("readYn", ar.isReadYn());
                     bell.addProperty("targetIdx", ar.getTargetIdx());
+                    bell.addProperty("targetIdx2", ar.getTargetIdx2());
                     bell.addProperty("type", ar.getType());
 
                     alarmArr.add(bell);
@@ -595,6 +598,27 @@ public class MainController {
 
     }
 
+
+    @PostMapping("/setAlarmReadYn")
+    public ResponseEntity<JsonObject> setAlarmReadYn(@RequestBody AlarmDto alarmDto,
+                                                     HttpServletRequest req) throws AppException, ParseException {
+        JsonObject data = new JsonObject();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        String userEmail = UserMiningUtil.getUserInfo(acToken);
+        User findUser = userRepository.findByEmail(userEmail);
+
+        Alarm findAlarm = alarmRepository.findByAlarmIdx(alarmDto.getAlarmIdx());
+
+        findAlarm.setReadYn(true);
+        findAlarm.setUpdateAt(FrontUtil.getNowDate());
+        findAlarm.setUpdator(findUser.getEmail());
+        alarmRepository.save(findAlarm);
+
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+
+    }
 
 
     @Transactional(rollbackFor = Exception.class)

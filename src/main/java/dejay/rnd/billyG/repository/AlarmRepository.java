@@ -13,6 +13,7 @@ import java.util.List;
 @Repository
 public interface AlarmRepository extends JpaRepository<Alarm, Long> {
 
-
     List<Alarm> findByHostIdxAndCreateAtGreaterThanEqualAndCreateAtLessThanEqualOrderByCreateAtDesc(Long userIdx, Date beforeDate, Date currentDate);
+
+    Alarm findByAlarmIdx(Long alarmIdx);
 }

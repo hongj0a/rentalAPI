@@ -54,10 +54,10 @@ public class UserService {
 
     @Transactional
     public UserDto signup(UserDto userDto) {
-        Grade findGrade = gradeRepository.findByGradeScoreLessThanEqual(30L);
+        List<Grade>findGrade = gradeRepository.findByGradeScoreLessThanEqualOrderByGradeScoreDesc(30L);
 
         Grade grade = Grade.builder()
-                .gradeIdx(Long.valueOf(findGrade.getMenuNum()))
+                .gradeIdx(Long.valueOf(findGrade.get(0).getGradeIdx()))
                 .build();
 
         User user = User.builder()
@@ -68,7 +68,7 @@ public class UserService {
                 .name(userDto.getName())
                 .activityScore(0)
                 .starPoint("0")
-                .userLevel(Long.valueOf(findGrade.getMenuNum()))
+                .userLevel(Long.valueOf(findGrade.get(0).getGradeIdx()))
                 .status(10)
                 .phoneNum(userDto.getPhoneNumber())
                 .ciValue(userDto.getCiValue())

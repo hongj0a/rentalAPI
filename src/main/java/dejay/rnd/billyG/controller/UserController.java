@@ -13,6 +13,7 @@ import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
 import dejay.rnd.billyG.service.*;
+import dejay.rnd.billyG.util.FrontUtil;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -332,6 +333,7 @@ public class UserController {
         data.addProperty("profileImage", otherUser.getProfileImageUrl());
         data.addProperty("nickName", otherUser.getNickName());
         data.addProperty("name", otherUser.getName());
+        data.addProperty("status", otherUser.getStatus());
         data.addProperty("phoneNumber", otherUser.getPhoneNum());
         data.addProperty("snsType", otherUser.getSnsName());
         data.addProperty("grade", findGrade.getGradeName());
@@ -428,6 +430,7 @@ public class UserController {
                         rvs.addProperty("renterLeadTown", findLeadTown.getTownName());
                         rvs.addProperty("reviewRegDate", review.getCreateAt().getTime());
                         rvs.addProperty("reviewIdx", review.getReviewIdx());
+                        rvs.addProperty("status", review.getTransaction().getRental().getUser().getStatus());
                         rvs.addProperty("reviewContent", review.getReviewContent());
                         rvs.addProperty("reviewStarPoint", review.getReviewScore());
 
@@ -514,6 +517,7 @@ public class UserController {
 
         data.addProperty("userIdx", review.getTransaction().getUser().getUserIdx());
         data.addProperty("nickName", review.getTransaction().getUser().getNickName());
+        data.addProperty("status", review.getTransaction().getRental().getUser().getStatus());
         data.addProperty("starPoint", review.getReviewScore());
         data.addProperty("title", review.getTransaction().getRental().getTitle());
         data.addProperty("content", review.getReviewContent());
@@ -646,9 +650,6 @@ public class UserController {
                                                   HttpServletRequest req) throws ParseException {
         JsonObject data = new JsonObject();
 
-        LocalDateTime date = LocalDateTime.now();
-        Date now_date = Timestamp.valueOf(date);
-
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
@@ -656,7 +657,7 @@ public class UserController {
 
         findUser.setCategory(findCategory);
         findUser.setStatus(30);
-        findUser.setDeleteAt(now_date);
+        findUser.setDeleteAt(FrontUtil.getNowDate());
         if (outDto.getBlockContent() != null) {
             findUser.setOutReason(outDto.getBlockContent());
         }
@@ -665,8 +666,8 @@ public class UserController {
 
         StatusHistory sh = new StatusHistory();
         sh.setUser(findUser);
-        sh.setDeleteAt(now_date);
-        sh.setCreateAt(now_date);
+        sh.setDeleteAt(FrontUtil.getNowDate());
+        sh.setCreateAt(FrontUtil.getNowDate());
         sh.setStatus(30);
 
         statusHistoryRepository.save(sh);

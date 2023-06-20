@@ -59,7 +59,8 @@ public class RentalRepositories implements RentalRepositoryCustom {
                     .where((rental.status.in(status)).and(rental.title.contains(title))
                             .and(builder)
                             .and(rental.activeYn.eq(true))
-                            .and(rental.deleteYn.eq(false)))
+                            .and(rental.deleteYn.eq(false))
+                            .and(rental.user.status.notIn(30)))
                     .orderBy(rental.viewCnt.desc())
                     .offset(pageable.getOffset())
                     .limit(pageable.getPageSize())
@@ -75,7 +76,8 @@ public class RentalRepositories implements RentalRepositoryCustom {
                     .where((rental.status.in(status)).and(rental.title.contains(title))
                     .and(builder)
                     .and(rental.activeYn.eq(true))
-                    .and(rental.deleteYn.eq(false)))
+                    .and(rental.deleteYn.eq(false))
+                    .and(rental.user.status.notIn(30)))
                     .orderBy(rental.pullUpAt.desc())
                     .offset(pageable.getOffset())
                     .limit(pageable.getPageSize())
@@ -111,7 +113,8 @@ public class RentalRepositories implements RentalRepositoryCustom {
                 .where((rental.status.in(status)).and(rental.title.contains(title))
                         .and(builder)
                         .and(rental.activeYn.eq(true))
-                        .and(rental.deleteYn.eq(false)))
+                        .and(rental.deleteYn.eq(false))
+                        .and(rental.user.status.notIn(30)))
                 .fetch();
         //Integer total = totalInfo.size();
         return totalInfo.stream().toList();
