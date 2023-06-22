@@ -1,6 +1,7 @@
 package dejay.rnd.billyG.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
@@ -13,32 +14,30 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "leave_menu")
+@Table(name = "user_item")
 @Entity
 @DynamicInsert
-public class LeaveMenu {
+public class UserItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "leave_idx")
-    private Long leaveIdx;
+    @Column (name = "user_item_idx")
+    private Long userItemIdx;
 
-    @Column (name = "view_id")
-    private String viewId;
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "userIdx")
+    private User user;
 
-    @Column (name = "view_name")
-    private String viewName;
+    @ManyToOne
+    @NotNull
+    @JoinColumn (name = "itemIdx")
+    private EvaluationItems evaluationItems;
 
-    @Column (name = "leave_cnt")
-    private Long leaveCnt;
-
+    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
     private Date createAt;
-
-    @Column (name = "update_at")
-    private Date updateAt;
-
 
 }

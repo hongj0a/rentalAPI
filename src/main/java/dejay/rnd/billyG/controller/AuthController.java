@@ -51,19 +51,19 @@ public class AuthController {
     public ResponseEntity<JsonObject> authorize(@RequestBody LoginDto loginDto, HttpServletRequest req) throws java.text.ParseException {
         JsonObject data = new JsonObject();
 
-        //User isUser = userRepository.findByCiValue(loginDto.getCiValue());
+        User isUser = userRepository.findByCiValue(loginDto.getCiValue());
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String email = loginDto.getEmail();
         String snsType = loginDto.getSnsType();
         User userOne = userRepository.findByEmail(email);
 
-        if (userOne != null) {
-            if(userOne.getStatus() == 30) {
+        if (isUser != null) {
+            if(isUser.getStatus() == 30) {
                 apiRes.setError(ErrCode.err_api_is_delete_user.code());
                 apiRes.setMessage(ErrCode.err_api_is_delete_user.msg());
                 return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
-            } else if ( !userOne.getSnsName().equals( loginDto.getSnsType()) ) {
+            } else if ( !isUser.getEmail().equals(loginDto.getEmail()) && isUser.getCiValue().equals(loginDto.getCiValue()) ) {
                 apiRes.setError(ErrCode.err_api_is_exist_user.code());
                 apiRes.setMessage(ErrCode.err_api_is_exist_user.msg());
                 return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());

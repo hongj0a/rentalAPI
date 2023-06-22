@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import com.amazonaws.services.s3.AmazonS3;
 import dejay.rnd.billyG.config.ImageProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import org.apache.commons.io.FilenameUtils;
 public class FileWriter {
 
     private final ImageProperties imageProperties;
+
 
     public long writeFile( MultipartFile multipartFile, String filePath ) {
         try {

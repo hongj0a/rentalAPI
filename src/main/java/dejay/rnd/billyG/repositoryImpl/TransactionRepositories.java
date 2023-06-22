@@ -1,10 +1,7 @@
 package dejay.rnd.billyG.repositoryImpl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import dejay.rnd.billyG.domain.ChatRoom;
-import dejay.rnd.billyG.domain.QChatRoom;
-import dejay.rnd.billyG.domain.QTransaction;
-import dejay.rnd.billyG.domain.Transaction;
+import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.repository.ChatRoomRepositoryCustom;
 import dejay.rnd.billyG.repository.TransactionRepositoryCustom;
 import jakarta.persistence.EntityManager;
@@ -24,6 +21,7 @@ public class TransactionRepositories implements TransactionRepositoryCustom {
     private final EntityManager em;
     private final JPAQueryFactory queryFactory;
     QTransaction transaction = QTransaction.transaction;
+    QBlockReview blockReview = QBlockReview.blockReview;
 
 
     @Override
@@ -40,6 +38,7 @@ public class TransactionRepositories implements TransactionRepositoryCustom {
 
         return result.stream().toList();
     }
+
 
 }
 

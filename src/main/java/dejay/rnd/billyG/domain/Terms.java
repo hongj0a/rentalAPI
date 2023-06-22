@@ -42,10 +42,10 @@ public class Terms {
     @Column
     private Integer type;
 
-    @Column
+    @Column(length = 5000)
     private String title;
 
-    @Column (columnDefinition = "TEXT")
+    @Column(length = 50000)
     private String content;
 
     @Column
@@ -55,8 +55,7 @@ public class Terms {
     @Column (name = "delete_yn")
     private boolean deleteYn;
 
-    @Column (name = "major_changes")
-    @Lob
+    @Column (name = "major_changes", length = 5000)
     private String majorChanges;
 
     @Column

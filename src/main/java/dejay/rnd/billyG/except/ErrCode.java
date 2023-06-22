@@ -28,6 +28,7 @@ public enum ErrCode {
   err_30days_no_use_user            ("1409", "30일 미이용 고객"),
   err_api_unsubscribed_user         ("2000", "가입되지 않은 사용자입니다."),
   err_api_incorrect_password        ("2001", "비밀번호 오류"),
+  err_api_transaction_ing        ("2222", "해당 채팅방 현재 렌탈중"),
   err_api_not_found_token           ("2002", "유효하지 않은 토큰"),
   err_api_expired_token             ("2003", "만료된 토큰"),
   err_unknown_exception             ("9999", "Unhandled Exception");

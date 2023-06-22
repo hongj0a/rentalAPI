@@ -32,7 +32,6 @@ public class ChatService {
 
     @Transactional
     public void updateExit(ChatRoom chatRoom) {
-        chatRoom.setExitAt(FrontUtil.getNowDate());
         chatRoom.setUpdateAt(FrontUtil.getNowDate());
     }
 

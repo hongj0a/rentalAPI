@@ -8,6 +8,7 @@ import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.InquiryDto;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.repository.*;
@@ -16,6 +17,7 @@ import dejay.rnd.billyG.service.FileUploadService;
 import dejay.rnd.billyG.service.OneToOneInquiryService;
 import dejay.rnd.billyG.util.FrontUtil;
 import dejay.rnd.billyG.util.UserMiningUtil;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
@@ -67,8 +69,8 @@ public class CSController {
         JsonObject data = new JsonObject();
         JsonArray noticeArr = new JsonArray();
 
-        Page<Notice> list = noticeRepository.findByDeleteYn(false, pageable);
-        List<Notice> size = noticeRepository.findAllByDeleteYn(false);
+        Page<Notice> list = noticeRepository.findByDeleteYnAndActiveYn(false, true, pageable);
+        List<Notice> size = noticeRepository.findAllByDeleteYnAndActiveYn(false, true);
 
         list.forEach(
                 noti -> {
@@ -218,19 +220,27 @@ public class CSController {
                     oto.addProperty("status", statusStr);
 
                     List<InquiryImage> findImg = inquiryImageRepository.findByOneToOneInquiry_oneIdx(ones.getOneIdx());
-                    findImg.forEach(
-                            img -> {
-                                JsonObject iObj = new JsonObject();
-                                iObj.addProperty("imageSeq", img.getImageIdx());
-                                iObj.addProperty("imageUrl", img.getImageUrl());
-                                imgArr.add(iObj);
-                            }
-                    );
+                    if (findImg.size() != 0) {
+                        findImg.forEach(
+                                img -> {
+                                    JsonObject iObj = new JsonObject();
+                                    iObj.addProperty("imageSeq", img.getImageIdx());
+                                    iObj.addProperty("imageUrl", img.getImageUrl());
+                                    imgArr.add(iObj);
+                                }
+                        );
+
+                    } else {
+                        JsonObject iObj = new JsonObject();
+                        iObj.addProperty("imageUrl", "deletedImage.png");
+                        imgArr.add(iObj);
+                    }
 
 
+                    oto.add("images", imgArr);
                     oto.addProperty("regDate", ones.getCreateAt().getTime());
                     oto.addProperty("content", ones.getContent());
-                    oto.add("images", imgArr);
+
                     faqArr.add(oto);
                 }
         );
@@ -248,7 +258,7 @@ public class CSController {
                                                 @RequestParam (value = "title") String title,
                                                 @RequestParam (value = "content") String content,
                                                 @RequestParam (value = "categoryIdx") String categoryIdx,
-                                                HttpServletRequest req) throws AppException, ParseException {
+                                                HttpServletRequest req) throws AppException, ParseException, IOException {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
@@ -268,13 +278,15 @@ public class CSController {
         OneToOneInquiry oneToOneInquiry = oneToOneInquiryService.insertOne(one);
 
         for (int i = 0; i < images.size(); i++) {
-            InquiryImage inquiryImage = new InquiryImage();
-            ImageFile file = uploadService.upload(images.get(i));
+            if (StringUtils.isEmpty(images.get(i).getOriginalFilename())) {
+                InquiryImage inquiryImage = new InquiryImage();
+                ImageFile file = uploadService.upload(images.get(i));
 
-            inquiryImage.setOneToOneInquiry(oneToOneInquiry);
-            inquiryImage.setImageUrl(file.getFileName());
+                inquiryImage.setOneToOneInquiry(oneToOneInquiry);
+                inquiryImage.setImageUrl(file.getFileName());
 
-            inquiryImageRepository.save(inquiryImage);
+                inquiryImageRepository.save(inquiryImage);
+            }
         }
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());

@@ -10,6 +10,7 @@ import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.repository.*;
 
+import dejay.rnd.billyG.repositoryImpl.TransactionRepositories;
 import dejay.rnd.billyG.service.*;
 import dejay.rnd.billyG.util.UserMiningUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,7 +40,8 @@ public class FunctionController {
     private final PushService pushService;
     private final UserCountRepository userCountRepository;
     private final UserCountService userCountService;
-    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository, SlangsRepository slangsRepository, ToBlockRepository toBlockRepository, ToBlockService toBlockService, PushService pushService, UserCountRepository userCountRepository, UserCountService userCountService) {
+    private final TransactionRepositories transactionRepositories;
+    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository, SlangsRepository slangsRepository, ToBlockRepository toBlockRepository, ToBlockService toBlockService, PushService pushService, UserCountRepository userCountRepository, UserCountService userCountService, TransactionRepositories transactionRepositories) {
         this.rentalRepository = rentalRepository;
         this.rentalService = rentalService;
         this.likeService = likeService;
@@ -51,6 +53,7 @@ public class FunctionController {
         this.pushService = pushService;
         this.userCountRepository = userCountRepository;
         this.userCountService = userCountService;
+        this.transactionRepositories = transactionRepositories;
     }
 
     @PostMapping("/setLike")

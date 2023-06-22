@@ -19,6 +19,7 @@ import dejay.rnd.billyG.repositoryImpl.UserRepositories;
 import dejay.rnd.billyG.service.*;
 import dejay.rnd.billyG.util.FrontUtil;
 import dejay.rnd.billyG.util.UserMiningUtil;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
@@ -172,6 +173,8 @@ public class MainController {
                         List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(rental.getRentalIdx());
                         if (rentalImages.size() != 0) {
                             rentalList.addProperty("imageUrl", rentalImages.get(0).getImageUrl());
+                        } else {
+                            rentalList.addProperty("imageUrl", "deletedImage.png");
                         }
 
                         rentalList.addProperty("title", rental.getTitle());
@@ -334,6 +337,7 @@ public class MainController {
         User findUser = userRepository.findByEmail(userEmail);
 
         Grade grade = gradeRepository.getOne(findUser.getUserLevel());
+        Grade gName = gradeRepository.getOne(Long.valueOf(grade.getMenuNum()));
         UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
 
         Rental findRental = rentalRepository.getOne(rentalIdx);
@@ -377,7 +381,7 @@ public class MainController {
         data.addProperty("userIdx", findRental.getUser().getUserIdx());
         data.addProperty("userStarPoint", Float.parseFloat(findRental.getUser().getStarPoint()));
         data.addProperty("activityScore", findRental.getUser().getActivityScore());
-        data.addProperty("grade", grade.getGradeName());
+        data.addProperty("grade", gName.getGradeName());
         data.addProperty("maxScore", getGrade.getGradeScore());
         data.addProperty("reviewCount", reviews.size());
 
@@ -424,6 +428,7 @@ public class MainController {
         ArrayList<Long> towns = new ArrayList<>();
 
         towns.add(findRental.getLeadTown());
+
         if (findRental.getTown1()!= null) towns.add(findRental.getTown1());
         if (findRental.getTown2()!= null) towns.add(findRental.getTown2());
         if (findRental.getTown3()!= null) towns.add(findRental.getTown3());
@@ -443,15 +448,23 @@ public class MainController {
 
         List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(rentalIdx);
 
-        rentalImages.forEach(
-                img -> {
-                    JsonObject images = new JsonObject();
-                    images.addProperty("imageSeq", img.getImageIdx());
-                    images.addProperty("imageUrl", img.getImageUrl());
+        if (rentalImages.size() != 0) {
+            rentalImages.forEach(
+                    img -> {
+                        JsonObject images = new JsonObject();
+                        images.addProperty("imageSeq", img.getImageIdx());
+                        images.addProperty("imageUrl", img.getImageUrl());
 
-                    imageArr.add(images);
-                }
-        );
+                        imageArr.add(images);
+                    }
+            );
+
+        } else {
+            JsonObject images = new JsonObject();
+            images.addProperty("imageUrl", "deletedImage.png");
+            imageArr.add(images);
+        }
+        data.add("images", imageArr);
 
         List<RentalCategoryInfo> categoryInfos = rentalCategoryInfoRepository.findByRental_rentalIdx(rentalIdx);
 
@@ -466,7 +479,6 @@ public class MainController {
         );
 
         data.add("towns", townArr);
-        data.add("images", imageArr);
         data.add("categoryInfo", cateArr);
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
@@ -497,7 +509,12 @@ public class MainController {
                     List<RentalImage> renImgs = rentalImageRepository.findByRental_rentalIdx(etcs.getRentalIdx());
 
                     etcRental.addProperty("rentalSeq", etcs.getRentalIdx());
-                    etcRental.addProperty("imageUrl", renImgs.get(0).getImageUrl());
+                    if (renImgs.size() != 0) {
+                        etcRental.addProperty("imageUrl", renImgs.get(0).getImageUrl());
+                    } else {
+                        etcRental.addProperty("imageUrl", "deleteImage.png");
+                    }
+
                     etcRental.addProperty("title", etcs.getTitle());
                     etcRental.addProperty("dailyRentalFee", etcs.getRentalPrice());
 
@@ -623,13 +640,13 @@ public class MainController {
 
     @Transactional(rollbackFor = Exception.class)
     @PostMapping(value = "/setRental", consumes = {"multipart/form-data"})
-    public ResponseEntity<JsonObject> setRental(@RequestParam (value = "images") List<MultipartFile> images,
+    public ResponseEntity<JsonObject> setRental(@RequestParam (value = "images", required = false) List<MultipartFile> images,
                                                 @RequestParam (value = "title") String title,
                                                 @RequestParam (value = "content") String content,
                                                 @RequestParam (value = "categories") String[] categories,
                                                 @RequestParam (value = "towns") String[] towns,
                                                 @RequestParam (value ="rentalDailyFee") String rentalDailyFee,
-                                                HttpServletRequest req) throws AppException, ParseException {
+                                                HttpServletRequest req) throws AppException, ParseException, IOException {
         JsonObject data = new JsonObject();
         Executor executor = Executors.newFixedThreadPool(30);
 
@@ -687,13 +704,15 @@ public class MainController {
         Rental findRental = rentalService.insertRental(rental);
 
         for (int i = 0; i < images.size(); i++) {
-            RentalImage rentalImage = new RentalImage();
-            ImageFile file = uploadService.upload(images.get(i));
+            if (!StringUtils.isEmpty(images.get(i).getOriginalFilename())) {
+                RentalImage rentalImage = new RentalImage();
+                ImageFile file = uploadService.upload(images.get(i));
 
-            rentalImage.setRental(findRental);
-            rentalImage.setImageUrl(file.getFileName());
+                rentalImage.setRental(findRental);
+                rentalImage.setImageUrl(file.getFileName());
 
-            rentalImageRepository.save(rentalImage);
+                rentalImageRepository.save(rentalImage);
+            }
         }
 
         for (int i = 0; i < categories.length; i++) {
@@ -848,7 +867,7 @@ public class MainController {
 
     @Transactional(rollbackFor = Exception.class)
     @PostMapping(value = "/editRental", consumes = {"multipart/form-data"})
-    public ResponseEntity<JsonObject> editRental(@RequestParam (value = "images") List<MultipartFile> images,
+    public ResponseEntity<JsonObject> editRental(@RequestParam (value = "images", required = false) List<MultipartFile> images,
                                                  @RequestParam (value = "title") String title,
                                                  @RequestParam (value = "content") String content,
                                                  @RequestParam (value = "categories") String[] categories,

@@ -38,7 +38,7 @@ public class Faq {
     @Column
     private String title;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(length = 50000)
     private String content;
 
     @ColumnDefault("0")
@@ -66,6 +66,6 @@ public class Faq {
     @Column
     private String updator;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column (length = 2000)
     private String answer;
 }

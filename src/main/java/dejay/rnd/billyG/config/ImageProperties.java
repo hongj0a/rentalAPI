@@ -22,6 +22,7 @@ public class ImageProperties {
     @Value("${file.upload.location}")
     private String defaultPath;
 
+
     @PostConstruct
     private void init() {
         log.info("path:: {}",this.defaultPath);

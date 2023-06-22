@@ -1,5 +1,6 @@
 package dejay.rnd.billyG.domain;
 
+import com.querydsl.core.annotations.QueryInit;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -30,7 +31,7 @@ public class BlockReview {
     @JoinColumn (name = "categoryIdx")
     private Category category;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     @JoinColumn (name = "reviewIdx")
     private Review review;
@@ -45,7 +46,7 @@ public class BlockReview {
     @Column (name = "processing_status")
     private Integer processingStatus;
 
-    @Column (name = "processing_content", length = 1000)
+    @Column (name = "processing_content", length = 50000)
     private String processingContent;
 
     @Temporal(value = TemporalType.TIMESTAMP)

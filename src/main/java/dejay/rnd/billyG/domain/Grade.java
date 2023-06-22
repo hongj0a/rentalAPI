@@ -26,7 +26,7 @@ public class Grade {
     @Column(name = "grade_idx")
     private Long gradeIdx;
 
-    @Column(name = "grade_name", length = 50)
+    @Column(name = "grade_name")
     private String gradeName;
 
     @Column(name = "middle_grade")

@@ -37,7 +37,7 @@ public class AdminGroup {
     @NotNull(message = " group name은 Null 일 수 없습니다. ")
     private String groupName;
 
-    @Column (length = 1000, name ="group_desc")
+    @Column (length = 5000, name ="group_desc")
     private String groupDesc;
 
     @ColumnDefault("1")

@@ -30,10 +30,10 @@ public class Coupon {
     @JoinColumn (name = "adminIdx")
     private Admin admin;
 
-    @Column(length = 100, name = "coupon_name")
+    @Column(name = "coupon_name")
     private String couponName;
 
-    @Column(length = 1000, name = "coupon_desc")
+    @Column(length = 5000, name = "coupon_desc")
     private String couponDesc;
 
     @Column (name = "open_date")

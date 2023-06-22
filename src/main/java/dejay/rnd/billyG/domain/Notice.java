@@ -39,10 +39,10 @@ public class Notice {
     @Column (name = "notice_type")
     private String noticeType;
 
-    @Column
+    @Column(length = 5000)
     private String title;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(length = 50000)
     private String content;
 
     @ColumnDefault("0")

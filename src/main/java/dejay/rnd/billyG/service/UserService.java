@@ -54,8 +54,9 @@ public class UserService {
 
     @Transactional
     public UserDto signup(UserDto userDto) {
-        List<Grade>findGrade = gradeRepository.findByGradeScoreLessThanEqualOrderByGradeScoreDesc(30L);
+        List<Grade>findGrade = gradeRepository.findByGradeScoreIsNotNullOrderByGradeScore();
 
+        System.out.println("findGrade = " + findGrade);
         Grade grade = Grade.builder()
                 .gradeIdx(Long.valueOf(findGrade.get(0).getGradeIdx()))
                 .build();

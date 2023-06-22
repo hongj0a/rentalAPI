@@ -1,5 +1,6 @@
 package dejay.rnd.billyG.domain;
 
+import com.querydsl.core.annotations.QueryInit;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -29,7 +30,7 @@ public class Rental {
     @Builder.Default
     private List<RentalCategoryInfo> rentalCategoryInfos = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne (fetch = FetchType.LAZY)
     @NotNull
     @JoinColumn (name = "userIdx")
     private User user;
@@ -57,7 +58,7 @@ public class Rental {
     @Column (name = "rental_price")
     private Long rentalPrice;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(length = 50000)
     private String content;
 
     @ColumnDefault("0")

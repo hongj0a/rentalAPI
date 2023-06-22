@@ -15,6 +15,7 @@ import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
 import dejay.rnd.billyG.service.*;
 import dejay.rnd.billyG.util.FrontUtil;
 import dejay.rnd.billyG.util.UserMiningUtil;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.nio.file.Path;
 
 import java.io.File;
@@ -107,20 +110,10 @@ public class UserController {
         this.userCountService = userCountService;
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<JsonObject> signup(@Valid @RequestBody UserDto userDto, HttpServletRequest req) {
-        JsonObject data = new JsonObject();
-
-        userService.signup(userDto);
-
-        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
-        return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
-    }
-
     @PostMapping("/editProfile")
     public ResponseEntity<JsonObject> editProfile(@RequestPart(value="image", required = false) MultipartFile multipartFile,
             @RequestParam(value="nickName", required = false) String nickName,
-                                                  HttpServletRequest req) throws ParseException {
+                                                  HttpServletRequest req) throws ParseException, IOException {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
@@ -130,8 +123,10 @@ public class UserController {
         String userNickName = "";
 
         if (multipartFile != null) {
-            ImageFile file = uploadService.upload(multipartFile);
-            imageUrl = file.getFileName();
+            if (!StringUtils.isEmpty(multipartFile.getOriginalFilename())) {
+                ImageFile file = uploadService.upload(multipartFile);
+                imageUrl = file.getFileName();
+            }
         }
 
         if (multipartFile != null && nickName != null) {
@@ -305,10 +300,16 @@ public class UserController {
 
         Grade grade = gradeRepository.findTop1ByOrderByGradeScoreDesc();
         Grade findGrade = gradeRepository.getOne(otherUser.getUserLevel());
+        Grade gName = gradeRepository.getOne(Long.valueOf(findGrade.getMenuNum()));
+        System.out.println("gName = " + gName.getGradeName());
 
-        //필수니깐 없을수가 없음
-        Town findLeadTown = townRepository.getOne(otherUser.getLeadTown());
-        data.addProperty("leadTown", findLeadTown.getTownName());
+        if (otherUser.getLeadTown() != null) {
+            Town findLeadTown = townRepository.getOne(otherUser.getLeadTown());
+            data.addProperty("leadTown", findLeadTown.getTownName());
+        } else {
+            data.addProperty("leadTown", "");
+        }
+
 
         if (otherUser.getTown1() != null) {
             Town findTown1 = townRepository.getOne(otherUser.getTown1());
@@ -336,7 +337,7 @@ public class UserController {
         data.addProperty("status", otherUser.getStatus());
         data.addProperty("phoneNumber", otherUser.getPhoneNum());
         data.addProperty("snsType", otherUser.getSnsName());
-        data.addProperty("grade", findGrade.getGradeName());
+        data.addProperty("grade", gName.getGradeName());
         data.addProperty("email", otherUser.getEmail());
         data.addProperty("idEmail", otherUser.getIdEmail());
         data.addProperty("receptionEmail", otherUser.getIdEmail());
@@ -398,6 +399,8 @@ public class UserController {
                         etcRental.addProperty("rentalSeq", etcs.getRentalIdx());
                         if (renImgs.size() != 0) {
                             etcRental.addProperty("imageUrl", renImgs.get(0).getImageUrl());
+                        } else {
+                            etcRental.addProperty("imageUrl", "deletedImage.png");
                         }
 
                         etcRental.addProperty("title", etcs.getTitle());
@@ -534,12 +537,13 @@ public class UserController {
                         rvImg.add(rvs);
                     }
             );
-            data.add("reviewImageList", rvImg);
+
         } else {
-
-            data.add("reviewImageList", rvImg);
+            JsonObject rvs = new JsonObject();
+            rvs.addProperty("imageUrl", "deletedImage.png");
+            rvImg.add(rvs);
         }
-
+        data.add("reviewImageList", rvImg);
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
@@ -720,12 +724,12 @@ public class UserController {
 
         Page<Transaction> transactions;
         List<Transaction> tranSize;
-        AtomicReference<String> str = new AtomicReference<>("");
 
         if (rentalFlag == 0) {
         //rental received
             if (rentalStatus.length == 0) {
                 //전체는 0으로
+                System.out.println("UserController.getSendOrReceivedRentals");
                 transactions = transactionRepository.findByUser_userIdxAndCancelYnOrderByCreateAtDesc(findUser.getUserIdx(), false, pageable);
                 tranSize = transactionRepository.findByUser_userIdxAndCancelYn(findUser.getUserIdx(), false);
             } else {
@@ -756,6 +760,8 @@ public class UserController {
                     if (img.size() != 0) {
                         trs.addProperty("imageSeq", img.get(0).getImageIdx());
                         trs.addProperty("imageUrl", img.get(0).getImageUrl());
+                    } else {
+                        trs.addProperty("imageUrl", "deletedImage.png");
                     }
                     trs.addProperty("title", tr.getRental().getTitle());
                     if (rentalFlag == 1) {
@@ -878,6 +884,8 @@ public class UserController {
         if (images.size() != 0) {
             data.addProperty("imageSeq", images.get(0).getImageIdx());
             data.addProperty("imageUrl", images.get(0).getImageUrl());
+        }else {
+            data.addProperty("imageUrl", "deletedImage.png");
         }
         data.addProperty("title", findRental.getTitle());
         data.addProperty("regDate", findRental.getCreateAt().getTime());
@@ -911,7 +919,7 @@ public class UserController {
                                                 @RequestParam (value = "content", required = false) String content,
                                                 @RequestParam (value = "score") String score[],
                                                 @RequestParam (value ="historyIdx") String historyIdx,
-                                                HttpServletRequest req) throws AppException, ParseException {
+                                                HttpServletRequest req) throws AppException, ParseException, IOException {
         JsonObject data = new JsonObject();
         Executor executor = Executors.newFixedThreadPool(30);
         String acToken = req.getHeader("Authorization").substring(7);
@@ -937,6 +945,7 @@ public class UserController {
         review.setRenterIdx(transaction.getUser().getUserIdx());
         review.setOwnerIdx(transaction.getRental().getUser().getUserIdx());
         review.setTransaction(transaction);
+
 
         Review getReview = reviewRepository.save(review);
 
@@ -972,15 +981,19 @@ public class UserController {
 
             userCountRepositories.save(newCount);
         }
+
         if (images.size() != 0 && images != null) {
+
             for (int i = 0; i < images.size(); i++) {
-                ReviewImage reviewImage = new ReviewImage();
-                ImageFile file = uploadService.upload(images.get(i));
+                if (!StringUtils.isEmpty(images.get(i).getOriginalFilename())) {
+                    ReviewImage reviewImage = new ReviewImage();
+                    ImageFile file = uploadService.upload(images.get(i));
 
-                reviewImage.setReview(getReview);
-                reviewImage.setImageUrl(file.getFileName());
+                    reviewImage.setReview(getReview);
+                    reviewImage.setImageUrl(file.getFileName());
 
-                reviewImageRepository.save(reviewImage);
+                    reviewImageRepository.save(reviewImage);
+                }
             }
         }
 
@@ -1077,6 +1090,7 @@ public class UserController {
         List<Grade> grades = gradeRepository.findByActiveYnAndMenuNumNotIn(true, new int[]{0});
         List<Grade> mains = gradeRepository.findByActiveYnAndMenuNumIn(true, new int[]{0});
         Grade grade = gradeRepository.getOne(findUser.getUserLevel());
+        Grade gName = gradeRepository.getOne(Long.valueOf(grade.getMenuNum()));
         List<Rental> rentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYn(findUser.getUserIdx(), true, false);
         UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
         Grade getGrade = gradeRepository.findTop1ByOrderByGradeScoreDesc();
@@ -1091,7 +1105,7 @@ public class UserController {
 
         data.addProperty("imageUrl", findUser.getProfileImageUrl());
         data.addProperty("nickName", findUser.getNickName());
-        data.addProperty("grade", grade.getGradeName()+grade.getMiddleGrade());
+        data.addProperty("grade", gName.getGradeName()+grade.getMiddleGrade());
         data.addProperty("activityScore", findUser.getActivityScore());
         data.addProperty("maxScore", getGrade.getGradeScore());
         data.add("topSteps", gson.toJsonTree(resultArr));
@@ -1203,25 +1217,36 @@ public class UserController {
         List<AmImage> amImages = amImageRepository.findByArbitrationManagement_AmIdx(amIdx);
         List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(getTr.getRental().getRentalIdx());
 
-        amImages.forEach(
-                img -> {
-                    JsonObject images = new JsonObject();
-                    images.addProperty("imageSeq", img.getImageIdx());
-                    images.addProperty("imageUrl", img.getImageUrl());
+        if (amImages.size() != 0) {
+            amImages.forEach(
+                    img -> {
+                        JsonObject images = new JsonObject();
+                        images.addProperty("imageSeq", img.getImageIdx());
+                        images.addProperty("imageUrl", img.getImageUrl());
 
-                    imageArr.add(images);
-                }
-        );
+                        imageArr.add(images);
+                    }
+            );
+            data.add("arbitrationImages", imageArr);
+        } else {
+            data.addProperty("imageUrl", "deleteImage.png");
+        }
+
 
         data.addProperty("rentalSeq", findRental.getRentalIdx());
-        data.addProperty("rentalImage", rentalImages.get(0).getImageUrl());
+        if (rentalImages.size() != 0) {
+            data.addProperty("rentalImage", rentalImages.get(0).getImageUrl());
+        } else {
+            data.addProperty("rentalImage", "deletedImage.png");
+        }
+
         data.addProperty("title", findRental.getTitle());
         data.addProperty("transactionNum", getTr.getTransactionNum());
         data.addProperty("dailyFee", findRental.getRentalPrice());
         data.addProperty("renterNickName", getTr.getUser().getNickName());
         data.addProperty("arbitrationContent", findAM.getAmContent());
         data.addProperty("regDate", findAM.getCreateAt().getTime());
-        data.add("arbitrationImages", imageArr);
+
 
         if (findAM.getAmStatus() == 2) {
             data.addProperty("arbitrationStatus", "중재완료");
@@ -1281,7 +1306,12 @@ public class UserController {
         List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(getTr.getRental().getRentalIdx());
 
         data.addProperty("rentalSeq", findRental.getRentalIdx());
-        data.addProperty("rentalImage", rentalImages.get(0).getImageUrl());
+        if (rentalImages.size() != 0) {
+            data.addProperty("rentalImage", rentalImages.get(0).getImageUrl());
+        } else {
+            data.addProperty("rentalImage", "deletedImage.png");
+        }
+
         data.addProperty("title", findRental.getTitle());
         data.addProperty("transactionNum", getTr.getTransactionNum());
         data.addProperty("transactionIdx", getTr.getTransactionIdx());
@@ -1294,10 +1324,10 @@ public class UserController {
 
     @Transactional(rollbackFor = Exception.class)
     @PostMapping(value = "/setArbitration", consumes = {"multipart/form-data"})
-    public ResponseEntity<JsonObject> setArbitration(@RequestParam (value = "images") List<MultipartFile> images,
+    public ResponseEntity<JsonObject> setArbitration(@RequestParam (value = "images", required = false) List<MultipartFile> images,
                                                 @RequestParam (value = "content") String content,
                                                 @RequestParam (value = "transactionIdx") Long transactionIdx,
-                                                HttpServletRequest req) throws AppException, ParseException {
+                                                HttpServletRequest req) throws AppException, ParseException, IOException {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
@@ -1317,13 +1347,15 @@ public class UserController {
         ArbitrationManagement arbitrationManagement = arbitrationRepository.save(am);
 
         for (int i = 0; i < images.size(); i++) {
-            AmImage amImage = new AmImage();
-            ImageFile file = uploadService.upload(images.get(i));
+            if(StringUtils.isEmpty(images.get(i).getOriginalFilename())){
+                AmImage amImage = new AmImage();
+                ImageFile file = uploadService.upload(images.get(i));
 
-            amImage.setArbitrationManagement(arbitrationManagement);
-            amImage.setImageUrl(file.getFileName());
+                amImage.setArbitrationManagement(arbitrationManagement);
+                amImage.setImageUrl(file.getFileName());
 
-            amImageRepository.save(amImage);
+                amImageRepository.save(amImage);
+            }
         }
 
         findTr.setOwnerStatus(60);

@@ -14,7 +14,7 @@ import java.util.List;
 public interface GradeRepository extends JpaRepository<Grade, Long> {
 
     Grade findTop1ByOrderByGradeScoreDesc();
-    List<Grade> findByGradeScoreLessThanEqualOrderByGradeScoreDesc(Long score);
+    List<Grade> findByGradeScoreIsNotNullOrderByGradeScore();
 
     Grade getOne(Long gradeIdx);
 

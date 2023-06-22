@@ -1,5 +1,6 @@
 package dejay.rnd.billyG.domain;
 
+import com.querydsl.core.annotations.QueryInit;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -31,7 +32,7 @@ public class Transaction {
     @Column (name = "transaction_idx")
     private Long transactionIdx;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     @JoinColumn (name = "rentalIdx")
     private Rental rental;

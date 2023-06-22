@@ -68,8 +68,11 @@ public class ChatRoom {
     @Column (name = "update_at")
     private Date updateAt;
 
-    @Column (name = "exit_at")
-    private Date exitAt;
+    @Column (name = "to_exit_at")
+    private Date toExitAt;
+
+    @Column (name = "from_exit_at")
+    private Date fromExitAt;
 
     @Column
     private String updator;

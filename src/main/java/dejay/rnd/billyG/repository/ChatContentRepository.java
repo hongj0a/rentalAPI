@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 @EnableJpaRepositories
@@ -15,6 +16,8 @@ import java.util.List;
 public interface ChatContentRepository extends JpaRepository<ChatContent, Long> {
 
     Page<ChatContent> findByChatRoom_chatRoomIdxOrderByCreateAtDesc(Long chatRoomIdx, Pageable pageable);
+    Page<ChatContent> findByChatRoom_chatRoomIdxAndCreateAtGreaterThanEqualOrderByCreateAtDesc(Long chatRoomIdx, Date exitAt, Pageable pageable);
+    List<ChatContent> findByChatRoom_chatRoomIdxAndCreateAtGreaterThanEqual(Long chatRoomIdx, Date exitAt);
+    List<ChatContent> findByChatRoom_chatRoomIdxOrderByCreateAtDesc(Long chatRoomIdx);
 
-    List<ChatContent> findByChatRoom_chatRoomIdx(Long chatRoomIdx);
 }

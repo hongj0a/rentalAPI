@@ -15,30 +15,29 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "rental_town_info")
+@Table(name = "evaluation_items")
 @Entity
 @DynamicInsert
-public class RentalTownInfo {
+public class EvaluationItems {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "rental_town_info_idx")
-    private Long rentalTownInfoIdx;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull
-    @JoinColumn (name = "rentalIdx")
-    private Rental rental;
+    @Column (name = "items_idx")
+    private Long itemsIdx;
 
     @ManyToOne
     @NotNull
-    @JoinColumn (name = "townIdx")
-    private Town town;
+    @JoinColumn (name = "adminIdx")
+    private Admin admin;
 
-    @Column (name = "active_yn")
-    @Builder.Default
-    private boolean activeYn = true;
+    @Column( length = 50000)
+    private String comment;
 
+    @ColumnDefault("0")
+    @Column (name = "delete_yn")
+    private boolean deleteYn;
+
+    @NotNull
     @Temporal(value = TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column (name = "create_at")
@@ -47,6 +46,13 @@ public class RentalTownInfo {
     @Column (name = "update_at")
     private Date updateAt;
 
+    @Column (name = "delete_at")
+    private Date deleteAt;
+
     @Column
     private String updator;
+
+    @Column (name = "order_num")
+    private Integer orderNum;
+
 }

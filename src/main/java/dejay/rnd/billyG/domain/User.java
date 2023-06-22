@@ -33,7 +33,6 @@ public class User {
     @Column (name = "id_email")
     private String idEmail;
 
-    @ColumnDefault("test")
     @Column (name = "email", unique = true)
     private String email;
 
@@ -58,12 +57,10 @@ public class User {
     private String snsName;
 
     //long text
-    @Lob
-    @Column (name = "refresh_token")
+    @Column (name = "refresh_token", length = 50000)
     private String refreshToken;
 
-    @Lob
-    @Column (name = "push_token")
+    @Column (name = "push_token", length = 50000)
     private String pushToken;
 
 
@@ -124,7 +121,7 @@ public class User {
     @Column (name = "last_login_date")
     private Date lastLoginDate;
 
-    @Column(length = 1000, name = "ci_value", unique = true)
+    @Column(length = 5000, name = "ci_value", unique = true)
     private String ciValue;
 
     @Column (name = "invitation_code")

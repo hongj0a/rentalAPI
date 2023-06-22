@@ -7,6 +7,7 @@ import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.ChatContentDto;
 import dejay.rnd.billyG.dto.ChatRoomDto;
 import dejay.rnd.billyG.except.AppException;
+import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.repositoryImpl.ChatRepositories;
@@ -14,6 +15,7 @@ import dejay.rnd.billyG.repositoryImpl.TransactionRepositories;
 import dejay.rnd.billyG.service.*;
 import dejay.rnd.billyG.util.FrontUtil;
 import dejay.rnd.billyG.util.UserMiningUtil;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -142,6 +145,11 @@ public class ChatController {
 
                 findRoom.setLastChatMessage(contentDto.getMessage());
                 findRoom.setUpdator(findUser.getEmail());
+                findRoom.setReadYn(false);
+
+                if (findRoom.getVisibleTo() != 0) {
+                    findRoom.setVisibleTo(0L);
+                }
 
                 chatService.updateChatRoom(findRoom);
 
@@ -179,7 +187,7 @@ public class ChatController {
             }
         }
 
-        if (contentDto.getTransactionIdx() != 0 && contentDto.isSystemYn() != true) {
+        if (StringUtils.isEmpty(contentDto.getMessage()) && contentDto.getTransactionIdx() != 0 && contentDto.isSystemYn() != true) {
             //변경되는 내용 다시저장
             Transaction findTr = transactionRepository.findByTransactionIdx(contentDto.getTransactionIdx());
 
@@ -473,7 +481,7 @@ public class ChatController {
     @PostMapping(value ="/api/setChatImage", consumes = {"multipart/form-data"})
     public ResponseEntity<JsonObject> setChatImage(@RequestParam (value = "images", required = false) List<MultipartFile> images,
                                                    @RequestParam (value = "roomIdx") Long roomIdx,
-                                                   HttpServletRequest req) throws AppException, ParseException {
+                                                   HttpServletRequest req) throws AppException, ParseException, IOException {
         JsonObject data = new JsonObject();
         JsonArray imgArr = new JsonArray();
 
@@ -494,16 +502,18 @@ public class ChatController {
         chatService.updateChatRoom(findRoom);
 
         for (int i = 0; i < images.size(); i++) {
-            ChatImage ci = new ChatImage();
-            JsonObject img = new JsonObject();
-            ImageFile file = uploadService.upload(images.get(i));
+            if (!StringUtils.isEmpty(images.get(i).getOriginalFilename())) {
+                ChatImage ci = new ChatImage();
+                JsonObject img = new JsonObject();
+                ImageFile file = uploadService.upload(images.get(i));
 
-            ci.setChatContent(chat);
-            ci.setImageUrl(file.getFileName());
+                ci.setChatContent(chat);
+                ci.setImageUrl(file.getFileName());
 
-            ChatImage chatImage = chatImageRepository.save(ci);
-            img.addProperty("imageUrl", chatImage.getImageUrl());
-            imgArr.add(img);
+                ChatImage chatImage = chatImageRepository.save(ci);
+                img.addProperty("imageUrl", chatImage.getImageUrl());
+                imgArr.add(img);
+            }
         }
 
         // 이미지 파일명 배열사이즈만큼 구해서 리턴
@@ -545,8 +555,11 @@ public class ChatController {
                     }
 
                     rms.addProperty("lastMessage", rm.getLastChatMessage());
-
-                    rms.addProperty("readYn", rm.isReadYn());
+                    if (rm.getUpdator().equals(findUser.getEmail())) {
+                        rms.addProperty("readYn", true);
+                    } else {
+                        rms.addProperty("readYn", rm.isReadYn());
+                    }
                     List<RentalImage> img = rentalImageRepository.findByRental_rentalIdx(rm.getRental().getRentalIdx());
                     rms.addProperty("rentalIdx", rm.getRental().getRentalIdx());
                     rms.addProperty("rentalImage", img.get(0).getImageUrl());
@@ -572,25 +585,40 @@ public class ChatController {
     @PostMapping("/setExit")
     public ResponseEntity<JsonObject> setExit(@RequestBody ChatRoomDto chatRoomDto, HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
+        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
         String userEmail = UserMiningUtil.getUserInfo(acToken);
         User findUser = userRepository.findByEmail(userEmail);
 
-        ChatRoom findChat = chatRepository.getOne(chatRoomDto.getChatRoomIdx());
+        ChatRoom findChat = chatRepository.findByChatRoomIdx(chatRoomDto.getChatRoomIdx());
+        Rental findRental = rentalRepository.findByRentalIdx(findChat.getRental().getRentalIdx());
 
-        if (findChat != null) {
-            if (findChat.getVisibleTo() != 0) {
-                findChat.setVisibleTo(-1L);
-            } else if ( findChat.getVisibleTo() == 0){
-                findChat.setVisibleTo(findUser.getUserIdx());
+        if (findRental.getStatus() == 2) {
+            apiRes.setError(ErrCode.err_api_transaction_ing.code());
+            apiRes.setMessage(ErrCode.err_api_transaction_ing.msg());
+            return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
+        } else {
+            if (findChat != null) {
+                if (findChat.getVisibleTo() != 0) {
+                    findChat.setVisibleTo(-1L);
+                } else if ( findChat.getVisibleTo() == 0){
+                    findChat.setVisibleTo(findUser.getUserIdx());
+                    if (findChat.getToUser().getUserIdx() == findUser.getUserIdx()) {
+                        findChat.setToExitAt(FrontUtil.getNowDate());
+                    } else {
+                        findChat.setFromExitAt(FrontUtil.getNowDate());
+                    }
+                }
+                findChat.setUpdator(findUser.getEmail());
+
+                chatService.updateExit(findChat);
             }
-            findChat.setUpdator(findUser.getEmail());
 
-            chatService.updateExit(findChat);
         }
 
-        RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
+
+
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
     }
@@ -601,8 +629,10 @@ public class ChatController {
 
         ChatRoom findChat = chatRepository.findByChatRoomIdx(chatRoomDto.getChatRoomIdx());
 
-        if (findChat.getLastChatMessage() == null) {
-            chatRepository.delete(findChat);
+        if (findChat != null) {
+            if (findChat.getLastChatMessage() == null) {
+                chatRepository.delete(findChat);
+            }
         }
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
@@ -612,7 +642,8 @@ public class ChatController {
 
     @GetMapping("/isRoomExistCheck")
     public ResponseEntity<JsonObject> isRoomExistCheck(@RequestParam(value="rentalIdx") Long rentalIdx,
-                                                       @RequestParam(value="roomIdx", required = false) Long roomIdx, Pageable pageable, HttpServletRequest req) throws AppException, ParseException {
+                                                       @RequestParam(value="roomIdx", required = false) Long roomIdx,
+                                                       @RequestParam(value = "readFlag", required = false) int readFlag, Pageable pageable, HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray conArr = new JsonArray();
 
@@ -627,24 +658,56 @@ public class ChatController {
         ChatRoom findChat;
         if (roomIdx == 0) {
             findChat = chatRepositories.getChat(findUser.getUserIdx(), findUser.getUserIdx(), new Long[]{-1L, findUser.getUserIdx()}, rentalIdx);
+            if (findChat != null) {
+                findChat.setReadYn(true);
+            }
         } else {
             findChat = chatRepository.findByChatRoomIdx(roomIdx);
         }
 
         if (findChat != null) {
-
+            if (readFlag == 1) {
+                findChat.setReadYn(true);
+            }
             if (findChat.isFirstYn() == true && (findChat.getRental().getUser().getUserIdx() == findUser.getUserIdx())) {
                 data.addProperty("ownerFirstYn", findChat.isFirstYn());
 
                 findChat.setFirstYn(false);
-                chatService.updateChatRoom(findChat);
+
             } else {
                 data.addProperty("ownerFirstYn", findChat.isFirstYn());
             }
+            chatService.updateChatRoom(findChat);
 
             //나가기 이후 보여주기
-            Page<ChatContent> chats = chatContentRepository.findByChatRoom_chatRoomIdxOrderByCreateAtDesc(findChat.getChatRoomIdx(), pageable);
-            List<ChatContent> size = chatContentRepository.findByChatRoom_chatRoomIdx(findChat.getChatRoomIdx());
+            Page<ChatContent> chats = null;
+            List<ChatContent> size = null;
+
+            //오너나 렌터가 나가기 한 경우
+            if (findChat.getVisibleTo() != 0 || findChat.getFromExitAt() != null || findChat.getToExitAt() != null) {
+
+                System.out.println("findUser.getUserIdx() = " + findUser.getUserIdx());
+                if (findChat.getToUser().getUserIdx() == findUser.getUserIdx()) {
+                    //오너가 나가기 한 경우, 오너가 나가기 한 이 후로 채팅을 보여줘야 함
+                    System.out.println("findChat = " + findChat.getToExitAt());
+                    chats = chatContentRepository.findByChatRoom_chatRoomIdxAndCreateAtGreaterThanEqualOrderByCreateAtDesc(findChat.getChatRoomIdx(), findChat.getToExitAt(), pageable);
+                    size = chatContentRepository.findByChatRoom_chatRoomIdxAndCreateAtGreaterThanEqual(findChat.getChatRoomIdx(), findChat.getToExitAt());
+
+                } else if (findChat.getFromUser().getUserIdx() == findUser.getUserIdx()) {
+                    //렌터가 나가기 한 경우, 렌터가 나가기 한 이 후로 채팅을 보여줘야 함
+                    System.out.println("findChat.getFromExitAt() = " + findChat.getFromExitAt());
+                    chats = chatContentRepository.findByChatRoom_chatRoomIdxAndCreateAtGreaterThanEqualOrderByCreateAtDesc(findChat.getChatRoomIdx(), findChat.getFromExitAt(), pageable);
+                    size = chatContentRepository.findByChatRoom_chatRoomIdxAndCreateAtGreaterThanEqual(findChat.getChatRoomIdx(), findChat.getFromExitAt());
+
+                }
+
+            } else {
+                //둘 다 나가기 안 한 경우
+                chats = chatContentRepository.findByChatRoom_chatRoomIdxOrderByCreateAtDesc(findChat.getChatRoomIdx(), pageable);
+                size = chatContentRepository.findByChatRoom_chatRoomIdxOrderByCreateAtDesc(findChat.getChatRoomIdx());
+
+            }
+
             //채팅목록 뿌려주기
             chats.forEach(
                     ch -> {
