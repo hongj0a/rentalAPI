@@ -26,7 +26,6 @@ public class AffiliatedTeam {
     private Long teamIdx;
 
     @ManyToOne
-    @NotNull
     @JoinColumn (name = "adminIdx")
     private Admin admin;
 
