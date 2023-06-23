@@ -69,7 +69,7 @@ public class FileUploadService {
         objectMetadata.setContentType(sourceFile.getContentType());
         objectMetadata.setContentLength(sourceFile.getSize());
 
-        String key = "test/" + fileName;
+        String key = "image/" + fileName;
 
         try (InputStream inputStream = sourceFile.getInputStream()) {
             amazonS3Client.putObject(new PutObjectRequest(bucketName, key, inputStream, objectMetadata)
@@ -81,11 +81,11 @@ public class FileUploadService {
         String storeFileUrl = amazonS3Client.getUrl(bucketName, key).toString();
 
         String filePath = fileWriter.getFilePath(fileName, sourceFile);
-        fileWriter.writeFile(sourceFile, storeFileUrl);
+        uploadMultipart(sourceFile, storeFileUrl);
 
         return ImageFile.builder()
                 .fileName(fileName)
-                .filePath(filePath)
+                .filePath(storeFileUrl)
                 .fileId(fileId)
                 .fileSize(sourceFile.getSize())
                 .build();
@@ -94,13 +94,13 @@ public class FileUploadService {
 
 
     // MultipartFile을 전달받아 File로 전환한 후 S3에 업로드
-    /*public String upload(MultipartFile multipartFile, String dirName) throws IOException {
+    public String uploadMultipart(MultipartFile multipartFile, String dirName) throws IOException {
         File uploadFile = convert(multipartFile)
                 .orElseThrow(() -> new IllegalArgumentException("MultipartFile -> File 전환 실패"));
-        return upload(uploadFile, dirName);
-    }*/
+        return uploadS3(uploadFile, dirName);
+    }
 
-    private String upload2(File uploadFile, String dirName) {
+    private String uploadS3(File uploadFile, String dirName) {
         String fileName = dirName + "/" + uploadFile.getName();
         String uploadImageUrl = putS3(uploadFile, fileName);
 

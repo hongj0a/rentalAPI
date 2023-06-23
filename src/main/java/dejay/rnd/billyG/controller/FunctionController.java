@@ -2,6 +2,7 @@ package dejay.rnd.billyG.controller;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.querydsl.core.Tuple;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.LikeDto;
@@ -10,6 +11,7 @@ import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.repository.*;
 
+import dejay.rnd.billyG.repositoryImpl.RentalRepositories;
 import dejay.rnd.billyG.repositoryImpl.TransactionRepositories;
 import dejay.rnd.billyG.service.*;
 import dejay.rnd.billyG.util.UserMiningUtil;
@@ -41,7 +43,8 @@ public class FunctionController {
     private final UserCountRepository userCountRepository;
     private final UserCountService userCountService;
     private final TransactionRepositories transactionRepositories;
-    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository, SlangsRepository slangsRepository, ToBlockRepository toBlockRepository, ToBlockService toBlockService, PushService pushService, UserCountRepository userCountRepository, UserCountService userCountService, TransactionRepositories transactionRepositories) {
+    private final RentalRepositories rentalRepositories;
+    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository, SlangsRepository slangsRepository, ToBlockRepository toBlockRepository, ToBlockService toBlockService, PushService pushService, UserCountRepository userCountRepository, UserCountService userCountService, TransactionRepositories transactionRepositories, RentalRepositories rentalRepositories) {
         this.rentalRepository = rentalRepository;
         this.rentalService = rentalService;
         this.likeService = likeService;
@@ -54,6 +57,7 @@ public class FunctionController {
         this.userCountRepository = userCountRepository;
         this.userCountService = userCountService;
         this.transactionRepositories = transactionRepositories;
+        this.rentalRepositories = rentalRepositories;
     }
 
     @PostMapping("/setLike")

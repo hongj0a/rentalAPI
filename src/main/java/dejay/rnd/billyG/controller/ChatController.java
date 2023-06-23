@@ -562,7 +562,12 @@ public class ChatController {
                     }
                     List<RentalImage> img = rentalImageRepository.findByRental_rentalIdx(rm.getRental().getRentalIdx());
                     rms.addProperty("rentalIdx", rm.getRental().getRentalIdx());
-                    rms.addProperty("rentalImage", img.get(0).getImageUrl());
+                    if (img.size() != 0) {
+                        rms.addProperty("rentalImage", img.get(0).getImageUrl());
+                    } else {
+                        rms.addProperty("rentalImage", "deletedImage.png");
+                    }
+
                     rms.addProperty("regDate", rm.getUpdateAt().getTime());
 
                     if (rm.getRental().getStatus() == 2) {
@@ -718,7 +723,7 @@ public class ChatController {
                         chs.addProperty("userIdx", ch.getUser().getUserIdx());
 
                         if (findUser.getUserIdx() != ch.getUser().getUserIdx()) {
-                            chs.addProperty("imageUrl", ch.getUser().getProfileImageUrl());
+                            chs.addProperty("image", ch.getUser().getProfileImageUrl());
                             chs.addProperty("nickName", ch.getUser().getNickName());
                         }
                         if (ch.isImageYn() == true) {

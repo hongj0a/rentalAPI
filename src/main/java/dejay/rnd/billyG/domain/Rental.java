@@ -30,6 +30,10 @@ public class Rental {
     @Builder.Default
     private List<RentalCategoryInfo> rentalCategoryInfos = new ArrayList<>();
 
+    @OneToMany(mappedBy = "rental", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Transaction> transactionInfos = new ArrayList<>();
+
     @ManyToOne (fetch = FetchType.LAZY)
     @NotNull
     @JoinColumn (name = "userIdx")
