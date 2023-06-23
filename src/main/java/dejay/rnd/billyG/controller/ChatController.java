@@ -503,18 +503,17 @@ public class ChatController {
         chatService.updateChatRoom(findRoom);
 
         for (int i = 0; i < images.size(); i++) {
-            if (!StringUtils.isEmpty(images.get(i).getOriginalFilename())) {
-                ChatImage ci = new ChatImage();
-                JsonObject img = new JsonObject();
-                ImageFile file = uploadService.upload(images.get(i));
+            ChatImage ci = new ChatImage();
+            JsonObject img = new JsonObject();
+            ImageFile file = uploadService.upload(images.get(i));
 
-                ci.setChatContent(chat);
-                ci.setImageUrl(file.getFileName());
+            ci.setChatContent(chat);
+            ci.setImageUrl(file.getFileName());
 
-                ChatImage chatImage = chatImageRepository.save(ci);
-                img.addProperty("imageUrl", chatImage.getImageUrl());
-                imgArr.add(img);
-            }
+            ChatImage chatImage = chatImageRepository.save(ci);
+            img.addProperty("imageUrl", chatImage.getImageUrl());
+            imgArr.add(img);
+
         }
 
         // 이미지 파일명 배열사이즈만큼 구해서 리턴
@@ -564,8 +563,6 @@ public class ChatController {
                     rms.addProperty("rentalIdx", rm.getRental().getRentalIdx());
                     if (img.size() != 0) {
                         rms.addProperty("rentalImage", img.get(0).getImageUrl());
-                    } else {
-                        rms.addProperty("rentalImage", "deletedImage.png");
                     }
 
                     rms.addProperty("regDate", rm.getUpdateAt().getTime());

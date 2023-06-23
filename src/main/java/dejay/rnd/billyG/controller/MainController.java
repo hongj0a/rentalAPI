@@ -174,8 +174,6 @@ public class MainController {
                         List<RentalImage> rentalImages = rentalImageRepository.findByRental_rentalIdx(rental.getRentalIdx());
                         if (rentalImages.size() != 0) {
                             rentalList.addProperty("imageUrl", rentalImages.get(0).getImageUrl());
-                        } else {
-                            rentalList.addProperty("imageUrl", "deletedImage.png");
                         }
 
                         rentalList.addProperty("title", rental.getTitle());
@@ -468,10 +466,6 @@ public class MainController {
                     }
             );
 
-        } else {
-            JsonObject images = new JsonObject();
-            images.addProperty("imageUrl", "deletedImage.png");
-            imageArr.add(images);
         }
         data.add("images", imageArr);
 
@@ -702,15 +696,14 @@ public class MainController {
         Rental findRental = rentalService.insertRental(rental);
 
         for (int i = 0; i < images.size(); i++) {
-            if (!StringUtils.isEmpty(images.get(i).getOriginalFilename())) {
-                RentalImage rentalImage = new RentalImage();
-                ImageFile file = uploadService.upload(images.get(i));
 
-                rentalImage.setRental(findRental);
-                rentalImage.setImageUrl(file.getFileName());
+            RentalImage rentalImage = new RentalImage();
+            ImageFile file = uploadService.upload(images.get(i));
 
-                rentalImageRepository.save(rentalImage);
-            }
+            rentalImage.setRental(findRental);
+            rentalImage.setImageUrl(file.getFileName());
+
+
         }
 
         for (int i = 0; i < categories.length; i++) {
@@ -1098,8 +1091,6 @@ public class MainController {
                     etcRental.addProperty("rentalSeq", etcs.getRentalIdx());
                     if (renImgs.size() != 0) {
                         etcRental.addProperty("imageUrl", renImgs.get(0).getImageUrl());
-                    } else {
-                        etcRental.addProperty("imageUrl", "deletedImage.png");
                     }
 
                     etcRental.addProperty("title", etcs.getTitle());

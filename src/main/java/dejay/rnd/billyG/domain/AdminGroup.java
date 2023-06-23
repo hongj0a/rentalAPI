@@ -30,7 +30,7 @@ public class AdminGroup {
     @JoinColumn (name = "adminIdx")
     private Admin admin;
 
-    @Column
+    @Column(length = 50000)
     private String updator;
 
     @Column (name = "group_name", unique = true)

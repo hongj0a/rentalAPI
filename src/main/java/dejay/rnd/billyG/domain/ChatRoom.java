@@ -74,7 +74,7 @@ public class ChatRoom {
     @Column (name = "from_exit_at")
     private Date fromExitAt;
 
-    @Column
+    @Column(length = 50000)
     private String updator;
 
 }

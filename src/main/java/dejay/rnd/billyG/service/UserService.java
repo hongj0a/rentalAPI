@@ -80,6 +80,7 @@ public class UserService {
                 .lastLoginDate(FrontUtil.getNowDate())
                 .activeAt(FrontUtil.getNowDate())
                 .build();
+        System.out.println("user.getEmail() = " + user.getEmail());
         return UserDto.from(userRepository.save(user));
     }
 

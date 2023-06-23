@@ -58,7 +58,7 @@ public class Terms {
     @Column (name = "major_changes", length = 5000)
     private String majorChanges;
 
-    @Column
+    @Column(length = 50000)
     private String updator;
 
     @Column (name = "reservation_date")

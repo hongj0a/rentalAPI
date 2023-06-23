@@ -1,5 +1,6 @@
 package dejay.rnd.billyG.controller;
 
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
@@ -9,7 +10,7 @@ import dejay.rnd.billyG.dto.InquiryDto;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
+
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.model.ImageFile;
@@ -20,6 +21,7 @@ import dejay.rnd.billyG.service.UserMining;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -47,11 +49,15 @@ public class CSController {
     private final OneToOneInquiryService oneToOneInquiryService;
     private final FileUploadService uploadService;
     private final InquiryImageRepository inquiryImageRepository;
-    private final Path fileStorageLocation;
     private final TermsRepository termsRepository;
     private final UserMining userMining;
 
-    public CSController(ImageProperties imageProperties, NoticeRepository noticeRepository, CategoryRepository categoryRepository, FaqRepository faqRepository, OneToOneInquiryRepository oneToOneInquiryRepository, UserRepository userRepository, OneToOneInquiryService oneToOneInquiryService, FileUploadService uploadService, InquiryImageRepository inquiryImageRepository, TermsRepository termsRepository, UserMining userMining) {
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucketName;
+
+    private final AmazonS3Client amazonS3Client;
+
+    public CSController( NoticeRepository noticeRepository, CategoryRepository categoryRepository, FaqRepository faqRepository, OneToOneInquiryRepository oneToOneInquiryRepository, UserRepository userRepository, OneToOneInquiryService oneToOneInquiryService, FileUploadService uploadService, InquiryImageRepository inquiryImageRepository, TermsRepository termsRepository, UserMining userMining, AmazonS3Client amazonS3Client) {
         this.noticeRepository = noticeRepository;
         this.categoryRepository = categoryRepository;
         this.faqRepository = faqRepository;
@@ -60,8 +66,7 @@ public class CSController {
         this.oneToOneInquiryService = oneToOneInquiryService;
         this.uploadService = uploadService;
         this.inquiryImageRepository = inquiryImageRepository;
-        this.fileStorageLocation = Paths.get(imageProperties.getDefaultPath())
-                .toAbsolutePath().normalize();
+        this.amazonS3Client = amazonS3Client;
         this.termsRepository = termsRepository;
         this.userMining = userMining;
     }
@@ -231,12 +236,7 @@ public class CSController {
                                 }
                         );
 
-                    } else {
-                        JsonObject iObj = new JsonObject();
-                        iObj.addProperty("imageUrl", "deletedImage.png");
-                        imgArr.add(iObj);
                     }
-
 
                     oto.add("images", imgArr);
                     oto.addProperty("regDate", ones.getCreateAt().getTime());
@@ -277,16 +277,17 @@ public class CSController {
 
         OneToOneInquiry oneToOneInquiry = oneToOneInquiryService.insertOne(one);
 
+        System.out.println("images.size() = " + images.size());
         for (int i = 0; i < images.size(); i++) {
-            if (StringUtils.isEmpty(images.get(i).getOriginalFilename())) {
-                InquiryImage inquiryImage = new InquiryImage();
-                ImageFile file = uploadService.upload(images.get(i));
+            System.out.println("images.get(i).getOriginalFilename() = " + images.get(i).getOriginalFilename());
+            InquiryImage inquiryImage = new InquiryImage();
+            ImageFile file = uploadService.upload(images.get(i));
 
-                inquiryImage.setOneToOneInquiry(oneToOneInquiry);
-                inquiryImage.setImageUrl(file.getFileName());
+            inquiryImage.setOneToOneInquiry(oneToOneInquiry);
+            inquiryImage.setImageUrl(file.getFileName());
 
-                inquiryImageRepository.save(inquiryImage);
-            }
+            inquiryImageRepository.save(inquiryImage);
+
         }
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
@@ -311,13 +312,18 @@ public class CSController {
 
         List<InquiryImage> imglist = inquiryImageRepository.findByOneToOneInquiry_oneIdx(inquiryDto.getOneIdx());
 
+        String storeFileUrl ;
         for (int i = 0; i < imglist.size(); i++) {
 
-            File file = new File(fileStorageLocation + File.separator + imglist.get(i).getImageUrl());
+            String key = "image/" + imglist.get(i).getImageUrl();
+            storeFileUrl = amazonS3Client.getUrl(bucketName, key).toString();
+
+            File file = new File(storeFileUrl);
 
             if (file.exists()) {
                 file.delete();
             }
+
             inquiryImageRepository.delete(imglist.get(i));
         }
 

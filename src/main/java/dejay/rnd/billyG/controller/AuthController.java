@@ -65,8 +65,8 @@ public class AuthController {
 
         String email = loginDto.getEmail();
         String snsType = loginDto.getSnsType();
-        System.out.println("kmsService = " + kmsService.encrypt(email));
-        User userOne = userRepository.findByEmail(kmsService.encrypt(email));
+        
+        User userOne = null;
 
         if (isUser != null) {
             if(isUser.getStatus() == 30) {
@@ -81,17 +81,19 @@ public class AuthController {
         } else {
             // ciValue가 없어서 신규회원이면 가입하고 로그인
 
+            System.out.println("AuthController.authorize");
+
             UserDto userDto = new UserDto();
             userDto.setEmail(email);
             userDto.setSnsType(snsType);
             userDto.setCiValue(loginDto.getCiValue());
             userDto.setName(loginDto.getName());
             userDto.setPhoneNumber(loginDto.getPhoneNumber());
-            userService.signup(userDto);
+            UserDto getUser = userService.signup(userDto);
 
-            userOne = userRepository.findByEmail(kmsService.encrypt(email));
+            userOne = userRepository.findByEmail(getUser.getEmail());
+
         }
-
         //1년이상 장기 미이용 고객 return 커스텀
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
@@ -109,7 +111,7 @@ public class AuthController {
 
         
         //로그인
-        TokenDto tokenDto = userService.login(kmsService.encrypt(email), snsType);
+        TokenDto tokenDto = userService.login(userOne.getEmail(), snsType);
         data.addProperty("grantType", tokenDto.getGrantType());
         data.addProperty("accessToken",tokenDto.getAccessToken());
         data.addProperty("refreshToken", tokenDto.getRefreshToken());

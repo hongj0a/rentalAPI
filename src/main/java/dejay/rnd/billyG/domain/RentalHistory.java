@@ -82,7 +82,7 @@ public class RentalHistory {
     @Column (name = "delete_at")
     private Date deleteAt;
 
-    @Column
+    @Column(length = 50000)
     private String updator;
 
     @Column(name ="pull_up_at")

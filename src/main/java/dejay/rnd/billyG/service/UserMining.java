@@ -26,7 +26,7 @@ public class UserMining {
         //refreshToken decode --> payload json parsing
         //userId 추출해서 회원정보 검색
         //refresh Token 검사해서 update.
-        String[] chunks = kmsService.encrypt(refreshToken).split("\\.");
+        String[] chunks = refreshToken.split("\\.");
         Base64.Decoder decoder = Base64.getUrlDecoder();
 
         String header = new String(decoder.decode(chunks[0]));
@@ -37,7 +37,7 @@ public class UserMining {
         JSONObject jsonObj = (JSONObject) obj;
 
         String email = (String) jsonObj.get("sub");
-        User findUser = userRepository.findByEmail(kmsService.encrypt(email));
+        User findUser = userRepository.findByEmail(email);
 
         return findUser;
     }

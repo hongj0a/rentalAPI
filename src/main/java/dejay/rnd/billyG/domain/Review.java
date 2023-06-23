@@ -63,7 +63,7 @@ public class Review {
     @Column (name = "renter_idx")
     private Long renterIdx;
 
-    @Column
+    @Column(length = 50000)
     private String updator;
 
 }

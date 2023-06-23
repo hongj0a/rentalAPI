@@ -37,7 +37,7 @@ public class UserDto {
    @Size (max = 1000)
    private String accessToken;
 
-   @Size (max = 1000)
+   @Size (max = 50000)
    private String refreshToken;
 
    @Size(min = 3, max = 100)

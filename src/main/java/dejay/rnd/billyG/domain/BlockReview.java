@@ -64,7 +64,7 @@ public class BlockReview {
     @Column (name = "delete_at")
     private Date deleteAt;
 
-    @Column
+    @Column(length = 50000)
     private String updator;
 
     @Column (name = "complete_at")

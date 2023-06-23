@@ -120,10 +120,8 @@ public class UserController {
         String userNickName = "";
 
         if (multipartFile != null) {
-            if (!StringUtils.isEmpty(multipartFile.getOriginalFilename())) {
-                ImageFile file = uploadService.upload(multipartFile);
-                imageUrl = file.getFileName();
-            }
+            ImageFile file = uploadService.upload(multipartFile);
+            imageUrl = file.getFileName();
         }
 
         if (multipartFile != null && nickName != null) {
@@ -389,8 +387,6 @@ public class UserController {
                         etcRental.addProperty("rentalSeq", etcs.getRentalIdx());
                         if (renImgs.size() != 0) {
                             etcRental.addProperty("imageUrl", renImgs.get(0).getImageUrl());
-                        } else {
-                            etcRental.addProperty("imageUrl", "deletedImage.png");
                         }
 
                         etcRental.addProperty("title", etcs.getTitle());
@@ -527,10 +523,6 @@ public class UserController {
                     }
             );
 
-        } else {
-            JsonObject rvs = new JsonObject();
-            rvs.addProperty("imageUrl", "deletedImage.png");
-            rvImg.add(rvs);
         }
         data.add("reviewImageList", rvImg);
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
@@ -743,8 +735,6 @@ public class UserController {
                     if (img.size() != 0) {
                         trs.addProperty("imageSeq", img.get(0).getImageIdx());
                         trs.addProperty("imageUrl", img.get(0).getImageUrl());
-                    } else {
-                        trs.addProperty("imageUrl", "deletedImage.png");
                     }
                     trs.addProperty("title", tr.getRental().getTitle());
                     if (rentalFlag == 1) {
@@ -861,8 +851,6 @@ public class UserController {
         if (images.size() != 0) {
             data.addProperty("imageSeq", images.get(0).getImageIdx());
             data.addProperty("imageUrl", images.get(0).getImageUrl());
-        }else {
-            data.addProperty("imageUrl", "deletedImage.png");
         }
         data.addProperty("title", findRental.getTitle());
         data.addProperty("regDate", findRental.getCreateAt().getTime());
@@ -962,15 +950,14 @@ public class UserController {
         if (images.size() != 0 && images != null) {
 
             for (int i = 0; i < images.size(); i++) {
-                if (!StringUtils.isEmpty(images.get(i).getOriginalFilename())) {
-                    ReviewImage reviewImage = new ReviewImage();
-                    ImageFile file = uploadService.upload(images.get(i));
+                ReviewImage reviewImage = new ReviewImage();
+                ImageFile file = uploadService.upload(images.get(i));
 
-                    reviewImage.setReview(getReview);
-                    reviewImage.setImageUrl(file.getFileName());
+                reviewImage.setReview(getReview);
+                reviewImage.setImageUrl(file.getFileName());
 
-                    reviewImageRepository.save(reviewImage);
-                }
+                reviewImageRepository.save(reviewImage);
+
             }
         }
 
@@ -1206,8 +1193,6 @@ public class UserController {
         data.addProperty("rentalSeq", findRental.getRentalIdx());
         if (rentalImages.size() != 0) {
             data.addProperty("rentalImage", rentalImages.get(0).getImageUrl());
-        } else {
-            data.addProperty("rentalImage", "deletedImage.png");
         }
 
         data.addProperty("title", findRental.getTitle());
@@ -1277,8 +1262,6 @@ public class UserController {
         data.addProperty("rentalSeq", findRental.getRentalIdx());
         if (rentalImages.size() != 0) {
             data.addProperty("rentalImage", rentalImages.get(0).getImageUrl());
-        } else {
-            data.addProperty("rentalImage", "deletedImage.png");
         }
 
         data.addProperty("title", findRental.getTitle());
@@ -1315,15 +1298,14 @@ public class UserController {
         ArbitrationManagement arbitrationManagement = arbitrationRepository.save(am);
 
         for (int i = 0; i < images.size(); i++) {
-            if(StringUtils.isEmpty(images.get(i).getOriginalFilename())){
-                AmImage amImage = new AmImage();
-                ImageFile file = uploadService.upload(images.get(i));
+            AmImage amImage = new AmImage();
+            ImageFile file = uploadService.upload(images.get(i));
 
-                amImage.setArbitrationManagement(arbitrationManagement);
-                amImage.setImageUrl(file.getFileName());
+            amImage.setArbitrationManagement(arbitrationManagement);
+            amImage.setImageUrl(file.getFileName());
 
-                amImageRepository.save(amImage);
-            }
+            amImageRepository.save(amImage);
+
         }
 
         findTr.setOwnerStatus(60);

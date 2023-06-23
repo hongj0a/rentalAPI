@@ -63,7 +63,7 @@ public class Faq {
     @Column (name = "active_at")
     private Date activeAt;
 
-    @Column
+    @Column(length = 50000)
     private String updator;
 
     @Column (length = 2000)
