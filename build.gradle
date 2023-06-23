@@ -42,6 +42,8 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
 	implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.1.RELEASE'
+	// https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk
+	implementation group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.12.493'
 
 
 	// === QueryDsl 시작 ===

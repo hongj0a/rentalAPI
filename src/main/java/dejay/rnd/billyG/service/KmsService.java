@@ -1,5 +1,8 @@
 package dejay.rnd.billyG.service;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.profile.internal.ProfileAssumeRoleCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClientBuilder;
@@ -22,12 +25,21 @@ public class KmsService {
     @Value("${aws.kms.keyId}")
     private String KEY_ID;
 
+    @Value("${cloud.aws.credentials.accessKey}")
+    private String ACCESS_KEY;
+
+    @Value("${cloud.aws.credentials.secretKey}")
+    private String SECRET_KEY;
+
     public String encrypt(String plainText) {
         try {
+            BasicAWSCredentials basicAWSCredentials= new BasicAWSCredentials(ACCESS_KEY, SECRET_KEY);
             AWSKMS kmsClient = AWSKMSClientBuilder.standard()
                     .withRegion(Regions.AP_NORTHEAST_2)
+                    .withCredentials(new AWSStaticCredentialsProvider(basicAWSCredentials))
                     .build();
 
+            System.out.println("plainText = " + plainText);
             EncryptRequest request = new EncryptRequest();
             request.withKeyId(KEY_ID);
             request.withPlaintext(ByteBuffer.wrap(plainText.getBytes(StandardCharsets.UTF_8)));
@@ -45,8 +57,10 @@ public class KmsService {
 
     public String decrypt(String encryptedText) {
         try {
+            BasicAWSCredentials basicAWSCredentials= new BasicAWSCredentials(ACCESS_KEY, SECRET_KEY);
             AWSKMS kmsClient = AWSKMSClientBuilder.standard()
                     .withRegion(Regions.AP_NORTHEAST_2)
+                    .withCredentials(new AWSStaticCredentialsProvider(basicAWSCredentials))
                     .build();
 
             System.out.println("encryptedText"+encryptedText);

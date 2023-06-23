@@ -14,10 +14,9 @@ import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
 import dejay.rnd.billyG.service.*;
 import dejay.rnd.billyG.util.FrontUtil;
-import dejay.rnd.billyG.util.UserMiningUtil;
+import dejay.rnd.billyG.service.UserMining;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.simple.parser.ParseException;
@@ -34,8 +33,6 @@ import java.nio.file.Path;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -57,7 +54,6 @@ public class UserController {
     private final ReviewRepository reviewRepository;
     private final ReviewImageRepository reviewImageRepository;
     private final GradeRepository gradeRepository;
-    private final TermsRepository termsRepository;
     private final CategoryRepository categoryRepository;
     private final StatusHistoryRepository statusHistoryRepository;
     private final TransactionRepository transactionRepository;
@@ -71,12 +67,14 @@ public class UserController {
     private final AmImageRepository amImageRepository;
     private final ArbitrationService arbitrationService;
     private final ToBlockRepository toBlockRepository;
-    private final ToBlockService toBlockService;
     private final BlockReviewRepository blockReviewRepository;
     private final PushService pushService;
     private final TransactionService transactionService;
     private final UserCountService userCountService;
-    public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, TermsRepository termsRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService, UserEvaluationRepository userEvaluationRepository, ArbitrationRepository arbitrationRepository, AmImageRepository amImageRepository, ArbitrationService arbitrationService, ToBlockRepository toBlockRepository, ToBlockService toBlockService, BlockReviewRepository blockReviewRepository, PushService pushService, TransactionService transactionService, UserCountService userCountService) {
+    private final UserMining userMining;
+    private final KmsService kmsService;
+
+    public UserController(ImageProperties imageProperties, UserService userService, UserRepository userRepository, TownService townService, TownRepository townRepository, FileUploadService uploadService, RentalRepository rentalRepository, RentalImageRepository rentalImageRepository, ReviewRepository reviewRepository, ReviewImageRepository reviewImageRepository, GradeRepository gradeRepository, CategoryRepository categoryRepository, StatusHistoryRepository statusHistoryRepository, TransactionRepository transactionRepository, LikeRepository likeRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, ReviewService reviewService, UserEvaluationRepository userEvaluationRepository, ArbitrationRepository arbitrationRepository, AmImageRepository amImageRepository, ArbitrationService arbitrationService, ToBlockRepository toBlockRepository, BlockReviewRepository blockReviewRepository, PushService pushService, TransactionService transactionService, UserCountService userCountService, UserMining userMining, KmsService kmsService) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.townService = townService;
@@ -87,7 +85,7 @@ public class UserController {
         this.reviewRepository = reviewRepository;
         this.reviewImageRepository = reviewImageRepository;
         this.gradeRepository = gradeRepository;
-        this.termsRepository = termsRepository;
+        this.userMining = userMining;
         this.categoryRepository = categoryRepository;
         this.statusHistoryRepository = statusHistoryRepository;
         this.transactionRepository = transactionRepository;
@@ -103,11 +101,11 @@ public class UserController {
         this.arbitrationService = arbitrationService;
 
         this.toBlockRepository = toBlockRepository;
-        this.toBlockService = toBlockService;
         this.blockReviewRepository = blockReviewRepository;
         this.pushService = pushService;
         this.transactionService = transactionService;
         this.userCountService = userCountService;
+        this.kmsService = kmsService;
     }
 
     @PostMapping("/editProfile")
@@ -117,8 +115,7 @@ public class UserController {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
         String imageUrl = "";
         String userNickName = "";
 
@@ -152,8 +149,7 @@ public class UserController {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         Map<Integer, Long> userTowns = new HashMap<>();
         Town userTownIdx = townService.setTowns(userTown.getLeadTownName());
@@ -183,8 +179,7 @@ public class UserController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         if (findUser.getCiValue().equals(userDto.getCiValue())) {
             userService.updateCiValue(userDto.getPhoneNumber(), findUser);
@@ -222,8 +217,7 @@ public class UserController {
         JsonArray townArr = new JsonArray();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         data.addProperty("profileImage", findUser.getProfileImageUrl());
         data.addProperty("nickName", findUser.getNickName());
@@ -293,15 +287,13 @@ public class UserController {
             data.addProperty("isMine", false);
         } else {
             String acToken = req.getHeader("Authorization").substring(7);
-            String userEmail = UserMiningUtil.getUserInfo(acToken);
-            otherUser = userRepository.findByEmail(userEmail);
+            otherUser = userMining.getUserInfo(acToken);
             data.addProperty("isMine", true);
         }
 
         Grade grade = gradeRepository.findTop1ByOrderByGradeScoreDesc();
         Grade findGrade = gradeRepository.getOne(otherUser.getUserLevel());
         Grade gName = gradeRepository.getOne(Long.valueOf(findGrade.getMenuNum()));
-        System.out.println("gName = " + gName.getGradeName());
 
         if (otherUser.getLeadTown() != null) {
             Town findLeadTown = townRepository.getOne(otherUser.getLeadTown());
@@ -333,14 +325,13 @@ public class UserController {
 
         data.addProperty("profileImage", otherUser.getProfileImageUrl());
         data.addProperty("nickName", otherUser.getNickName());
-        data.addProperty("name", otherUser.getName());
+        data.addProperty("name", kmsService.decrypt(otherUser.getName()));
         data.addProperty("status", otherUser.getStatus());
-        data.addProperty("phoneNumber", otherUser.getPhoneNum());
+        data.addProperty("phoneNumber", kmsService.decrypt(otherUser.getPhoneNum()));
         data.addProperty("snsType", otherUser.getSnsName());
         data.addProperty("grade", gName.getGradeName());
-        data.addProperty("email", otherUser.getEmail());
-        data.addProperty("idEmail", otherUser.getIdEmail());
-        data.addProperty("receptionEmail", otherUser.getIdEmail());
+        data.addProperty("email", kmsService.decrypt(otherUser.getEmail()));
+        data.addProperty("idEmail", kmsService.decrypt(otherUser.getIdEmail()));
         data.addProperty("activityScore", otherUser.getActivityScore());
         data.addProperty("maxScore", grade.getGradeScore());
         data.addProperty("starPoint", Float.parseFloat(otherUser.getStarPoint()));
@@ -382,8 +373,7 @@ public class UserController {
             otherUser = userRepository.getOne(userIdx);
         } else {
             String acToken = req.getHeader("Authorization").substring(7);
-            String userEmail = UserMiningUtil.getUserInfo(acToken);
-            otherUser = userRepository.findByEmail(userEmail);
+            otherUser = userMining.getUserInfo(acToken);
         }
 
         if (type == 1) {
@@ -496,8 +486,7 @@ public class UserController {
         JsonArray rvImg = new JsonArray();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         //삭제검사 생략, 애초에 리뷰 리스트 가져올 때 delete_yn 필터링 됨.
 
@@ -571,8 +560,7 @@ public class UserController {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         data.addProperty("chatNoticeYn", findUser.isChatNoticeYn());
@@ -589,8 +577,7 @@ public class UserController {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         findUser.setIdEmail(userDto.getEmail());
         userService.updateUser(findUser);
@@ -607,8 +594,7 @@ public class UserController {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         findUser.setDoNotDisturbTimeYn(alarmDto.isDoNotDisturbTimeYn());
         if (alarmDto.isDoNotDisturbTimeYn() == true) {
@@ -631,8 +617,7 @@ public class UserController {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         findUser.setChatNoticeYn(alarmDto.isChatNoticeYn());
         findUser.setActivityNoticeYn(alarmDto.isActivityNoticeYn());
@@ -655,8 +640,7 @@ public class UserController {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
         Category findCategory = categoryRepository.getOne(outDto.getTypeIdx());
 
         findUser.setCategory(findCategory);
@@ -719,8 +703,7 @@ public class UserController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         Page<Transaction> transactions;
         List<Transaction> tranSize;
@@ -793,12 +776,10 @@ public class UserController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
-
+        User findUser = userMining.getUserInfo(acToken);
 
         Gson gson = new Gson();
-        Page<Likes> likes = likeRepository.findByUser_userIdxAndDeleteYnOrderByCreateAtDesc(findUser.getUserIdx(), false, pageable);
+        Page<Likes> likes = likeRepository.findByUser_userIdxAndDeleteYnOrderByRental_PullUpAtDesc(findUser.getUserIdx(), false, pageable);
         List<Likes> likeSize = likeRepository.findByUser_userIdxAndDeleteYn(findUser.getUserIdx(), false);
 
         likes.forEach(
@@ -824,7 +805,7 @@ public class UserController {
                     }
 
                     my.addProperty("dailyRentalFee", li.getRental().getRentalPrice());
-                    my.addProperty("regDate", li.getRental().getCreateAt().getTime());
+                    my.addProperty("regDate", li.getRental().getPullUpAt().getTime());
                     my.addProperty("status", rentalStatus);
 
                     //town 리스트 추출
@@ -870,10 +851,6 @@ public class UserController {
         JsonObject data = new JsonObject();
         JsonArray itemArr = new JsonArray();
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
-
-        String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
 
         Rental findRental = rentalRepository.getOne(rentalIdx);
 
@@ -923,8 +900,8 @@ public class UserController {
         JsonObject data = new JsonObject();
         Executor executor = Executors.newFixedThreadPool(30);
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
+
         int total = 0;
         float avg;
         String starPoint;
@@ -1036,8 +1013,7 @@ public class UserController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
         
         Review findReview = reviewRepository.getOne(reviewDto.getReviewIdx());
         Transaction transaction = transactionRepository.getOne(findReview.getTransaction().getTransactionIdx());
@@ -1081,8 +1057,7 @@ public class UserController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
         List<Likes> likes = likeRepository.findByUser_userIdxAndDeleteYn(findUser.getUserIdx(), false);
 
         Gson gson = new Gson();
@@ -1151,8 +1126,7 @@ public class UserController {
         JsonObject data = new JsonObject();
         JsonArray amArr = new JsonArray();
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
         AtomicReference<String> status = new AtomicReference<>("");
 
         Page<ArbitrationManagement> amList = arbitrationRepository.findAllByUser_userIdxAndDeleteYnOrderByCreateAtDesc(findUser.getUserIdx(), false, pageable);
@@ -1205,10 +1179,6 @@ public class UserController {
         JsonObject data = new JsonObject();
         JsonArray imageArr = new JsonArray();
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
-
-        String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
 
         Transaction getTr = transactionRepository.getOne(transactionIdx);
 
@@ -1270,8 +1240,7 @@ public class UserController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         ArbitrationManagement findRM = arbitrationRepository.getOne(rmDto.getAmIdx());
 
@@ -1331,8 +1300,7 @@ public class UserController {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
@@ -1417,8 +1385,7 @@ public class UserController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         List<ToBlock> total = toBlockRepository.findByUser_userIdxAndDeleteYn(findUser.getUserIdx(), false);
         Page<ToBlock> blocks = toBlockRepository.findByUser_userIdxAndDeleteYnOrderByCreateAtDesc(findUser.getUserIdx(), false, pageable);

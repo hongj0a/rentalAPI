@@ -18,7 +18,7 @@ import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
 import dejay.rnd.billyG.repositoryImpl.UserRepositories;
 import dejay.rnd.billyG.service.*;
 import dejay.rnd.billyG.util.FrontUtil;
-import dejay.rnd.billyG.util.UserMiningUtil;
+import dejay.rnd.billyG.service.UserMining;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
@@ -74,8 +74,9 @@ public class MainController {
     private final UserRepositories userRepositories;
     private final PushService pushService;
     private final UserCountService userCountService;
+    private final UserMining userMining;
 
-    public MainController(ImageProperties imageProperties, UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, BellScheduleRepositry bellScheduleRepository, BellScheduleService bellScheduleService, BlockUserRepository blockUserRepository, BlockPostRepository blockPostRepository, ToBlockRepository toBlockRepository, UserRepositories userRepositories, PushService pushService, UserCountService userCountService) {
+    public MainController(ImageProperties imageProperties, UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, BellScheduleRepositry bellScheduleRepository, BellScheduleService bellScheduleService, BlockUserRepository blockUserRepository, BlockPostRepository blockPostRepository, ToBlockRepository toBlockRepository, UserRepositories userRepositories, PushService pushService, UserCountService userCountService, UserMining userMining) {
         this.userRepository = userRepository;
         this.townRepository = townRepository;
         this.townRepositories = townRepositories;
@@ -104,6 +105,7 @@ public class MainController {
         this.userRepositories = userRepositories;
         this.pushService = pushService;
         this.userCountService = userCountService;
+        this.userMining = userMining;
     }
 
     @GetMapping("/getMainList")
@@ -117,8 +119,7 @@ public class MainController {
         JsonArray rentalArr = new JsonArray();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         /**
          * [렌탈 상태]
@@ -227,9 +228,12 @@ public class MainController {
     }
 
     @GetMapping("/getStatus")
-    public ResponseEntity<JsonObject> getStatus(HttpServletRequest req) throws AppException {
+    public ResponseEntity<JsonObject> getStatus(HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray statusArr = new JsonArray();
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        User findUser = userMining.getUserInfo(acToken);
 
         Map<Integer, String> statusMap = new HashMap<>();
         statusMap.put(1, "렌탈가능");
@@ -244,6 +248,13 @@ public class MainController {
             statusArr.add(status);
         }
 
+        List<Alarm> alarms = alarmRepository.findByHostIdxAndCreateAtGreaterThanEqualAndReadYn(findUser.getUserIdx(), FrontUtil.getNowDate(), false);
+
+        if (alarms.size() != 0) {
+            data.addProperty("isNew", true);
+        } else {
+            data.addProperty("isNew", false);
+        }
         data.add("statusList", statusArr);
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
@@ -290,8 +301,7 @@ public class MainController {
         JsonArray townArr = new JsonArray();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         ArrayList<Long> towns = new ArrayList<>();
 
@@ -333,8 +343,7 @@ public class MainController {
         Grade getGrade = gradeRepository.findTop1ByOrderByGradeScoreDesc();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         Grade grade = gradeRepository.getOne(findUser.getUserLevel());
         Grade gName = gradeRepository.getOne(Long.valueOf(grade.getMenuNum()));
@@ -493,10 +502,6 @@ public class MainController {
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
-        String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
-
         Rental findRental = rentalRepository.getOne(rentalIdx);
 
         Page<Rental> etcRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotInOrderByCreateAtDesc(findRental.getUser().getUserIdx(), true, false, new int[]{4}, pageable);
@@ -535,10 +540,6 @@ public class MainController {
         JsonObject data = new JsonObject();
         JsonArray historyArr = new JsonArray();
 
-        String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
-
         List<Transaction> transaction = transactionRepository.findByRental_rentalIdxAndOwnerStatusOrderByCreateAtDesc(rentalIdx, 70);
         Page<Transaction> transactions = transactionRepository.findByRental_rentalIdxAndOwnerStatusOrderByCreateAtDesc(rentalIdx, 70, pageable);
 
@@ -569,8 +570,7 @@ public class MainController {
         JsonArray alarmArr = new JsonArray();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         Date currentTime = java.sql.Timestamp.valueOf(LocalDateTime.now());
         Date beforeTime = java.sql.Timestamp.valueOf(LocalDateTime.now().minusDays(30));
@@ -622,8 +622,7 @@ public class MainController {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         Alarm findAlarm = alarmRepository.findByAlarmIdx(alarmDto.getAlarmIdx());
 
@@ -651,8 +650,7 @@ public class MainController {
         Executor executor = Executors.newFixedThreadPool(30);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
@@ -760,8 +758,7 @@ public class MainController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         Rental findRental = rentalRepository.getOne(rentalIdx);
 
@@ -841,11 +838,6 @@ public class MainController {
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
-        String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
-
-        Rental findRental = rentalRepository.getOne(rentalIdx);
         List<RentalCategoryInfo> findCates = rentalCategoryInfoRepository.findByRental_rentalIdx(rentalIdx);
 
         findCates.forEach(
@@ -878,10 +870,7 @@ public class MainController {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
-
-
+        User findUser = userMining.getUserInfo(acToken);
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         Long leadTown = 0L;
@@ -1024,8 +1013,7 @@ public class MainController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         Rental findRental = rentalRepository.getOne(mainDto.getRentalIdx());
 
@@ -1051,8 +1039,7 @@ public class MainController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         Rental findRental = rentalRepository.getOne(mainDto.getRentalIdx());
 
@@ -1085,8 +1072,7 @@ public class MainController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         ArrayList<Integer> p_status = new ArrayList<>();
 
@@ -1110,7 +1096,12 @@ public class MainController {
 
                     List<RentalImage> renImgs = rentalImageRepository.findByRental_rentalIdx(etcs.getRentalIdx());
                     etcRental.addProperty("rentalSeq", etcs.getRentalIdx());
-                    etcRental.addProperty("imageUrl", renImgs.get(0).getImageUrl());
+                    if (renImgs.size() != 0) {
+                        etcRental.addProperty("imageUrl", renImgs.get(0).getImageUrl());
+                    } else {
+                        etcRental.addProperty("imageUrl", "deletedImage.png");
+                    }
+
                     etcRental.addProperty("title", etcs.getTitle());
                     etcRental.addProperty("dailyFee", etcs.getRentalPrice());
                     etcRental.addProperty("regDate", etcs.getPullUpAt().getTime());
@@ -1187,9 +1178,8 @@ public class MainController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
+
         Rental findRental = rentalRepository.getOne(mainDto.getRentalIdx());
 
         BellSchedule findBell = bellScheduleRepository.findByUser_userIdxAndRental_rentalIdxAndDeleteYn(findUser.getUserIdx(), findRental.getRentalIdx(),false);

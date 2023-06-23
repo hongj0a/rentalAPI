@@ -39,7 +39,6 @@ import java.util.UUID;
 @Service
 public class FileUploadService {
     private FileWriter fileWriter;
-    private final Path fileStorageLocation;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
@@ -47,9 +46,7 @@ public class FileUploadService {
     private final AmazonS3Client amazonS3Client;
 
     @Autowired
-    FileUploadService(ImageProperties imageProperties, FileWriter fileWriter, AmazonS3Client amazonS3Client) {
-        this.fileStorageLocation = Paths.get(imageProperties.getDefaultPath())
-                .toAbsolutePath().normalize();
+    FileUploadService(FileWriter fileWriter, AmazonS3Client amazonS3Client) {
         this.fileWriter = fileWriter;
         this.amazonS3Client = amazonS3Client;
     }

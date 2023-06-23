@@ -2,7 +2,6 @@ package dejay.rnd.billyG.controller;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.querydsl.core.Tuple;
 import dejay.rnd.billyG.api.RestApiRes;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.LikeDto;
@@ -14,7 +13,7 @@ import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.repositoryImpl.RentalRepositories;
 import dejay.rnd.billyG.repositoryImpl.TransactionRepositories;
 import dejay.rnd.billyG.service.*;
-import dejay.rnd.billyG.util.UserMiningUtil;
+import dejay.rnd.billyG.service.UserMining;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.HttpHeaders;
@@ -42,9 +41,8 @@ public class FunctionController {
     private final PushService pushService;
     private final UserCountRepository userCountRepository;
     private final UserCountService userCountService;
-    private final TransactionRepositories transactionRepositories;
-    private final RentalRepositories rentalRepositories;
-    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository, SlangsRepository slangsRepository, ToBlockRepository toBlockRepository, ToBlockService toBlockService, PushService pushService, UserCountRepository userCountRepository, UserCountService userCountService, TransactionRepositories transactionRepositories, RentalRepositories rentalRepositories) {
+    private final UserMining userMining;
+    public FunctionController(RentalRepository rentalRepository, RentalService rentalService, LikeService likeService, UserRepository userRepository, LikeRepository likeRepository, SlangsRepository slangsRepository, ToBlockRepository toBlockRepository, ToBlockService toBlockService, PushService pushService, UserCountRepository userCountRepository, UserCountService userCountService, UserMining userMining) {
         this.rentalRepository = rentalRepository;
         this.rentalService = rentalService;
         this.likeService = likeService;
@@ -56,8 +54,7 @@ public class FunctionController {
         this.pushService = pushService;
         this.userCountRepository = userCountRepository;
         this.userCountService = userCountService;
-        this.transactionRepositories = transactionRepositories;
-        this.rentalRepositories = rentalRepositories;
+        this.userMining = userMining;
     }
 
     @PostMapping("/setLike")
@@ -68,9 +65,7 @@ public class FunctionController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
-
+        User findUser = userMining.getUserInfo(acToken);
 
         Rental findRental = rentalRepository.getOne(likeDto.getRentalIdx());
         UserCount userCount = userCountRepository.findByUser_UserIdx(findRental.getUser().getUserIdx());
@@ -182,8 +177,7 @@ public class FunctionController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         ToBlock findOne;
 

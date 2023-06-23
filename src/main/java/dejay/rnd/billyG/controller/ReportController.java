@@ -11,7 +11,7 @@ import dejay.rnd.billyG.repositoryImpl.UserCountRepositories;
 import dejay.rnd.billyG.service.CategoryService;
 import dejay.rnd.billyG.service.ReportService;
 import dejay.rnd.billyG.service.UserCountService;
-import dejay.rnd.billyG.util.UserMiningUtil;
+import dejay.rnd.billyG.service.UserMining;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.HttpHeaders;
@@ -33,9 +33,10 @@ public class ReportController {
     private final UserCountService userCountService;
     private final UserCountRepository userCountRepository;
     private final UserCountRepositories userCountRepositories;
+    private final UserMining userMining;
 
 
-    public ReportController(UserRepository userRepository, ReportService reportService, RentalRepository rentalRepository, ReviewRepository reviewRepository, CategoryService categoryService, CategoryRepository categoryRepository, UserCountService userCountService, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories) {
+    public ReportController(UserRepository userRepository, ReportService reportService, RentalRepository rentalRepository, ReviewRepository reviewRepository, CategoryService categoryService, CategoryRepository categoryRepository, UserCountService userCountService, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, UserMining userMining) {
         this.userRepository = userRepository;
         this.reportService = reportService;
         this.rentalRepository = rentalRepository;
@@ -45,6 +46,7 @@ public class ReportController {
         this.userCountService = userCountService;
         this.userCountRepository = userCountRepository;
         this.userCountRepositories = userCountRepositories;
+        this.userMining = userMining;
     }
 
     //신고항목리스트
@@ -80,8 +82,7 @@ public class ReportController {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
         Category findBT = categoryRepository.getOne(reportDto.getBlockTypeIdx());
 
         System.out.println("findBT.getName() = " + findBT.getName());

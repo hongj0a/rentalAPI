@@ -69,7 +69,7 @@ public class SecurityConfig {
 
                 .and()
                 .authorizeHttpRequests()
-                .requestMatchers("/ws-stomp/**", "/api/authenticate","/api/refreshTokenValidation", "/api/ciValueCheck", "/api/isExistCheck", "/image/**", "/api/getSlangs", "/api/isNoticeCheck", "/api/getTerms").permitAll()
+                .requestMatchers("/api/encrypt", "/api/decrypt","/ws-stomp/**", "/api/authenticate","/api/refreshTokenValidation", "/api/ciValueCheck", "/api/isExistCheck", "/image/**", "/api/getSlangs", "/api/isNoticeCheck", "/api/getTerms").permitAll()
                 .anyRequest().authenticated()
 
                 .and()

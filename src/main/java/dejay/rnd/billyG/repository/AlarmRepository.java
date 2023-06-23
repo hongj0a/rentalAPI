@@ -15,5 +15,6 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
 
     List<Alarm> findByHostIdxAndCreateAtGreaterThanEqualAndCreateAtLessThanEqualOrderByCreateAtDesc(Long userIdx, Date beforeDate, Date currentDate);
 
+    List<Alarm> findByHostIdxAndCreateAtGreaterThanEqualAndReadYn(Long userIdx, Date nowDate, boolean readYn);
     Alarm findByAlarmIdx(Long alarmIdx);
 }

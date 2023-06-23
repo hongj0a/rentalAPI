@@ -16,7 +16,7 @@ import dejay.rnd.billyG.model.ImageFile;
 import dejay.rnd.billyG.service.FileUploadService;
 import dejay.rnd.billyG.service.OneToOneInquiryService;
 import dejay.rnd.billyG.util.FrontUtil;
-import dejay.rnd.billyG.util.UserMiningUtil;
+import dejay.rnd.billyG.service.UserMining;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
@@ -49,8 +49,9 @@ public class CSController {
     private final InquiryImageRepository inquiryImageRepository;
     private final Path fileStorageLocation;
     private final TermsRepository termsRepository;
+    private final UserMining userMining;
 
-    public CSController(ImageProperties imageProperties, NoticeRepository noticeRepository, CategoryRepository categoryRepository, FaqRepository faqRepository, OneToOneInquiryRepository oneToOneInquiryRepository, UserRepository userRepository, OneToOneInquiryService oneToOneInquiryService, FileUploadService uploadService, InquiryImageRepository inquiryImageRepository, TermsRepository termsRepository) {
+    public CSController(ImageProperties imageProperties, NoticeRepository noticeRepository, CategoryRepository categoryRepository, FaqRepository faqRepository, OneToOneInquiryRepository oneToOneInquiryRepository, UserRepository userRepository, OneToOneInquiryService oneToOneInquiryService, FileUploadService uploadService, InquiryImageRepository inquiryImageRepository, TermsRepository termsRepository, UserMining userMining) {
         this.noticeRepository = noticeRepository;
         this.categoryRepository = categoryRepository;
         this.faqRepository = faqRepository;
@@ -62,6 +63,7 @@ public class CSController {
         this.fileStorageLocation = Paths.get(imageProperties.getDefaultPath())
                 .toAbsolutePath().normalize();
         this.termsRepository = termsRepository;
+        this.userMining = userMining;
     }
 
     @GetMapping("/getNotice")
@@ -188,8 +190,7 @@ public class CSController {
         JsonArray faqArr = new JsonArray();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         Page<OneToOneInquiry> list = oneToOneInquiryRepository.findAllByUser_userIdxAndDeleteYnOrderByCreateAtDesc(findUser.getUserIdx(), false, pageable);
         List<OneToOneInquiry> size = oneToOneInquiryRepository.findAllByUser_userIdxAndDeleteYn(findUser.getUserIdx(), false);
@@ -262,8 +263,7 @@ public class CSController {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         Category findCategory = categoryRepository.getOne(Long.valueOf(categoryIdx));
@@ -301,8 +301,7 @@ public class CSController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         OneToOneInquiry findInquiry = oneToOneInquiryRepository.getOne(inquiryDto.getOneIdx());
         findInquiry.setDeleteYn(true);

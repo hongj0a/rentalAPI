@@ -39,8 +39,9 @@ public class UserService {
     private final UserCountRepositories userCountRepositories;
     private final GradeRepository gradeRepository;
     private final UserCountService userCountService;
+    private final KmsService kmsService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManagerBuilder authenticationManagerBuilder, TokenProvider tokenProvider, UserRepositories userRepositories, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, GradeRepository gradeRepository, UserCountService userCountService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManagerBuilder authenticationManagerBuilder, TokenProvider tokenProvider, UserRepositories userRepositories, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, GradeRepository gradeRepository, UserCountService userCountService, KmsService kmsService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
@@ -50,6 +51,7 @@ public class UserService {
         this.userCountRepositories = userCountRepositories;
         this.gradeRepository = gradeRepository;
         this.userCountService = userCountService;
+        this.kmsService = kmsService;
     }
 
     @Transactional
@@ -62,17 +64,17 @@ public class UserService {
                 .build();
 
         User user = User.builder()
-                .email(userDto.getEmail())
-                .idEmail(userDto.getEmail())
+                .email(kmsService.encrypt(userDto.getEmail()))
+                .idEmail(kmsService.encrypt(userDto.getEmail()))
                 .snsType(passwordEncoder.encode(userDto.getSnsType()))
                 .snsName(userDto.getSnsType())
-                .name(userDto.getName())
+                .name(kmsService.encrypt(userDto.getName()))
                 .activityScore(0)
                 .starPoint("0")
                 .userLevel(Long.valueOf(findGrade.get(0).getGradeIdx()))
                 .status(10)
-                .phoneNum(userDto.getPhoneNumber())
-                .ciValue(userDto.getCiValue())
+                .phoneNum(kmsService.encrypt(userDto.getPhoneNumber()))
+                .ciValue(kmsService.encrypt(userDto.getCiValue()))
                 .grades(Collections.singleton(grade))
                 .levelupAt(FrontUtil.getNowDate())
                 .lastLoginDate(FrontUtil.getNowDate())
@@ -83,8 +85,6 @@ public class UserService {
 
     @Transactional
     public void updateUserInfo(Long userIdx, String snsType) {
-
-
         User findUser = userRepositories.findOne(userIdx);
         findUser.setSnsName(snsType);
         findUser.setSnsType(passwordEncoder.encode(snsType));

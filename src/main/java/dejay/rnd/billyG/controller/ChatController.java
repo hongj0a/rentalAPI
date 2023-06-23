@@ -14,7 +14,7 @@ import dejay.rnd.billyG.repositoryImpl.ChatRepositories;
 import dejay.rnd.billyG.repositoryImpl.TransactionRepositories;
 import dejay.rnd.billyG.service.*;
 import dejay.rnd.billyG.util.FrontUtil;
-import dejay.rnd.billyG.util.UserMiningUtil;
+import dejay.rnd.billyG.service.UserMining;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
@@ -65,9 +65,10 @@ public class ChatController {
     private final BellScheduleRepositry bellScheduleRepositry;
     private final PushService pushService;
     private final LikeRepository likeRepository;
+    private final UserMining userMining;
 
 
-    public ChatController(ChatService chatService, UserRepository userRepository, ChatRepository chatRepository, RentalImageRepository rentalImageRepository, RentalRepository rentalRepository, RentalService rentalService, ChatContentRepository chatContentRepository, SimpMessagingTemplate template, FileUploadService uploadService, TransactionRepository transactionRepository, ChatImageRepository chatImageRepository, ChatRepositories chatRepositories, TransactionService transactionService, TransactionRepositories transactionRepositories, BellScheduleRepositry bellScheduleRepositry, PushService pushService, LikeRepository likeRepository) {
+    public ChatController(ChatService chatService, UserRepository userRepository, ChatRepository chatRepository, RentalImageRepository rentalImageRepository, RentalRepository rentalRepository, RentalService rentalService, ChatContentRepository chatContentRepository, SimpMessagingTemplate template, FileUploadService uploadService, TransactionRepository transactionRepository, ChatImageRepository chatImageRepository, ChatRepositories chatRepositories, TransactionService transactionService, TransactionRepositories transactionRepositories, BellScheduleRepositry bellScheduleRepositry, PushService pushService, LikeRepository likeRepository, UserMining userMining) {
         this.chatService = chatService;
         this.userRepository = userRepository;
         this.chatRepository = chatRepository;
@@ -85,6 +86,7 @@ public class ChatController {
         this.bellScheduleRepositry = bellScheduleRepositry;
         this.pushService = pushService;
         this.likeRepository = likeRepository;
+        this.userMining = userMining;
     }
 
 
@@ -486,8 +488,7 @@ public class ChatController {
         JsonArray imgArr = new JsonArray();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         ChatRoom findRoom = chatRepository.findByChatRoomIdx(roomIdx);
 
@@ -534,8 +535,7 @@ public class ChatController {
         JsonArray roomArr = new JsonArray();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         Page<ChatRoom> rooms = chatRepositories.findAll(findUser.getUserIdx(), findUser.getUserIdx(), new Long[]{-1L, findUser.getUserIdx()}, pageable);
         List<ChatRoom> totalRooms = chatRepositories.getTotalCount(findUser.getUserIdx(), findUser.getUserIdx(), new Long[]{-1L, findUser.getUserIdx()});
@@ -593,8 +593,7 @@ public class ChatController {
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         ChatRoom findChat = chatRepository.findByChatRoomIdx(chatRoomDto.getChatRoomIdx());
         Rental findRental = rentalRepository.findByRentalIdx(findChat.getRental().getRentalIdx());
@@ -653,8 +652,7 @@ public class ChatController {
         JsonArray conArr = new JsonArray();
 
         String acToken = req.getHeader("Authorization").substring(7);
-        String userEmail = UserMiningUtil.getUserInfo(acToken);
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(acToken);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 

@@ -9,10 +9,12 @@ import dejay.rnd.billyG.dto.UserDto;
 import dejay.rnd.billyG.except.ErrCode;
 import dejay.rnd.billyG.jwt.TokenProvider;
 import dejay.rnd.billyG.repository.UserRepository;
+import dejay.rnd.billyG.service.KmsService;
 import dejay.rnd.billyG.service.UserService;
-import dejay.rnd.billyG.util.UserMiningUtil;
+import dejay.rnd.billyG.service.UserMining;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,11 +30,18 @@ public class AuthController {
     private final UserService userService;
     private final TokenProvider tokenProvider;
     private final UserRepository userRepository;
+    private final KmsService kmsService;
+    private final UserMining userMining;
 
-    public AuthController(UserService userService, TokenProvider tokenProvider, UserRepository userRepository) {
+    @Value("${cloud.aws.s3.bucket.url}")
+    private String bucketUrl;
+
+    public AuthController(UserService userService, TokenProvider tokenProvider, UserRepository userRepository, KmsService kmsService, UserMining userMining) {
         this.userService = userService;
         this.tokenProvider = tokenProvider;
         this.userRepository = userRepository;
+        this.kmsService = kmsService;
+        this.userMining = userMining;
     }
 
     /**
@@ -51,12 +60,13 @@ public class AuthController {
     public ResponseEntity<JsonObject> authorize(@RequestBody LoginDto loginDto, HttpServletRequest req) throws java.text.ParseException {
         JsonObject data = new JsonObject();
 
-        User isUser = userRepository.findByCiValue(loginDto.getCiValue());
+        User isUser = userRepository.findByCiValue(kmsService.encrypt(loginDto.getCiValue()));
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String email = loginDto.getEmail();
         String snsType = loginDto.getSnsType();
-        User userOne = userRepository.findByEmail(email);
+        System.out.println("kmsService = " + kmsService.encrypt(email));
+        User userOne = userRepository.findByEmail(kmsService.encrypt(email));
 
         if (isUser != null) {
             if(isUser.getStatus() == 30) {
@@ -79,7 +89,7 @@ public class AuthController {
             userDto.setPhoneNumber(loginDto.getPhoneNumber());
             userService.signup(userDto);
 
-            userOne = userRepository.findByEmail(email);
+            userOne = userRepository.findByEmail(kmsService.encrypt(email));
         }
 
         //1년이상 장기 미이용 고객 return 커스텀
@@ -99,7 +109,7 @@ public class AuthController {
 
         
         //로그인
-        TokenDto tokenDto = userService.login(email, snsType);
+        TokenDto tokenDto = userService.login(kmsService.encrypt(email), snsType);
         data.addProperty("grantType", tokenDto.getGrantType());
         data.addProperty("accessToken",tokenDto.getAccessToken());
         data.addProperty("refreshToken", tokenDto.getRefreshToken());
@@ -133,7 +143,7 @@ public class AuthController {
             data.addProperty("isLeadTownEmpty", false);
         }
 
-        data.addProperty("imageUrl", "http://192.168.1.242:8080/image/");
+        data.addProperty("imageUrl", bucketUrl);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
 
@@ -201,8 +211,8 @@ public class AuthController {
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
         }
 
-        String userEmail = UserMiningUtil.getUserInfo(token.getRefreshToken());
-        User findUser = userRepository.findByEmail(userEmail);
+        User findUser = userMining.getUserInfo(token.getRefreshToken());
+        //User findUser = userRepository.findByEmail(userEmail);
 
         if (findUser != null) {
             if (findUser.getRefreshToken().equals(token.getRefreshToken())) {
@@ -225,7 +235,7 @@ public class AuthController {
                 } else {
                     data.addProperty("isLeadTownEmpty", false);
                 }
-                data.addProperty("imageUrl", "http://192.168.1.242:8080/image/");
+                data.addProperty("imageUrl", bucketUrl);
 
                 //공지사항알림 플래그
                 //마케팅알림 플래그
