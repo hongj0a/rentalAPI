@@ -279,14 +279,17 @@ public class CSController {
 
         System.out.println("images.size() = " + images.size());
         for (int i = 0; i < images.size(); i++) {
-            System.out.println("images.get(i).getOriginalFilename() = " + images.get(i).getOriginalFilename());
-            InquiryImage inquiryImage = new InquiryImage();
-            ImageFile file = uploadService.upload(images.get(i));
 
-            inquiryImage.setOneToOneInquiry(oneToOneInquiry);
-            inquiryImage.setImageUrl(file.getFileName());
+            if (!StringUtils.isEmpty(images.get(i).getOriginalFilename())) {
+                InquiryImage inquiryImage = new InquiryImage();
+                ImageFile file = uploadService.upload(images.get(i));
 
-            inquiryImageRepository.save(inquiryImage);
+                inquiryImage.setOneToOneInquiry(oneToOneInquiry);
+                inquiryImage.setImageUrl(file.getFileName());
+
+                inquiryImageRepository.save(inquiryImage);
+            }
+
 
         }
 

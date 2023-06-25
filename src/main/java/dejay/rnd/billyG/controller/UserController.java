@@ -153,14 +153,23 @@ public class UserController {
         Town userTownIdx = townService.setTowns(userTown.getLeadTownName());
         userTowns.put(0, userTownIdx.getTownIdx());
 
+        for (int k = 1; k <= 4; k++) {
+            userTowns.put(k, null);
+        }
+        userService.updateUserTownInfo(userTowns, findUser);
+
         if (userTown.getTowns().length > 0) {
             for (int i = 0; i < userTown.getTowns().length; i++) {
-                if(!userTown.getTowns()[i].isEmpty()) {
+                if(!StringUtils.isEmpty(userTown.getTowns()[i])) {
                     //townService.setUserTownInfo(findUser.getUserIdx(), userTown.getTowns()[i], false);
                     //town테이블에 있는 타운인지 조회해서 인덱스 리턴받고 배열에 저장
                     userTownIdx = townService.setTowns(userTown.getTowns()[i]);
                     userTowns.put(i+1, userTownIdx.getTownIdx());
                 }
+            }
+        } else if (userTown.getTowns().length == 0) {
+            for (int j = 0; j < 4; j++) {
+                userTowns.put(j + 1, null);
             }
         }
 
@@ -328,8 +337,8 @@ public class UserController {
         data.addProperty("phoneNumber", kmsService.decrypt(otherUser.getPhoneNum()));
         data.addProperty("snsType", otherUser.getSnsName());
         data.addProperty("grade", gName.getGradeName());
-        data.addProperty("email", kmsService.decrypt(otherUser.getEmail()));
-        data.addProperty("idEmail", kmsService.decrypt(otherUser.getIdEmail()));
+        data.addProperty("email", otherUser.getEmail());
+        data.addProperty("idEmail", otherUser.getIdEmail());
         data.addProperty("activityScore", otherUser.getActivityScore());
         data.addProperty("maxScore", grade.getGradeScore());
         data.addProperty("starPoint", Float.parseFloat(otherUser.getStarPoint()));
@@ -950,13 +959,16 @@ public class UserController {
         if (images.size() != 0 && images != null) {
 
             for (int i = 0; i < images.size(); i++) {
-                ReviewImage reviewImage = new ReviewImage();
-                ImageFile file = uploadService.upload(images.get(i));
+                if (!StringUtils.isEmpty(images.get(i).getOriginalFilename())) {
+                    ReviewImage reviewImage = new ReviewImage();
+                    ImageFile file = uploadService.upload(images.get(i));
 
-                reviewImage.setReview(getReview);
-                reviewImage.setImageUrl(file.getFileName());
+                    reviewImage.setReview(getReview);
+                    reviewImage.setImageUrl(file.getFileName());
 
-                reviewImageRepository.save(reviewImage);
+                    reviewImageRepository.save(reviewImage);
+                }
+
 
             }
         }
@@ -1298,14 +1310,15 @@ public class UserController {
         ArbitrationManagement arbitrationManagement = arbitrationRepository.save(am);
 
         for (int i = 0; i < images.size(); i++) {
-            AmImage amImage = new AmImage();
-            ImageFile file = uploadService.upload(images.get(i));
+            if (!StringUtils.isEmpty(images.get(i).getOriginalFilename())) {
+                AmImage amImage = new AmImage();
+                ImageFile file = uploadService.upload(images.get(i));
 
-            amImage.setArbitrationManagement(arbitrationManagement);
-            amImage.setImageUrl(file.getFileName());
+                amImage.setArbitrationManagement(arbitrationManagement);
+                amImage.setImageUrl(file.getFileName());
 
-            amImageRepository.save(amImage);
-
+                amImageRepository.save(amImage);
+            }
         }
 
         findTr.setOwnerStatus(60);

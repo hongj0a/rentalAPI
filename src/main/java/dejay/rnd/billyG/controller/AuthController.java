@@ -54,13 +54,16 @@ public class AuthController {
      *  5. access_token 12 hour, refresh_token 30 days -- 2023.05.22 정책변경
      *  6. refresh_token expired 시 재 로그인 요청
      *  7. access_token expired 시 refresh_token 으로 검증해서 access_token 재발급, 이 때 AT, RT 모두 갱신
+     *  (최종_ 암복호화적용)
+     *  8. 암호화범위 : name, phone_number
+     *  9. email, ci_value는 암호화 안 함 - 23.06.25
      */
     @Transactional(rollbackFor = Exception.class)
     @PostMapping("/authenticate")
     public ResponseEntity<JsonObject> authorize(@RequestBody LoginDto loginDto, HttpServletRequest req) throws java.text.ParseException {
         JsonObject data = new JsonObject();
 
-        User isUser = userRepository.findByCiValue(kmsService.encrypt(loginDto.getCiValue()));
+        User isUser = userRepository.findByCiValue(loginDto.getCiValue());
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
         String email = loginDto.getEmail();
@@ -91,9 +94,8 @@ public class AuthController {
             userDto.setPhoneNumber(loginDto.getPhoneNumber());
             UserDto getUser = userService.signup(userDto);
 
-            userOne = userRepository.findByEmail(getUser.getEmail());
-
         }
+        userOne = userRepository.findByEmail(loginDto.getEmail());
         //1년이상 장기 미이용 고객 return 커스텀
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");

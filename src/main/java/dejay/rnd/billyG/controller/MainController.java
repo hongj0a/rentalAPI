@@ -309,17 +309,17 @@ public class MainController {
         if (findUser.getTown3()!= null) towns.add(findUser.getTown3());
         if (findUser.getTown4()!= null) towns.add(findUser.getTown4());
 
-        List<Town> town = townRepositories.findByTownInfo(towns);
 
-        town.forEach(
-                tn -> {
-                    JsonObject tns = new JsonObject();
-                    tns.addProperty("townSeq", tn.getTownIdx());
-                    tns.addProperty("townName", tn.getTownName());
+        for (int i = 0; i < towns.size(); i++) {
+            JsonObject tns = new JsonObject();
 
-                    townArr.add(tns);
-                }
-        );
+            Town findTown = townRepository.getOne(towns.get(i));
+
+            tns.addProperty("townSeq", findTown.getTownIdx());
+            tns.addProperty("townName", findTown.getTownName());
+
+            townArr.add(tns);
+        }
         data.add("townList", townArr);
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
@@ -696,12 +696,16 @@ public class MainController {
         Rental findRental = rentalService.insertRental(rental);
 
         for (int i = 0; i < images.size(); i++) {
+            if (!StringUtils.isEmpty(images.get(i).getOriginalFilename())) {
+                RentalImage rentalImage = new RentalImage();
+                ImageFile file = uploadService.upload(images.get(i));
 
-            RentalImage rentalImage = new RentalImage();
-            ImageFile file = uploadService.upload(images.get(i));
+                System.out.println("file.getFileName() = " + file.getFileName());
+                rentalImage.setRental(findRental);
+                rentalImage.setImageUrl(file.getFileName());
 
-            rentalImage.setRental(findRental);
-            rentalImage.setImageUrl(file.getFileName());
+                rentalImageRepository.save(rentalImage);
+            }
 
 
         }

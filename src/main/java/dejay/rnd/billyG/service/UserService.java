@@ -58,14 +58,13 @@ public class UserService {
     public UserDto signup(UserDto userDto) {
         List<Grade>findGrade = gradeRepository.findByGradeScoreIsNotNullOrderByGradeScore();
 
-        System.out.println("findGrade = " + findGrade);
         Grade grade = Grade.builder()
                 .gradeIdx(Long.valueOf(findGrade.get(0).getGradeIdx()))
                 .build();
 
         User user = User.builder()
-                .email(kmsService.encrypt(userDto.getEmail()))
-                .idEmail(kmsService.encrypt(userDto.getEmail()))
+                .email(userDto.getEmail())
+                .idEmail(userDto.getEmail())
                 .snsType(passwordEncoder.encode(userDto.getSnsType()))
                 .snsName(userDto.getSnsType())
                 .name(kmsService.encrypt(userDto.getName()))
@@ -74,7 +73,7 @@ public class UserService {
                 .userLevel(Long.valueOf(findGrade.get(0).getGradeIdx()))
                 .status(10)
                 .phoneNum(kmsService.encrypt(userDto.getPhoneNumber()))
-                .ciValue(kmsService.encrypt(userDto.getCiValue()))
+                .ciValue(userDto.getCiValue())
                 .grades(Collections.singleton(grade))
                 .levelupAt(FrontUtil.getNowDate())
                 .lastLoginDate(FrontUtil.getNowDate())
