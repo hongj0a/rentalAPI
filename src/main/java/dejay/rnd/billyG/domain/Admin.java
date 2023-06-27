@@ -30,7 +30,7 @@ public class Admin {
     @JoinColumn (name = "teamIdx")
     private AffiliatedTeam affiliatedTeam;
 
-    @Column (length = 50000)
+    @Column
     @NotNull(message = " admin id는 Null 일 수 없습니다.")
     private String id;
 
@@ -70,7 +70,7 @@ public class Admin {
     @Column (name = "delete_at")
     private Date deleteAt;
 
-    @Column(length = 50000)
+    @Column
     private String updator;
 
     @Column (name = "certification_number")

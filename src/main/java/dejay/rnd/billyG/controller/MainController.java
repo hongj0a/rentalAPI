@@ -594,27 +594,13 @@ public class MainController {
                     }
                     if (ar.getAdmin() != null) {
                         bell.addProperty("sendUserIdx", 0);
-                        bell.addProperty("sendUserProfile", "");
+                        bell.addProperty("sendUserProfile", "icon.png");
                     }
                     bell.addProperty("content", ar.getContent());
                     bell.addProperty("regDate", ar.getCreateAt().getTime());
                     bell.addProperty("readYn", ar.isReadYn());
                     bell.addProperty("targetIdx", ar.getTargetIdx());
-
-                    //채팅방목록, 새로운메시지를 보냈습니다 일 때 상대방 프로필이미지 추출
-                    //만약 to_user == findUser 같다면 fromUser image, 다르다면 toUser image
-                    if (ar.getTargetIdx2() != null) {
-                        bell.addProperty("targetIdx2", ar.getTargetIdx2());
-                        ChatRoom findRoom = chatRepository.findByChatRoomIdx(ar.getTargetIdx2());
-                        if (findRoom != null) {
-                            if (findRoom.getToUser().getUserIdx() == findUser.getUserIdx()) {
-                                bell.addProperty("sendUserProfile", findRoom.getFromUser().getProfileImageUrl());
-                            } else {
-                                bell.addProperty("sendUserProfile", findRoom.getToUser().getProfileImageUrl());
-                            }
-                        }
-
-                    }
+                    bell.addProperty("targetIdx2", ar.getTargetIdx2());
                     bell.addProperty("type", ar.getType());
 
                     alarmArr.add(bell);

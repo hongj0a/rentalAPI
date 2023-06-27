@@ -87,7 +87,7 @@ public class Transaction {
     @ColumnDefault("20")
     private Integer renterStatus;
 
-    @Column(length = 50000)
+    @Column
     private String updator;
 
     @Column (name = "transaction_num")

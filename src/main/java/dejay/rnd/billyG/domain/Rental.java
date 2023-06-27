@@ -62,7 +62,7 @@ public class Rental {
     @Column (name = "rental_price")
     private Long rentalPrice;
 
-    @Column(length = 50000)
+    @Column(length = 2000)
     private String content;
 
     @ColumnDefault("0")
@@ -99,7 +99,7 @@ public class Rental {
     @Column (name = "delete_at")
     private Date deleteAt;
 
-    @Column(length = 50000)
+    @Column
     private String updator;
 
     @Temporal(value = TemporalType.TIMESTAMP)

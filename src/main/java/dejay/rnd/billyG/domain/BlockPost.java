@@ -63,7 +63,7 @@ public class BlockPost {
     @Column (name = "delete_at")
     private Date deleteAt;
 
-    @Column(length = 50000)
+    @Column
     private String updator;
 
     @Column (name = "complete_at")

@@ -57,6 +57,8 @@ public class FrontUtil {
         params.add("targetIdx", String.valueOf(pushDto.getTargetIdx()));
         if (!StringUtils.isEmpty(String.valueOf(pushDto.getTargetIdx2()))) {
             params.add("targetIdx2", String.valueOf(pushDto.getTargetIdx2()));
+        } else {
+            params.add("targetIdx2", null);
         }
 
         params.add("message", pushDto.getMessage());

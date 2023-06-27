@@ -30,13 +30,13 @@ public class User {
     @Column (name = "nick_name")
     private String nickName;
 
-    @Column (name = "id_email", length = 50000)
+    @Column (name = "id_email")
     private String idEmail;
 
-    @Column (name = "email", unique = true, length = 50000)
+    @Column (name = "email", unique = true)
     private String email;
 
-    @Column (name = "phone_num", length = 50000)
+    @Column (name = "phone_num", length = 5000)
     private String phoneNum;
 
     @Column(length = 1000, name = "profile_image_url")
@@ -57,10 +57,10 @@ public class User {
     private String snsName;
 
     //long text
-    @Column (name = "refresh_token", length = 50000)
+    @Column (name = "refresh_token", length = 5000)
     private String refreshToken;
 
-    @Column (name = "push_token", length = 50000)
+    @Column (name = "push_token", length = 5000)
     private String pushToken;
 
 
@@ -121,7 +121,7 @@ public class User {
     @Column (name = "last_login_date")
     private Date lastLoginDate;
 
-    @Column(length = 50000, name = "ci_value", unique = true)
+    @Column(length = 5000, name = "ci_value", unique = true)
     private String ciValue;
 
     @Column (name = "invitation_code")
@@ -142,7 +142,7 @@ public class User {
     @Column (name = "out_reason", length = 1000)
     private String outReason;
 
-    @Column (name = "name", length = 50000)
+    @Column (name = "name", length = 5000)
     private String name;
 
     @ManyToMany
@@ -194,7 +194,7 @@ public class User {
     @Column (name = "do_not_disturb_end_minute")
     private Integer doNotDisturbEndMinute;
 
-    @Column (length = 50000)
+    @Column
     private String updator;
 
 

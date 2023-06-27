@@ -272,6 +272,8 @@ public class CSController {
                                                 HttpServletRequest req) throws AppException, ParseException, IOException {
         JsonObject data = new JsonObject();
 
+        System.out.println("CSController.setInquiry111111");
+
         String acToken = req.getHeader("Authorization").substring(7);
         User findUser = userMining.getUserInfo(acToken);
 

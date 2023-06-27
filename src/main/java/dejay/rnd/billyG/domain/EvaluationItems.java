@@ -30,7 +30,7 @@ public class EvaluationItems {
     @JoinColumn (name = "adminIdx")
     private Admin admin;
 
-    @Column( length = 50000)
+    @Column
     private String comment;
 
     @ColumnDefault("0")
@@ -49,7 +49,7 @@ public class EvaluationItems {
     @Column (name = "delete_at")
     private Date deleteAt;
 
-    @Column(length = 50000)
+    @Column
     private String updator;
 
     @Column (name = "order_num")

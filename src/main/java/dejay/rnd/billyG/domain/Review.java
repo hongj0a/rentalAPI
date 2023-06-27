@@ -35,7 +35,7 @@ public class Review {
     @Column (name = "review_score")
     private Integer reviewScore;
 
-    @Column (name = "review_content",length = 50000)
+    @Column (name = "review_content",length = 2000)
     private String reviewContent;
 
     @ColumnDefault("0")
@@ -63,7 +63,7 @@ public class Review {
     @Column (name = "renter_idx")
     private Long renterIdx;
 
-    @Column(length = 50000)
+    @Column
     private String updator;
 
 }

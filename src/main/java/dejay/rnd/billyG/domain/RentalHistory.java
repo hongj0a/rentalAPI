@@ -52,7 +52,7 @@ public class RentalHistory {
     @Column (name = "rental_price")
     private Integer rentalPrice;
 
-    @Column(length = 50000)
+    @Column(length = 2000)
     private String content;
 
     @Column (name = "trading_method")
@@ -82,7 +82,7 @@ public class RentalHistory {
     @Column (name = "delete_at")
     private Date deleteAt;
 
-    @Column(length = 50000)
+    @Column
     private String updator;
 
     @Column(name ="pull_up_at")

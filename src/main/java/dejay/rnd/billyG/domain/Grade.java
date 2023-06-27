@@ -43,7 +43,7 @@ public class Grade {
     @Column(name = "update_at")
     private Date updateAt;
 
-    @Column(length = 50000)
+    @Column
     private String updator;
 
     @Column(name = "active_yn")

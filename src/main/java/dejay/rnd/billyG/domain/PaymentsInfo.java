@@ -38,7 +38,7 @@ public class PaymentsInfo {
     @Column (name = "update_at")
     private Date updateAt;
 
-    @Column(length = 50000)
+    @Column
     private String updator;
 
     @Column (length = 100, name = "renter_price")

@@ -134,7 +134,7 @@ public class ChatController {
                 Transaction transaction = transactionRepository.findByTransactionIdx(contentDto.getTransactionIdx());
                 contentDto.setStatus(String.valueOf(transaction.getOwnerStatus()));
             }
-            //contentDto.setRegDate(now_date);
+            contentDto.setRegDate(now_date);
 
         } else if (contentDto.isSystemYn() == false){
             //채팅 메시지가 있는경우, 새로운 메시지 알림

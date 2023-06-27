@@ -42,7 +42,7 @@ public class ChatContent {
     @JoinColumn (name = "adminIdx")
     private Admin admin;
 
-    @Column(length = 50000)
+    @Column(length = 1429496729)
     private String content;
 
     @ColumnDefault("0")

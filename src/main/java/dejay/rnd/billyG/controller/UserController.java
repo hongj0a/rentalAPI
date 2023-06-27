@@ -286,8 +286,10 @@ public class UserController {
                                                              HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray townArr = new JsonArray();
+       // User otherUser;
 
-        User otherUser;
+        String acToken = req.getHeader("Authorization").substring(7);
+        User otherUser = userMining.getUserInfo(acToken);
 
         if (userIdx != 0) {
             otherUser = userRepository.getOne(userIdx);
@@ -295,10 +297,6 @@ public class UserController {
         } else if (userIdx == 0) {
             data.addProperty("isMine", true);
         }
-
-        String acToken = req.getHeader("Authorization").substring(7);
-        otherUser = userMining.getUserInfo(acToken);
-
         if (userIdx == otherUser.getUserIdx()) {
             data.addProperty("isMine", true);
         }
@@ -379,15 +377,18 @@ public class UserController {
         JsonArray renArr = new JsonArray();
         JsonArray reviewArr = new JsonArray();
 
+        String acToken = req.getHeader("Authorization").substring(7);
+        User loginUser = userMining.getUserInfo(acToken);;
         User otherUser;
 
         if (userIdx != 0) {
             otherUser = userRepository.getOne(userIdx);
         } else {
-            String acToken = req.getHeader("Authorization").substring(7);
-            otherUser = userMining.getUserInfo(acToken);
+
+            otherUser = userRepository.getOne(loginUser.getUserIdx());
         }
 
+        System.out.println("otherUser.getUserIdx() = " + otherUser.getUserIdx());
         if (type == 1) {
             //렌탈중인 게시글
             Page<Rental> etcRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotInOrderByCreateAtDesc(otherUser.getUserIdx(), true, false, new int[]{4}, pageable);
@@ -424,7 +425,7 @@ public class UserController {
 
                         rvs.addProperty("renterIdx", review.getTransaction().getUser().getUserIdx());
                         rvs.addProperty("renterImage", review.getTransaction().getUser().getProfileImageUrl());
-                        if (review.getTransaction().getUser().getUserIdx() == otherUser.getUserIdx()) {
+                        if (review.getRenterIdx() == loginUser.getUserIdx()) {
                             rvs.addProperty("isMine", true);
                         } else {
                             rvs.addProperty("isMine", false);
@@ -456,7 +457,6 @@ public class UserController {
             Page<Review> findReviews = reviewRepository.findByRenterIdxAndActiveYnAndDeleteYnOrderByCreateAtDesc(otherUser.getUserIdx(), true, false, pageable);
             List<Review> reviews = reviewRepository.findByRenterIdxAndActiveYnAndDeleteYnOrderByCreateAtDesc(otherUser.getUserIdx(), true, false);
 
-
             findReviews.forEach(
                     review -> {
                         JsonObject rvs = new JsonObject();
@@ -466,7 +466,7 @@ public class UserController {
                         List<RentalImage> images = rentalImageRepository.findByRental_rentalIdx(review.getTransaction().getRental().getRentalIdx());
                         rvs.addProperty("renterImage", images.get(0).getImageUrl());
 
-                        if (review.getTransaction().getUser().getUserIdx() == otherUser.getUserIdx()) {
+                        if (review.getOwnerIdx() == loginUser.getUserIdx()) {
                             rvs.addProperty("isMine", true);
                         } else {
                             rvs.addProperty("isMine", false);
