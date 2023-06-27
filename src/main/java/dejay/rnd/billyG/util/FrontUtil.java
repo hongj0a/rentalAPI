@@ -2,6 +2,7 @@ package dejay.rnd.billyG.util;
 
 import com.google.gson.JsonObject;
 import dejay.rnd.billyG.dto.PushDto;
+import io.micrometer.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -54,6 +55,10 @@ public class FrontUtil {
         params.add("userIdx", String.valueOf(pushDto.getUserIdx()));
         params.add("adminIdx", null);
         params.add("targetIdx", String.valueOf(pushDto.getTargetIdx()));
+        if (!StringUtils.isEmpty(String.valueOf(pushDto.getTargetIdx2()))) {
+            params.add("targetIdx2", String.valueOf(pushDto.getTargetIdx2()));
+        }
+
         params.add("message", pushDto.getMessage());
         params.add("type", String.valueOf(pushDto.getType()));
         params.add("title", pushDto.getTitle());

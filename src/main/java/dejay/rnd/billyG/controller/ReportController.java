@@ -85,7 +85,6 @@ public class ReportController {
         User findUser = userMining.getUserInfo(acToken);
         Category findBT = categoryRepository.getOne(reportDto.getBlockTypeIdx());
 
-        System.out.println("findBT.getName() = " + findBT.getName());
         Rental findRental = new Rental();
         User reportUser = new User();
         Review findReview = new Review();

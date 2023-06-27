@@ -37,6 +37,6 @@ public class ChatService {
 
     @Transactional
     public void updateChatRoom(ChatRoom chatRoom) {
-        chatRoom.setUpdateAt(FrontUtil.getNowDate());
+        chatRoomRepository.save(chatRoom);
     }
 }

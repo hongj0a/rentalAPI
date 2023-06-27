@@ -292,9 +292,14 @@ public class UserController {
         if (userIdx != 0) {
             otherUser = userRepository.getOne(userIdx);
             data.addProperty("isMine", false);
-        } else {
-            String acToken = req.getHeader("Authorization").substring(7);
-            otherUser = userMining.getUserInfo(acToken);
+        } else if (userIdx == 0) {
+            data.addProperty("isMine", true);
+        }
+
+        String acToken = req.getHeader("Authorization").substring(7);
+        otherUser = userMining.getUserInfo(acToken);
+
+        if (userIdx == otherUser.getUserIdx()) {
             data.addProperty("isMine", true);
         }
 
@@ -458,13 +463,15 @@ public class UserController {
                         Town findLeadTown = townRepository.getOne(review.getTransaction().getUser().getLeadTown());
 
                         rvs.addProperty("renterIdx", review.getTransaction().getUser().getUserIdx());
-                        rvs.addProperty("renterImage", review.getTransaction().getUser().getProfileImageUrl());
+                        List<RentalImage> images = rentalImageRepository.findByRental_rentalIdx(review.getTransaction().getRental().getRentalIdx());
+                        rvs.addProperty("renterImage", images.get(0).getImageUrl());
+
                         if (review.getTransaction().getUser().getUserIdx() == otherUser.getUserIdx()) {
                             rvs.addProperty("isMine", true);
                         } else {
                             rvs.addProperty("isMine", false);
                         }
-                        rvs.addProperty("renterNickName", review.getTransaction().getUser().getNickName());
+                        rvs.addProperty("renterNickName", review.getTransaction().getRental().getTitle());
                         rvs.addProperty("renterLeadTown", findLeadTown.getTownName());
                         rvs.addProperty("reviewRegDate", review.getCreateAt().getTime());
                         rvs.addProperty("reviewIdx", review.getReviewIdx());
@@ -518,6 +525,7 @@ public class UserController {
         data.addProperty("starPoint", review.getReviewScore());
         data.addProperty("title", review.getTransaction().getRental().getTitle());
         data.addProperty("content", review.getReviewContent());
+        data.addProperty("transactionNum", review.getTransaction().getTransactionNum());
 
         List<ReviewImage> images = reviewImageRepository.findByReview_ReviewIdx(review.getReviewIdx());
 
@@ -672,7 +680,6 @@ public class UserController {
 
         LinkedHashMap<Integer, String> statusMap = new LinkedHashMap<>();
         statusMap.put(10, "매칭대기");
-        statusMap.put(20, "렌탈매칭");
         statusMap.put(30, "매칭완료");
         statusMap.put(40, "물품인수");
         statusMap.put(50, "물품반납");
@@ -713,7 +720,6 @@ public class UserController {
         //rental received
             if (rentalStatus.length == 0) {
                 //전체는 0으로
-                System.out.println("UserController.getSendOrReceivedRentals");
                 transactions = transactionRepository.findByUser_userIdxAndCancelYnOrderByCreateAtDesc(findUser.getUserIdx(), false, pageable);
                 tranSize = transactionRepository.findByUser_userIdxAndCancelYn(findUser.getUserIdx(), false);
             } else {
@@ -746,14 +752,14 @@ public class UserController {
                         trs.addProperty("imageUrl", img.get(0).getImageUrl());
                     }
                     trs.addProperty("title", tr.getRental().getTitle());
-                    if (rentalFlag == 1) {
-                        //렌탈보냄, 오너상태
-                        trs.addProperty("status", tr.getOwnerStatus());
+
+                    trs.addProperty("status", tr.getOwnerStatus());
+                    Review findReview = reviewRepository.findByTransaction_TransactionIdxAndTransaction_OwnerStatus(tr.getTransactionIdx(), 70);
+                    if (findReview != null) {
+                        trs.addProperty("canFlag", false);
                     } else {
-                        trs.addProperty("status", tr.getRenterStatus());
+                        trs.addProperty("canFlag", true);
                     }
-
-
                     trs.addProperty("dailyRentalFee", tr.getRental().getRentalPrice());
 
                     renArr.add(trs);
@@ -985,18 +991,18 @@ public class UserController {
         starUser.setStarPoint(starPoint);
         userService.updateUser(starUser);
 
-        if (transaction.getRental().getUser().isActivityNoticeYn() == true) {
-            CompletableFuture.runAsync(() -> {
-                try {
-                    pushService.sendPush(new Long[]{transaction.getRental().getUser().getUserIdx()}, findUser.getUserIdx(),
-                            transaction.getRental().getRentalIdx(), 20,"새로운 평가 등록", findUser.getNickName()+"님이 회원님의 "+transaction.getRental().getTitle()+" 게시물에 대한 새로운 평가를 등록하였습니다.");
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                System.out.println(Thread.currentThread().getName() + ": hi");
-            }, executor);
-        }
+        CompletableFuture.runAsync(() -> {
+            try {
+                pushService.sendPush(new Long[]{transaction.getRental().getUser().getUserIdx()}, findUser.getUserIdx(),
+                        transaction.getRental().getRentalIdx(), null,20,"새로운 평가 등록", findUser.getNickName()+"님이 회원님의 "+transaction.getRental().getTitle()+" 게시물에 대한 새로운 평가를 등록하였습니다.");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName() + ": hi");
+        }, executor);
+
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
@@ -1332,33 +1338,33 @@ public class UserController {
 
         Executor executor = Executors.newFixedThreadPool(30);
 
-        if (findTr.getRental().getUser().isActivityNoticeYn() == true) {
-            CompletableFuture.runAsync(() -> {
-                try {
-                    //렌탈오너에게
-                    pushService.sendPush(new Long[]{findTr.getRental().getUser().getUserIdx()}, findTr.getUser().getUserIdx(), arbitrationManagement.getAmIdx(),
-                            60, "이의신청 접수완료", findTr.getUser().getNickName()+" 님과의 렌탈거래에 대한 이의신청이 접수되었습니다.");
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                System.out.println(Thread.currentThread().getName() + ": hi");
-            }, executor);
-        }
+        CompletableFuture.runAsync(() -> {
+            try {
+                //렌탈오너에게
+                pushService.sendPush(new Long[]{findTr.getRental().getUser().getUserIdx()}, findTr.getUser().getUserIdx(), arbitrationManagement.getAmIdx(),
+                        null,60, "이의신청 접수완료", findTr.getUser().getNickName()+" 님과의 렌탈거래에 대한 이의신청이 접수되었습니다.");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName() + ": hi");
+        }, executor);
 
 
-        if (findTr.getUser().isActivityNoticeYn() == true) {
-            CompletableFuture.runAsync(() -> {
-                try {
-                    //렌탈러에게
-                    pushService.sendPush(new Long[]{findTr.getUser().getUserIdx()}, findTr.getRental().getUser().getUserIdx(), arbitrationManagement.getAmIdx(),
-                            60, "이의신청으로 인한 거래중재중", findTr.getRental().getTitle()+ " 거래에 대해 렌탈오너가 이의를 제기 했습니다. ");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                System.out.println(Thread.currentThread().getName() + ": hi");
-            }, executor);
-        }
+
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                //렌탈러에게
+                pushService.sendPush(new Long[]{findTr.getUser().getUserIdx()}, findTr.getRental().getUser().getUserIdx(), arbitrationManagement.getAmIdx(),
+                        null,60, "이의신청으로 인한 거래중재중", findTr.getRental().getTitle()+ " 거래에 대해 렌탈오너가 이의를 제기 했습니다. ");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName() + ": hi");
+        }, executor);
+
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 

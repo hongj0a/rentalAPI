@@ -75,8 +75,9 @@ public class MainController {
     private final PushService pushService;
     private final UserCountService userCountService;
     private final UserMining userMining;
+    private final ChatRepository chatRepository;
 
-    public MainController(ImageProperties imageProperties, UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, BellScheduleRepositry bellScheduleRepository, BellScheduleService bellScheduleService, BlockUserRepository blockUserRepository, BlockPostRepository blockPostRepository, ToBlockRepository toBlockRepository, UserRepositories userRepositories, PushService pushService, UserCountService userCountService, UserMining userMining) {
+    public MainController(ImageProperties imageProperties, UserRepository userRepository, TownRepository townRepository, TownRepositories townRepositories, CategoryService categoryService, RentalRepository rentalRepository, RentalRepositories rentalRepositories, RentalImageRepository rentalImageRepository, RentalCategoryInfoRepository rentalCategoryInfoRepository, RentalService rentalService, TransactionRepository transactionRepository, LikeRepository likeRepository, AlarmRepository alarmRepository, ReviewRepository reviewRepository, GradeRepository gradeRepository, FileUploadService uploadService, CategoryRepository categoryRepository, UserCountRepository userCountRepository, UserCountRepositories userCountRepositories, BellScheduleRepositry bellScheduleRepository, BellScheduleService bellScheduleService, BlockUserRepository blockUserRepository, BlockPostRepository blockPostRepository, ToBlockRepository toBlockRepository, UserRepositories userRepositories, PushService pushService, UserCountService userCountService, UserMining userMining, ChatRepository chatRepository) {
         this.userRepository = userRepository;
         this.townRepository = townRepository;
         this.townRepositories = townRepositories;
@@ -106,6 +107,7 @@ public class MainController {
         this.pushService = pushService;
         this.userCountService = userCountService;
         this.userMining = userMining;
+        this.chatRepository = chatRepository;
     }
 
     @GetMapping("/getMainList")
@@ -245,9 +247,11 @@ public class MainController {
 
             statusArr.add(status);
         }
+        Date beforeTime = java.sql.Timestamp.valueOf(LocalDateTime.now().minusDays(30));
 
-        List<Alarm> alarms = alarmRepository.findByHostIdxAndCreateAtGreaterThanEqualAndReadYn(findUser.getUserIdx(), FrontUtil.getNowDate(), false);
+        List<Alarm> alarms = alarmRepository.findByHostIdxAndCreateAtGreaterThanEqualAndCreateAtLessThanEqualAndReadYn(findUser.getUserIdx(), beforeTime, FrontUtil.getNowDate(), false);
 
+        System.out.println("alarms.size() = " + alarms.size());
         if (alarms.size() != 0) {
             data.addProperty("isNew", true);
         } else {
@@ -596,7 +600,21 @@ public class MainController {
                     bell.addProperty("regDate", ar.getCreateAt().getTime());
                     bell.addProperty("readYn", ar.isReadYn());
                     bell.addProperty("targetIdx", ar.getTargetIdx());
-                    bell.addProperty("targetIdx2", ar.getTargetIdx2());
+
+                    //채팅방목록, 새로운메시지를 보냈습니다 일 때 상대방 프로필이미지 추출
+                    //만약 to_user == findUser 같다면 fromUser image, 다르다면 toUser image
+                    if (ar.getTargetIdx2() != null) {
+                        bell.addProperty("targetIdx2", ar.getTargetIdx2());
+                        ChatRoom findRoom = chatRepository.findByChatRoomIdx(ar.getTargetIdx2());
+                        if (findRoom != null) {
+                            if (findRoom.getToUser().getUserIdx() == findUser.getUserIdx()) {
+                                bell.addProperty("sendUserProfile", findRoom.getFromUser().getProfileImageUrl());
+                            } else {
+                                bell.addProperty("sendUserProfile", findRoom.getToUser().getProfileImageUrl());
+                            }
+                        }
+
+                    }
                     bell.addProperty("type", ar.getType());
 
                     alarmArr.add(bell);
@@ -732,7 +750,7 @@ public class MainController {
             CompletableFuture.runAsync(() -> {
                 try {
                     pushService.sendPush(hosts, findUser.getUserIdx(), findRental.getRentalIdx(),
-                            10, "[알림] 렌탈가능 물품", "회원님의 동네로 등록된 새게시글이 있습니다.");
+                            null, 10, "[알림] 렌탈가능 물품", "회원님의 동네로 등록된 새게시글이 있습니다.");
 
                 } catch (Exception e) {
                     e.printStackTrace();

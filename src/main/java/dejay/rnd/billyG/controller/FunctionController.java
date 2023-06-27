@@ -78,18 +78,16 @@ public class FunctionController {
                     likeService.updateLikeInfo(findLike, findUser);
                     data.addProperty("likeFlag", true);
 
-                    if (findRental.getUser().isActivityNoticeYn() == true) {
-                        CompletableFuture.runAsync(() -> {
-                            try {
-                                pushService.sendPush(new Long[]{findRental.getUser().getUserIdx()}, findUser.getUserIdx(), findRental.getRentalIdx(), 10,
-                                        "새로운 좋아요", findUser.getNickName()+"님이 회원님의 "+findRental.getTitle()+" 게시물을 좋아합니다.");
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            System.out.println(Thread.currentThread().getName() + ": hi");
-                        }, executor);
+                    CompletableFuture.runAsync(() -> {
+                        try {
+                            pushService.sendPush(new Long[]{findRental.getUser().getUserIdx()}, findUser.getUserIdx(), findRental.getRentalIdx(), null,10,
+                                    "새로운 좋아요", findUser.getNickName()+"님이 회원님의 "+findRental.getTitle()+" 게시물을 좋아합니다.");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        System.out.println(Thread.currentThread().getName() + ": hi");
+                    }, executor);
 
-                    }
 
                 } else if ( findLike.isDeleteYn() == false && findLike.getUser().getUserIdx() == findUser.getUserIdx()){
                     apiRes.setStatus(9999);
@@ -98,17 +96,15 @@ public class FunctionController {
                 }
 
             } else {
-                if (findRental.getUser().isActivityNoticeYn() == true) {
-                    CompletableFuture.runAsync(() -> {
-                        try {
-                            pushService.sendPush(new Long[]{findRental.getUser().getUserIdx()}, findUser.getUserIdx(), findRental.getRentalIdx(), 10,
-                                    "새로운 좋아요", findUser.getNickName()+"님이 회원님의 "+findRental.getTitle()+" 게시물을 좋아합니다.");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        System.out.println(Thread.currentThread().getName() + ": hi");
-                    }, executor);
-                }
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        pushService.sendPush(new Long[]{findRental.getUser().getUserIdx()}, findUser.getUserIdx(), findRental.getRentalIdx(), null, 10,
+                                "새로운 좋아요", findUser.getNickName()+"님이 회원님의 "+findRental.getTitle()+" 게시물을 좋아합니다.");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(Thread.currentThread().getName() + ": hi");
+                }, executor);
 
                 likeService.insertLikeInfo(findRental,findUser);
             }

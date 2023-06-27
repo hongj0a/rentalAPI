@@ -206,7 +206,7 @@ public class CSController {
                     JsonObject oto = new JsonObject();
                     JsonArray imgArr = new JsonArray();
 
-                    String statusStr = "답변대기";
+                    String statusStr = "";
 
                     oto.addProperty("oneIdx", ones.getOneIdx());
                     if (ones.getCategory().getOrderNum() == 9999) {
@@ -216,13 +216,23 @@ public class CSController {
                     }
 
                     oto.addProperty("title", ones.getTitle());
-                    if (ones.getStatus().equals("2")) {
-                        statusStr = "답변완료";
-                        //Answer answer = answerRepository.findByOneToOneInquiry_OneIdx(ones.getOneIdx());
-                        oto.addProperty("answerContent", StringEscapeUtils.unescapeHtml4(ones.getAnswerContent()));
-                    } else {
-                        oto.addProperty("answerContent", "");
+
+
+                    switch (ones.getStatus()) {
+                        case "0":
+                            statusStr = "답변대기";
+                            break;
+                        case "1":
+                            statusStr = "답변중";
+                            break;
+                        case "2":
+                            statusStr = "답변완료";
+                        default:
+                            System.out.println("CSController.getInquiry");
+                            break;
                     }
+
+
                     oto.addProperty("status", statusStr);
 
                     List<InquiryImage> findImg = inquiryImageRepository.findByOneToOneInquiry_oneIdx(ones.getOneIdx());

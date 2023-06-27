@@ -16,6 +16,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     Review getOne(Long reviewIdx);
 
+    Review findByTransaction_TransactionIdxAndTransaction_OwnerStatus(Long trIdx, int ownerStatus);
     List<Review> findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAtDesc(Long userIdx, boolean active_yn, boolean delete_yn);
     Page<Review> findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAtDesc(Long userIdx, boolean active_yn, boolean delete_yn, Pageable pageable);
 

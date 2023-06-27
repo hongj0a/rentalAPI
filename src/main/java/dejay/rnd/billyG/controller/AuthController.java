@@ -92,7 +92,7 @@ public class AuthController {
             userDto.setCiValue(loginDto.getCiValue());
             userDto.setName(loginDto.getName());
             userDto.setPhoneNumber(loginDto.getPhoneNumber());
-            UserDto getUser = userService.signup(userDto);
+            userService.signup(userDto);
 
         }
         userOne = userRepository.findByEmail(loginDto.getEmail());

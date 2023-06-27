@@ -12,12 +12,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class PushService {
 
-    public void sendPush(Long[] hostIdxes, Long userIdx, Long targetIdx, int type, String title, String message) {
+    public void sendPush(Long[] hostIdxes, Long userIdx, Long targetIdx, Long targetIdx2, int type, String title, String message) {
         PushDto pushDto = new PushDto();
 
         pushDto.setHostIdxes(hostIdxes);
         pushDto.setUserIdx(userIdx);
         pushDto.setTargetIdx(targetIdx);
+        if (targetIdx2 != null) {
+            pushDto.setTargetIdx2(targetIdx2);
+        }
         pushDto.setType(type);
         pushDto.setTitle(title);
         pushDto.setMessage(message);
