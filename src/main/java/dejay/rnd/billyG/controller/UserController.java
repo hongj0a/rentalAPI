@@ -438,7 +438,7 @@ public class UserController {
                         rvs.addProperty("reviewContent", review.getReviewContent());
                         rvs.addProperty("reviewStarPoint", review.getReviewScore());
 
-                        blockReview = blockReviewRepository.findByReporterIdxAndReview_reviewIdxAndProcessingStatusNotIn(otherUser.getUserIdx(), review.getReviewIdx(), new int[]{2});
+                        blockReview = blockReviewRepository.findByReporterIdxAndReview_reviewIdxAndProcessingStatusNotIn(loginUser.getUserIdx(), review.getReviewIdx(), new int[]{2});
 
                         if (blockReview != null) {
                             rvs.addProperty("blockReviewHistory", true);
@@ -466,7 +466,7 @@ public class UserController {
                         List<RentalImage> images = rentalImageRepository.findByRental_rentalIdx(review.getTransaction().getRental().getRentalIdx());
                         rvs.addProperty("renterImage", images.get(0).getImageUrl());
 
-                        if (review.getOwnerIdx() == loginUser.getUserIdx()) {
+                        if (review.getRenterIdx() == loginUser.getUserIdx()) {
                             rvs.addProperty("isMine", true);
                         } else {
                             rvs.addProperty("isMine", false);

@@ -76,8 +76,8 @@ public class CSController {
         JsonObject data = new JsonObject();
         JsonArray noticeArr = new JsonArray();
 
-        Page<Notice> list = noticeRepository.findByDeleteYnAndActiveYn(false, true, pageable);
-        List<Notice> size = noticeRepository.findAllByDeleteYnAndActiveYn(false, true);
+        Page<Notice> list = noticeRepository.findByDeleteYnAndActiveYnAndActiveAtLessThanEqual(false, true, FrontUtil.getNowDate(), pageable);
+        List<Notice> size = noticeRepository.findAllByDeleteYnAndActiveYnAndActiveAtLessThanEqual(false, true, FrontUtil.getNowDate());
 
         list.forEach(
                 noti -> {

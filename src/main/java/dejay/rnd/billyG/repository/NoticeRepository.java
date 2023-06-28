@@ -11,8 +11,8 @@ import java.util.List;
 public interface NoticeRepository extends JpaRepository<Notice,Pageable> {
     // findAll japRepository 기본 기능이기 때문에 굳이 선언해 주지 않아도 됨.
 
-    Page<Notice> findByDeleteYnAndActiveYn(boolean deleteYn, boolean activeYn, Pageable pageable);
-    List<Notice> findAllByDeleteYnAndActiveYn(boolean deleteYn, boolean activeYn);
+    Page<Notice> findByDeleteYnAndActiveYnAndActiveAtLessThanEqual(boolean deleteYn, boolean activeYn, Date nowDate, Pageable pageable);
+    List<Notice> findAllByDeleteYnAndActiveYnAndActiveAtLessThanEqual(boolean deleteYn, boolean activeYn, Date nowDate);
 
     Notice findByStartAtLessThanEqualAndEndAtGreaterThanEqualAndViewType(Date startDate, Date endDate, String viewType);
 }

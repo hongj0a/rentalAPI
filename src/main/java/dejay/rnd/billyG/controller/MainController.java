@@ -1088,9 +1088,10 @@ public class MainController {
         List<Rental> my = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusIn(findUser.getUserIdx(), true, false, p_status);
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        cal.add(Calendar.DAY_OF_WEEK, -7);
+
         Date date1 = dateFormat.parse(dateFormat.format(cal.getTime()));
 
-        cal.add(Calendar.DAY_OF_WEEK, -7);
         myRentals.forEach(
                 etcs -> {
                     JsonObject etcRental = new JsonObject();
