@@ -306,7 +306,7 @@ public class MainController {
 
         ArrayList<Long> towns = new ArrayList<>();
 
-        towns.add(findUser.getLeadTown());
+        if (findUser.getLeadTown()!=null) towns.add(findUser.getLeadTown());
         if (findUser.getTown1()!= null) towns.add(findUser.getTown1());
         if (findUser.getTown2()!= null) towns.add(findUser.getTown2());
         if (findUser.getTown3()!= null) towns.add(findUser.getTown3());

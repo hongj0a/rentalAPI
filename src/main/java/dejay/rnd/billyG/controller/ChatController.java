@@ -129,7 +129,6 @@ public class ChatController {
             chat.setSystemYn(true);
 
             chatService.insert(chat);
-            contentDto.setSystemYn(true);
             if (contentDto.getTransactionIdx() != 0) {
                 Transaction transaction = transactionRepository.findByTransactionIdx(contentDto.getTransactionIdx());
                 contentDto.setStatus(String.valueOf(transaction.getOwnerStatus()));
@@ -138,7 +137,8 @@ public class ChatController {
 
         } else if (contentDto.isSystemYn() == false){
             //채팅 메시지가 있는경우, 새로운 메시지 알림
-                if (findUser != null && !("newImage").equals(contentDto.getMessage())) {
+                if (findUser != null && !("newImage").equals(contentDto.getMessage()) && contentDto.getMessage() != null) {
+
                     ChatContent chat = new ChatContent();
                     chat.setUser(findUser);
                     chat.setChatRoom(findRoom);
@@ -548,6 +548,7 @@ public class ChatController {
         ChatContent chat = chatService.insert(content);
 
         findRoom.setLastChatMessage("이미지를 보냈습니다.");
+        findRoom.setReadYn(false);
         findRoom.setUpdateAt(FrontUtil.getNowDate());
         chatService.updateChatRoom(findRoom);
 
