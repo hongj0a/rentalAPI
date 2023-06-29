@@ -251,7 +251,6 @@ public class MainController {
 
         List<Alarm> alarms = alarmRepository.findByHostIdxAndCreateAtGreaterThanEqualAndCreateAtLessThanEqualAndReadYn(findUser.getUserIdx(), beforeTime, FrontUtil.getNowDate(), false);
 
-        System.out.println("alarms.size() = " + alarms.size());
         if (alarms.size() != 0) {
             data.addProperty("isNew", true);
         } else {
@@ -369,7 +368,7 @@ public class MainController {
 
         List<Review> reviews = reviewRepository.findByOwnerIdxAndActiveYnAndDeleteYnOrderByCreateAtDesc(findRental.getUser().getUserIdx(), true, false);
 
-        if (findRental.isDeleteYn() == true || findRental.getStatus() == 4 || findRental.isActiveYn() == false) {
+        if (findRental.isDeleteYn() == true || findRental.isActiveYn() == false) {
             apiRes.setError(ErrCode.err_api_is_deleted_post.code());
             apiRes.setMessage(ErrCode.err_api_is_deleted_post.msg());
             return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
@@ -736,7 +735,7 @@ public class MainController {
             CompletableFuture.runAsync(() -> {
                 try {
                     pushService.sendPush(hosts, findUser.getUserIdx(), findRental.getRentalIdx(),
-                            null, 10, "[알림] 렌탈가능 물품", "회원님의 동네로 등록된 새게시글이 있습니다.");
+                            0L, 10, "[알림] 렌탈가능 물품", "회원님의 동네로 등록된 새게시글이 있습니다.");
 
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -250,7 +250,8 @@ public class CSController {
 
                     oto.add("images", imgArr);
                     oto.addProperty("regDate", ones.getCreateAt().getTime());
-                    oto.addProperty("content", ones.getContent());
+                    oto.addProperty("content", StringEscapeUtils.unescapeHtml4(ones.getContent()));
+                    oto.addProperty("answerContent", StringEscapeUtils.unescapeHtml4(ones.getAnswerContent()));
 
                     faqArr.add(oto);
                 }
@@ -391,7 +392,7 @@ public class CSController {
             }
             tr.addProperty("termsIdx", terms.get(i).getTermsIdx());
             tr.addProperty("title", terms.get(i).getTitle());
-            tr.addProperty("content", terms.get(i).getContent());
+            tr.addProperty("content", StringEscapeUtils.unescapeHtml4(terms.get(i).getContent()));
             tr.addProperty("createAt", String.valueOf(terms.get(i).getCreateAt()));
 
             termsArr.add(tr);

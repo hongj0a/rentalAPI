@@ -50,7 +50,7 @@ public class RentalHistory {
     private Integer deposit;
 
     @Column (name = "rental_price")
-    private Integer rentalPrice;
+    private Long rentalPrice;
 
     @Column(length = 2000)
     private String content;

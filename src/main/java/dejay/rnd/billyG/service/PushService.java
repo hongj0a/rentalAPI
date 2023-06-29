@@ -18,9 +18,7 @@ public class PushService {
         pushDto.setHostIdxes(hostIdxes);
         pushDto.setUserIdx(userIdx);
         pushDto.setTargetIdx(targetIdx);
-        if (targetIdx2 != null) {
-            pushDto.setTargetIdx2(targetIdx2);
-        }
+        pushDto.setTargetIdx2(targetIdx2);
         pushDto.setType(type);
         pushDto.setTitle(title);
         pushDto.setMessage(message);

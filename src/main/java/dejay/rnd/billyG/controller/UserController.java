@@ -291,13 +291,11 @@ public class UserController {
         String acToken = req.getHeader("Authorization").substring(7);
         User otherUser = userMining.getUserInfo(acToken);
 
-        if (userIdx != 0) {
+        System.out.println("userIdx = " + userIdx);
+        if (userIdx != 0 && userIdx != otherUser.getUserIdx()) {
             otherUser = userRepository.getOne(userIdx);
             data.addProperty("isMine", false);
-        } else if (userIdx == 0) {
-            data.addProperty("isMine", true);
-        }
-        if (userIdx == otherUser.getUserIdx()) {
+        } else if (userIdx == 0 || userIdx == otherUser.getUserIdx()) {
             data.addProperty("isMine", true);
         }
 
@@ -751,7 +749,7 @@ public class UserController {
                         trs.addProperty("imageSeq", img.get(0).getImageIdx());
                         trs.addProperty("imageUrl", img.get(0).getImageUrl());
                     }
-                    trs.addProperty("title", tr.getRental().getTitle());
+                    trs.addProperty("title", tr.getRentalHistory().getTitle());
 
                     trs.addProperty("status", tr.getOwnerStatus());
                     Review findReview = reviewRepository.findByTransaction_TransactionIdxAndTransaction_OwnerStatus(tr.getTransactionIdx(), 70);
@@ -760,7 +758,7 @@ public class UserController {
                     } else {
                         trs.addProperty("canFlag", true);
                     }
-                    trs.addProperty("dailyRentalFee", tr.getRental().getRentalPrice());
+                    trs.addProperty("dailyRentalFee", tr.getRentalHistory().getRentalPrice());
 
                     renArr.add(trs);
                 }
@@ -784,8 +782,8 @@ public class UserController {
         User findUser = userMining.getUserInfo(acToken);
 
         Gson gson = new Gson();
-        Page<Likes> likes = likeRepository.findByUser_userIdxAndDeleteYnOrderByRental_PullUpAtDesc(findUser.getUserIdx(), false, pageable);
-        List<Likes> likeSize = likeRepository.findByUser_userIdxAndDeleteYn(findUser.getUserIdx(), false);
+        Page<Likes> likes = likeRepository.findByUser_userIdxAndDeleteYnAndRental_statusNotInOrderByRental_PullUpAtDesc(findUser.getUserIdx(), false, new int[]{4}, pageable);
+        List<Likes> likeSize = likeRepository.findByUser_userIdxAndDeleteYnAndRental_statusNotIn(findUser.getUserIdx(), false, new int[]{4} );
 
         likes.forEach(
                 li -> {
@@ -995,7 +993,7 @@ public class UserController {
         CompletableFuture.runAsync(() -> {
             try {
                 pushService.sendPush(new Long[]{transaction.getRental().getUser().getUserIdx()}, findUser.getUserIdx(),
-                        transaction.getRental().getRentalIdx(), null,20,"새로운 평가 등록", findUser.getNickName()+"님이 회원님의 "+transaction.getRental().getTitle()+" 게시물에 대한 새로운 평가를 등록하였습니다.");
+                        transaction.getRental().getRentalIdx(), 0L,20,"새로운 평가 등록", findUser.getNickName()+"님이 회원님의 "+transaction.getRental().getTitle()+" 게시물에 대한 새로운 평가를 등록하였습니다.");
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -1063,7 +1061,7 @@ public class UserController {
 
         String acToken = req.getHeader("Authorization").substring(7);
         User findUser = userMining.getUserInfo(acToken);
-        List<Likes> likes = likeRepository.findByUser_userIdxAndDeleteYn(findUser.getUserIdx(), false);
+        List<Likes> likes = likeRepository.findByUser_userIdxAndDeleteYnAndRental_statusNotIn(findUser.getUserIdx(), false, new int[]{4});
 
         Gson gson = new Gson();
 
@@ -1343,7 +1341,7 @@ public class UserController {
             try {
                 //렌탈오너에게
                 pushService.sendPush(new Long[]{findTr.getRental().getUser().getUserIdx()}, findTr.getUser().getUserIdx(), arbitrationManagement.getAmIdx(),
-                        null,60, "이의신청 접수완료", findTr.getUser().getNickName()+" 님과의 렌탈거래에 대한 이의신청이 접수되었습니다.");
+                        0L,60, "이의신청 접수완료", findTr.getUser().getNickName()+" 님과의 렌탈거래에 대한 이의신청이 접수되었습니다.");
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -1358,7 +1356,7 @@ public class UserController {
             try {
                 //렌탈러에게
                 pushService.sendPush(new Long[]{findTr.getUser().getUserIdx()}, findTr.getRental().getUser().getUserIdx(), arbitrationManagement.getAmIdx(),
-                        null,60, "이의신청으로 인한 거래중재중", findTr.getRental().getTitle()+ " 거래에 대해 렌탈오너가 이의를 제기 했습니다. ");
+                        0L,60, "이의신청으로 인한 거래중재중", findTr.getRental().getTitle()+ " 거래에 대해 렌탈오너가 이의를 제기 했습니다. ");
             } catch (Exception e) {
                 e.printStackTrace();
             }

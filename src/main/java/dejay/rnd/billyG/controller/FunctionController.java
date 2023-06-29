@@ -80,7 +80,7 @@ public class FunctionController {
 
                     CompletableFuture.runAsync(() -> {
                         try {
-                            pushService.sendPush(new Long[]{findRental.getUser().getUserIdx()}, findUser.getUserIdx(), findRental.getRentalIdx(), null,10,
+                            pushService.sendPush(new Long[]{findRental.getUser().getUserIdx()}, findUser.getUserIdx(), findRental.getRentalIdx(), 0L,10,
                                     "새로운 좋아요", findUser.getNickName()+"님이 회원님의 "+findRental.getTitle()+" 게시물을 좋아합니다.");
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -98,7 +98,7 @@ public class FunctionController {
             } else {
                 CompletableFuture.runAsync(() -> {
                     try {
-                        pushService.sendPush(new Long[]{findRental.getUser().getUserIdx()}, findUser.getUserIdx(), findRental.getRentalIdx(), null, 10,
+                        pushService.sendPush(new Long[]{findRental.getUser().getUserIdx()}, findUser.getUserIdx(), findRental.getRentalIdx(), 0L, 10,
                                 "새로운 좋아요", findUser.getNickName()+"님이 회원님의 "+findRental.getTitle()+" 게시물을 좋아합니다.");
                     } catch (Exception e) {
                         e.printStackTrace();

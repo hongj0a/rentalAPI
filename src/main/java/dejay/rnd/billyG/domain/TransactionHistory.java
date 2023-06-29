@@ -1,6 +1,7 @@
 package dejay.rnd.billyG.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
@@ -30,6 +31,9 @@ public class TransactionHistory {
 
     @Column (name = "rental_idx")
     private Long rentalIdx;
+
+    @Column (name = "rental_history_idx")
+    private Long rentalHistoryIdx;
 
     @Column (name = "cancel_yn")
     private boolean cancelYn;

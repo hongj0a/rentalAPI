@@ -18,7 +18,7 @@ public interface LikeRepository extends JpaRepository<Likes, Long> {
     Likes findByRental_rentalIdxAndUser_userIdx(Long rentalIdx, Long userIdx);
 
     List<Likes> findAllByRental_rentalIdxAndDeleteYn(Long rentalIdx, boolean deleteYn);
-    Page<Likes> findByUser_userIdxAndDeleteYnOrderByRental_PullUpAtDesc(Long userIdx, boolean deleteYn, Pageable pageable);
+    Page<Likes> findByUser_userIdxAndDeleteYnAndRental_statusNotInOrderByRental_PullUpAtDesc(Long userIdx, boolean deleteYn, int[] status, Pageable pageable);
 
-    List<Likes> findByUser_userIdxAndDeleteYn(Long userIdx, boolean deleteYn);
+    List<Likes> findByUser_userIdxAndDeleteYnAndRental_statusNotIn(Long userIdx, boolean deleteYn, int[] status);
 }

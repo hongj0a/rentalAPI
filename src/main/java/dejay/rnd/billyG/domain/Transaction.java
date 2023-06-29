@@ -37,6 +37,10 @@ public class Transaction {
     @JoinColumn (name = "rentalIdx")
     private Rental rental;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn (name = "rental_history_idx")
+    private RentalHistory rentalHistory;
+
     //빌려간 사람의 idx
     @ManyToOne
     @NotNull

@@ -22,6 +22,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+
+import java.util.*;
+
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -31,11 +34,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -66,9 +66,10 @@ public class ChatController {
     private final PushService pushService;
     private final LikeRepository likeRepository;
     private final UserMining userMining;
+    private final RentalHistoryRepository rentalHistoryRepository;
 
 
-    public ChatController(ChatService chatService, UserRepository userRepository, ChatRepository chatRepository, RentalImageRepository rentalImageRepository, RentalRepository rentalRepository, RentalService rentalService, ChatContentRepository chatContentRepository, SimpMessagingTemplate template, FileUploadService uploadService, TransactionRepository transactionRepository, ChatImageRepository chatImageRepository, ChatRepositories chatRepositories, TransactionService transactionService, TransactionRepositories transactionRepositories, BellScheduleRepositry bellScheduleRepositry, PushService pushService, LikeRepository likeRepository, UserMining userMining) {
+    public ChatController(ChatService chatService, UserRepository userRepository, ChatRepository chatRepository, RentalImageRepository rentalImageRepository, RentalRepository rentalRepository, RentalService rentalService, ChatContentRepository chatContentRepository, SimpMessagingTemplate template, FileUploadService uploadService, TransactionRepository transactionRepository, ChatImageRepository chatImageRepository, ChatRepositories chatRepositories, TransactionService transactionService, TransactionRepositories transactionRepositories, BellScheduleRepositry bellScheduleRepositry, PushService pushService, LikeRepository likeRepository, UserMining userMining, RentalHistoryRepository rentalHistoryRepository) {
         this.chatService = chatService;
         this.userRepository = userRepository;
         this.chatRepository = chatRepository;
@@ -87,6 +88,7 @@ public class ChatController {
         this.pushService = pushService;
         this.likeRepository = likeRepository;
         this.userMining = userMining;
+        this.rentalHistoryRepository = rentalHistoryRepository;
     }
 
 
@@ -95,8 +97,6 @@ public class ChatController {
     public void message(@Payload ChatContentDto contentDto) throws java.text.ParseException {
 
         Executor executor = Executors.newFixedThreadPool(30);
-        LocalDateTime date = LocalDateTime.now();
-        long now_date = Timestamp.valueOf(date).getTime();
 
         contentDto.setStep(contentDto.getStep());
 
@@ -134,57 +134,93 @@ public class ChatController {
                 Transaction transaction = transactionRepository.findByTransactionIdx(contentDto.getTransactionIdx());
                 contentDto.setStatus(String.valueOf(transaction.getOwnerStatus()));
             }
-            contentDto.setRegDate(now_date);
+            contentDto.setRegDate(FrontUtil.getNowDate().getTime());
 
         } else if (contentDto.isSystemYn() == false){
             //채팅 메시지가 있는경우, 새로운 메시지 알림
-            if (findUser != null && contentDto.getMessage() != null) {
-                ChatContent chat = new ChatContent();
-                chat.setUser(findUser);
-                chat.setChatRoom(findRoom);
-                chat.setContent(contentDto.getMessage());
-                ChatContent chatContent = chatService.insert(chat);
+                if (findUser != null && !("newImage").equals(contentDto.getMessage())) {
+                    ChatContent chat = new ChatContent();
+                    chat.setUser(findUser);
+                    chat.setChatRoom(findRoom);
+                    chat.setContent(contentDto.getMessage());
+                    ChatContent chatContent = chatService.insert(chat);
 
-                findRoom.setLastChatMessage(contentDto.getMessage());
-                findRoom.setUpdator(findUser.getEmail());
-                findRoom.setReadYn(false);
-                findRoom.setUpdateAt(FrontUtil.getNowDate());
+                    findRoom.setLastChatMessage(contentDto.getMessage());
+                    findRoom.setUpdator(findUser.getEmail());
+                    findRoom.setReadYn(false);
+                    findRoom.setUpdateAt(FrontUtil.getNowDate());
 
-                if (findRoom.getVisibleTo() != 0) {
-                    findRoom.setVisibleTo(0L);
-                }
-
-                chatService.updateChatRoom(findRoom);
-
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        //렌탈러에게
-                        if (findUser.getUserIdx() == findRoom.getToUser().getUserIdx()) {
-                            pushService.sendPush(new Long[]{findRoom.getFromUser().getUserIdx()}, findRoom.getToUser().getUserIdx(), findRoom.getChatRoomIdx(), findRental.getRentalIdx(),
-                                    50, "새로운 메시지", "새로운 메시지가 있습니다.");
-
-                        } else {
-                            pushService.sendPush(new Long[]{findRoom.getToUser().getUserIdx()}, findRoom.getFromUser().getUserIdx(), findRoom.getChatRoomIdx(), findRental.getRentalIdx(),
-                                    50, "새로운 메시지", "새로운 메시지가 있습니다.");
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    if (findRoom.getVisibleTo() != 0) {
+                        findRoom.setVisibleTo(0L);
                     }
-                    System.out.println(Thread.currentThread().getName() + ": hi");
-                }, executor);
 
-                if (contentDto.getTransactionIdx() != 0) {
-                    Transaction transaction = transactionRepository.findByTransactionIdx(contentDto.getTransactionIdx());
-                    contentDto.setStatus(String.valueOf(transaction.getOwnerStatus()));
-                } else {
-                    contentDto.setStatus(String.valueOf(10));
+                    chatService.updateChatRoom(findRoom);
+
+                    CompletableFuture.runAsync(() -> {
+                        try {
+                            //렌탈러에게
+                            if (findUser.getUserIdx() == findRoom.getToUser().getUserIdx()) {
+                                pushService.sendPush(new Long[]{findRoom.getFromUser().getUserIdx()}, findRoom.getToUser().getUserIdx(), findRoom.getChatRoomIdx(), findRental.getRentalIdx(),
+                                        50, "새로운 메시지", "새로운 메시지가 있습니다.");
+
+                            } else {
+                                pushService.sendPush(new Long[]{findRoom.getToUser().getUserIdx()}, findRoom.getFromUser().getUserIdx(), findRoom.getChatRoomIdx(), findRental.getRentalIdx(),
+                                        50, "새로운 메시지", "새로운 메시지가 있습니다.");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        System.out.println(Thread.currentThread().getName() + ": hi");
+                    }, executor);
+
+                    if (contentDto.getTransactionIdx() != 0) {
+                        Transaction transaction = transactionRepository.findByTransactionIdx(contentDto.getTransactionIdx());
+                        contentDto.setStatus(String.valueOf(transaction.getOwnerStatus()));
+                    } else {
+                        contentDto.setStatus(String.valueOf(10));
+                    }
+
+                    contentDto.setMessageSeq(chatContent.getChatIdx());
+                    contentDto.setNickName(findUser.getNickName());
+                    contentDto.setImage(findUser.getProfileImageUrl());
+                    contentDto.setRegDate(FrontUtil.getNowDate().getTime());
+                } else if (("newImage").equals(contentDto.getMessage())) {
+
+                    List<ChatImage> chatImage = chatImageRepository.findByChatContent_ChatIdx(contentDto.getMessageSeq());
+
+                    ArrayList<Map<String, String>> imgMap = new ArrayList<>();
+                    if (chatImage.size() != 0) {
+                        for (int i = 0; i < chatImage.size(); i++) {
+                            Map<String, String> map = new HashMap<>();
+                            map.put("imageUrl", chatImage.get(i).getImageUrl());
+                            imgMap.add(map);
+                        }
+                    }
+
+                    contentDto.setImages(imgMap);
+                    contentDto.setMessageSeq(contentDto.getMessageSeq());
+                    contentDto.setNickName(findUser.getNickName());
+                    contentDto.setImage(findUser.getProfileImageUrl());
+                    contentDto.setRegDate(FrontUtil.getNowDate().getTime());
+
+                    CompletableFuture.runAsync(() -> {
+                        try {
+                            //렌탈러에게
+                            if (findUser.getUserIdx() == findRoom.getToUser().getUserIdx()) {
+                                pushService.sendPush(new Long[]{findRoom.getFromUser().getUserIdx()}, findRoom.getToUser().getUserIdx(), findRoom.getChatRoomIdx(), findRental.getRentalIdx(),
+                                        50, "새로운 메시지", "새로운 메시지가 있습니다.");
+
+                            } else {
+                                pushService.sendPush(new Long[]{findRoom.getToUser().getUserIdx()}, findRoom.getFromUser().getUserIdx(), findRoom.getChatRoomIdx(), findRental.getRentalIdx(),
+                                        50, "새로운 메시지", "새로운 메시지가 있습니다.");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        System.out.println(Thread.currentThread().getName() + ": hi");
+                    }, executor);
                 }
 
-                contentDto.setMessageSeq(chatContent.getChatIdx());
-                contentDto.setNickName(findUser.getNickName());
-                contentDto.setImage(findUser.getProfileImageUrl());
-                contentDto.setRegDate(now_date);
-            }
         }
 
         if (StringUtils.isEmpty(contentDto.getMessage()) && contentDto.getTransactionIdx() != 0 && contentDto.isSystemYn() != true) {
@@ -352,7 +388,7 @@ public class ChatController {
 
                 CompletableFuture.runAsync(() -> {
                     try {
-                        pushService.sendPush(hosts, findUser.getUserIdx(), findRental.getRentalIdx(), null,
+                        pushService.sendPush(hosts, findUser.getUserIdx(), findRental.getRentalIdx(), 0L,
                                 10, "[알림] 렌탈가능 물품", "알림 설정하신 " + findRental.getTitle() + " 상품이 렌탈 가능한 상태로 변경되었습니다.");
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -371,7 +407,7 @@ public class ChatController {
 
                 CompletableFuture.runAsync(() -> {
                     try {
-                        pushService.sendPush(users, findUser.getUserIdx(), findRental.getRentalIdx(), null,
+                        pushService.sendPush(users, findUser.getUserIdx(), findRental.getRentalIdx(), 0L,
                                 10, "게시글 상태 변경", "회원님께서 좋아요한 게시글 "+findRental.getTitle()+" 상품이 렌탈가능 합니다.");
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -395,12 +431,25 @@ public class ChatController {
             //null, 새로 만들어야 하는 시점. 히스토리도 똑같이 입력
                 if (contentDto.getStep()==1) {
 
+                    //렌탈히스토리를 먼저 세팅한후에 그 정보를 트랜잭션에 세팅
+                    RentalHistory rh = new RentalHistory();
+                    rh.setUserIdx(findRental.getUser().getUserIdx());
+                    rh.setRentalIdx(findRental.getRentalIdx());
+                    rh.setStatus(2);
+                    rh.setTitle(findRental.getTitle());
+                    rh.setRentalPrice(findRental.getRentalPrice());
+                    rh.setContent(findRental.getContent());
+                    rh.setCreateAt(FrontUtil.getNowDate());
+                    rh.setUpdateAt(FrontUtil.getNowDate());
+                    RentalHistory rentalHistory = rentalHistoryRepository.save(rh);
+
                     Transaction tr = new Transaction();
                     tr.setOwnerStatus(20);
                     tr.setRenterStatus(20);
                     tr.setCancelYn(false);
                     tr.setRental(findRoom.getRental());
                     tr.setUser(renter);
+                    tr.setRentalHistory(rentalHistory);
 
                     findRental.setStatus(2);
                     rentalService.updateRental(findRental);
@@ -448,6 +497,7 @@ public class ChatController {
                     history.setStatusAt(FrontUtil.getNowDate());
                     history.setUpdateAt(FrontUtil.getNowDate());
                     history.setUserIdx(renter.getUserIdx());
+                    history.setRentalHistoryIdx(rentalHistory.getHistoryIdx());
 
                     contentDto.setStatus(String.valueOf(20));
                     contentDto.setTransactionIdx(tr.getTransactionIdx());
@@ -520,6 +570,7 @@ public class ChatController {
         data.addProperty("messageSeq", chat.getChatIdx());
         data.addProperty("userIdx", findUser.getUserIdx());
         data.addProperty("regDate", chat.getCreateAt().getTime());
+        data.addProperty("messageSeq", chat.getChatIdx());
         data.add("images", imgArr);
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
