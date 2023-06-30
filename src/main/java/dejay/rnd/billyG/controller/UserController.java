@@ -1160,7 +1160,7 @@ public class UserController {
                         am.addProperty("amStatus", status.get());
                         am.addProperty("transactionIdx", ams.getTransaction().getTransactionIdx());
                         am.addProperty("regDate", ams.getCreateAt().getTime());
-                        am.addProperty("content", ams.getAmContent());
+                        am.addProperty("content", ams.getTransaction().getRentalHistory().getTitle());
 
                         amArr.add(am);
                     }
@@ -1201,8 +1201,6 @@ public class UserController {
                     }
             );
             data.add("arbitrationImages", imageArr);
-        } else {
-            data.addProperty("imageUrl", "deleteImage.png");
         }
 
 
