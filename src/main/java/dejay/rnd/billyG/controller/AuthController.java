@@ -68,6 +68,9 @@ public class AuthController {
 
         String email = loginDto.getEmail();
         String snsType = loginDto.getSnsType();
+
+        System.out.println("email:"+email);
+        System.out.println("snsType:"+snsType);
         
         User userOne = null;
 
