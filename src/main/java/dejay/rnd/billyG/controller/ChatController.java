@@ -96,6 +96,8 @@ public class ChatController {
     @MessageMapping(value = "/chat/message")
     public void message(@Payload ChatContentDto contentDto) throws java.text.ParseException {
 
+        System.out.println("contentDto.toString():"+contentDto.toString());
+
         Executor executor = Executors.newFixedThreadPool(30);
 
         contentDto.setStep(contentDto.getStep());
@@ -223,7 +225,12 @@ public class ChatController {
 
         }
 
+        System.out.println("StringUtils.isEmpty(contentDto.getMessage()):"+StringUtils.isEmpty(contentDto.getMessage()));
+        System.out.println("contentDto.getTransactionIdx():"+contentDto.getTransactionIdx());
+        System.out.println("contentDto.isSystemYn():"+contentDto.isSystemYn());
         if (StringUtils.isEmpty(contentDto.getMessage()) && contentDto.getTransactionIdx() != 0 && contentDto.isSystemYn() != true) {
+            System.out.println("1 step");
+
             //변경되는 내용 다시저장
             Transaction findTr = transactionRepository.findByTransactionIdx(contentDto.getTransactionIdx());
 
@@ -276,6 +283,14 @@ public class ChatController {
                 contentDto.setTransactionIdx(0L);
 
             } else if (contentDto.getStep()==1) {
+                System.out.println("2 step");
+                System.out.println("findTr.getOwnerStatus():"+findTr.getOwnerStatus());
+                System.out.println("findTr.getRenterStatus():"+findTr.getRenterStatus());
+
+                if (findTr.getOwnerStatus() != 10) {
+                    findRental.setStatus(2);
+                    rentalService.updateRental(findRental);
+                }
 
                 history.setOwnerStatus(findTr.getOwnerStatus() + 10);
                 history.setRenterStatus(findTr.getRenterStatus() + 10);
@@ -330,6 +345,7 @@ public class ChatController {
 
                 contentDto.setStatus(String.valueOf(findTr.getOwnerStatus()));
             } else if (contentDto.getStep() == 2) {
+                System.out.println("3 step");
 
                 history.setOwnerStatus(70);
                 history.setRenterStatus(70);
@@ -430,6 +446,7 @@ public class ChatController {
         } else if (contentDto.getTransactionIdx() == 0 && contentDto.isSystemYn() != true) {
             //null, 새로 만들어야 하는 시점. 히스토리도 똑같이 입력
                 if (contentDto.getStep()==1) {
+                    System.out.println("4 step");
 
                     //렌탈히스토리를 먼저 세팅한후에 그 정보를 트랜잭션에 세팅
                     RentalHistory rh = new RentalHistory();
@@ -451,8 +468,8 @@ public class ChatController {
                     tr.setUser(renter);
                     tr.setRentalHistory(rentalHistory);
 
-                    findRental.setStatus(2);
-                    rentalService.updateRental(findRental);
+//                    findRental.setStatus(2);
+//                    rentalService.updateRental(findRental);
 
                     switch (len) {
                         case 0 :
