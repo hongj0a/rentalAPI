@@ -744,6 +744,7 @@ public class UserController {
                     JsonObject trs = new JsonObject();
                     trs.addProperty("historySeq", tr.getTransactionIdx());
                     trs.addProperty("rentalSeq", tr.getRental().getRentalIdx());
+                    trs.addProperty("rentalStatus", tr.getRental().getStatus());
                     List<RentalImage> img = rentalImageRepository.findByRental_rentalIdx(tr.getRental().getRentalIdx());
                     if (img.size() != 0) {
                         trs.addProperty("imageSeq", img.get(0).getImageIdx());
@@ -767,6 +768,7 @@ public class UserController {
         data.add("transactions", renArr);
         data.addProperty("totalCount", tranSize.size());
 
+        System.out.println("apiRes:"+apiRes);
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
     }
