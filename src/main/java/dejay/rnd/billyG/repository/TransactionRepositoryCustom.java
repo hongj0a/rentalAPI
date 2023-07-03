@@ -12,4 +12,6 @@ import java.util.List;
 public interface TransactionRepositoryCustom {
     List<Transaction> finds(Long rentalIdx, Long toIdx, boolean cancelYn, Integer[] ownerStatus);
 
+    List<Transaction> finds2(Long rentalIdx, Long toIdx, boolean cancelYn, Integer[] ownerStatus);
+
 }

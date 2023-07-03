@@ -229,12 +229,13 @@ public class ChatController {
         System.out.println("contentDto.getTransactionIdx():"+contentDto.getTransactionIdx());
         System.out.println("contentDto.isSystemYn():"+contentDto.isSystemYn());
         if (StringUtils.isEmpty(contentDto.getMessage()) && contentDto.getTransactionIdx() != 0 && contentDto.isSystemYn() != true) {
-            System.out.println("1 step");
+            System.out.println("0 step");
 
             //변경되는 내용 다시저장
             Transaction findTr = transactionRepository.findByTransactionIdx(contentDto.getTransactionIdx());
 
             if (contentDto.getStep()== 0 ) {
+                System.out.println("1 step");
 
                 CompletableFuture.runAsync(() -> {
                     try {
@@ -734,6 +735,7 @@ public class ChatController {
         }
 
         if (findChat != null) {
+            System.out.println("1 step");
             if (readFlag == 1) {
                 findChat.setReadYn(true);
             }
@@ -845,6 +847,7 @@ public class ChatController {
             }
 
         } else if (findChat == null){
+            System.out.println("2 step");
             //찾아진 채팅이 없다는거는 나가기를 했거나 처음인거라 렌탈중일 수 없기 때문 빈페이지 무방하나
             //방 번호리턴을 위해 내가 나가기 한 방 찾아서 방 번호 리턴
 
@@ -878,8 +881,26 @@ public class ChatController {
 
         }
 
-        //방번호 리턴
 
+        // 렌탈진행중에 제3자와는 렌탈매칭 안되도록 처리 
+        if (findChat != null) {
+            List<Transaction> transactionsByFromUser = transactionRepositories.finds2(rentalIdx,findChat.getFromUser().getUserIdx(), false, new Integer[]{70});
+            List<Transaction> transactionsByToUser = transactionRepositories.finds2(rentalIdx,findChat.getToUser().getUserIdx(), false, new Integer[]{70});
+
+            System.out.println("findChat:" + findChat);
+            System.out.println("findChat.getFromUser():"+findChat.getFromUser());
+            System.out.println("findChat.getToUser():"+findChat.getToUser());
+
+            if (transactionsByFromUser.size() != 0 || transactionsByToUser.size() != 0) {
+                data.addProperty("statusKey", -100);
+            }
+        }
+
+
+        //방번호 리턴
+        System.out.println("apiRes:"+apiRes);
+        System.out.println("apiRes.toString():"+apiRes.toString());
+        System.out.println("RestApiRes.data(apiRes):"+RestApiRes.data(apiRes));
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
         }

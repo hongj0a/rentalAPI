@@ -40,5 +40,21 @@ public class TransactionRepositories implements TransactionRepositoryCustom {
     }
 
 
+    @Override
+    public List<Transaction> finds2(Long rentalIdx, Long toIdx, boolean cancelYn, Integer[] ownerStatus){
+
+        List<Transaction> result = queryFactory.select(transaction).distinct().from(transaction)
+                .where(
+                        (transaction.user.userIdx.notIn(toIdx)
+                                .and(transaction.rental.user.userIdx.notIn(toIdx)))
+                                .and(transaction.rental.rentalIdx.eq(rentalIdx))
+                                .and(transaction.cancelYn.eq(cancelYn))
+                                .and(transaction.ownerStatus.notIn(ownerStatus)))
+                .fetch();
+
+        return result.stream().toList();
+    }
+
+
 }
 
