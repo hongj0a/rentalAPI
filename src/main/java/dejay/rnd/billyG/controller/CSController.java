@@ -251,7 +251,13 @@ public class CSController {
                     oto.add("images", imgArr);
                     oto.addProperty("regDate", ones.getCreateAt().getTime());
                     oto.addProperty("content", StringEscapeUtils.unescapeHtml4(ones.getContent()));
-                    oto.addProperty("answerContent", StringEscapeUtils.unescapeHtml4(ones.getAnswerContent()));
+                    
+                    // 답변완료일때만 답변보이기
+                    if (ones.getStatus().equals("2")) {
+                        oto.addProperty("answerContent", StringEscapeUtils.unescapeHtml4(ones.getAnswerContent()));
+                    } else {
+                        oto.addProperty("answerContent", "");
+                    }
 
                     faqArr.add(oto);
                 }
