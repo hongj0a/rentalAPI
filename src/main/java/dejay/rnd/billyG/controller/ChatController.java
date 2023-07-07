@@ -763,14 +763,27 @@ public class ChatController {
                 if (findChat.getToUser().getUserIdx() == findUser.getUserIdx()) {
                     //오너가 나가기 한 경우, 오너가 나가기 한 이 후로 채팅을 보여줘야 함
                     System.out.println("findChat = " + findChat.getToExitAt());
-                    chats = chatContentRepository.findByChatRoom_chatRoomIdxAndCreateAtGreaterThanEqualOrderByCreateAtDesc(findChat.getChatRoomIdx(), findChat.getToExitAt(), pageable);
-                    size = chatContentRepository.findByChatRoom_chatRoomIdxAndCreateAtGreaterThanEqual(findChat.getChatRoomIdx(), findChat.getToExitAt());
+
+                    if (findChat.getToExitAt() == null) {
+                        chats = chatContentRepository.findByChatRoom_chatRoomIdxOrderByCreateAtDesc(findChat.getChatRoomIdx(), pageable);
+                        size = chatContentRepository.findByChatRoom_chatRoomIdxOrderByCreateAtDesc(findChat.getChatRoomIdx());
+                    } else {
+                        chats = chatContentRepository.findByChatRoom_chatRoomIdxAndCreateAtGreaterThanEqualOrderByCreateAtDesc(findChat.getChatRoomIdx(), findChat.getToExitAt(), pageable);
+                        size = chatContentRepository.findByChatRoom_chatRoomIdxAndCreateAtGreaterThanEqual(findChat.getChatRoomIdx(), findChat.getToExitAt());
+                    }
 
                 } else if (findChat.getFromUser().getUserIdx() == findUser.getUserIdx()) {
                     //렌터가 나가기 한 경우, 렌터가 나가기 한 이 후로 채팅을 보여줘야 함
                     System.out.println("findChat.getFromExitAt() = " + findChat.getFromExitAt());
-                    chats = chatContentRepository.findByChatRoom_chatRoomIdxAndCreateAtGreaterThanEqualOrderByCreateAtDesc(findChat.getChatRoomIdx(), findChat.getFromExitAt(), pageable);
-                    size = chatContentRepository.findByChatRoom_chatRoomIdxAndCreateAtGreaterThanEqual(findChat.getChatRoomIdx(), findChat.getFromExitAt());
+
+                    if (findChat.getFromExitAt() == null) {
+                        chats = chatContentRepository.findByChatRoom_chatRoomIdxOrderByCreateAtDesc(findChat.getChatRoomIdx(), pageable);
+                        size = chatContentRepository.findByChatRoom_chatRoomIdxOrderByCreateAtDesc(findChat.getChatRoomIdx());
+                    } else {
+                        chats = chatContentRepository.findByChatRoom_chatRoomIdxAndCreateAtGreaterThanEqualOrderByCreateAtDesc(findChat.getChatRoomIdx(), findChat.getFromExitAt(), pageable);
+                        size = chatContentRepository.findByChatRoom_chatRoomIdxAndCreateAtGreaterThanEqual(findChat.getChatRoomIdx(), findChat.getFromExitAt());
+                    }
+
 
                 }
 
