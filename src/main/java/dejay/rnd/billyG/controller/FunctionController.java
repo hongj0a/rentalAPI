@@ -141,7 +141,8 @@ public class FunctionController {
 
         }
 
-
+        // 좋아요 총갯수 리턴
+        data.addProperty("likeCnt", findRental.getLikeCnt());
 
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
     }
