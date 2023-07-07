@@ -293,14 +293,16 @@ public class ChatController {
                     rentalService.updateRental(findRental);
                 }
 
-                history.setOwnerStatus(findTr.getOwnerStatus() + 10);
-                history.setRenterStatus(findTr.getRenterStatus() + 10);
-                history.setUpdateAt(FrontUtil.getNowDate());
-                history.setStatusAt(FrontUtil.getNowDate());
+                if (findTr.getOwnerStatus() < 70) {
+                    history.setOwnerStatus(findTr.getOwnerStatus() + 10);
+                    history.setRenterStatus(findTr.getRenterStatus() + 10);
+                    history.setUpdateAt(FrontUtil.getNowDate());
+                    history.setStatusAt(FrontUtil.getNowDate());
 
-                findTr.setOwnerStatus(findTr.getOwnerStatus() + 10);
-                findTr.setRenterStatus(findTr.getRenterStatus() + 10);
-                findTr.setStatusAt(FrontUtil.getNowDate());
+                    findTr.setOwnerStatus(findTr.getOwnerStatus() + 10);
+                    findTr.setRenterStatus(findTr.getRenterStatus() + 10);
+                    findTr.setStatusAt(FrontUtil.getNowDate());
+                }
 
                 if (findTr.getOwnerStatus() == 30 ) {
 
