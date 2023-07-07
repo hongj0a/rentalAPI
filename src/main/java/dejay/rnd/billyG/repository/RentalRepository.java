@@ -37,4 +37,8 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     List<Rental> findByUser_userIdxAndActiveYnAndDeleteYnAndStatusIn(Long user_idx, boolean active_yn, boolean delete_yn, ArrayList<Integer> status);
     Page<Rental> findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotInOrderByCreateAtDesc(Long user_idx, boolean active_yn, boolean delete_yn, int[] status, Pageable pageable);
     List<Rental> findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotIn(Long user_idx, boolean active_yn, boolean delete_yn, int[] status);
+
+
+    Page<Rental> findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotInAndRentalIdxNotOrderByCreateAtDesc(Long user_idx, boolean active_yn, boolean delete_yn, int[] status, Long rentalIdx, Pageable pageable);
+    List<Rental> findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotInAndRentalIdxNot(Long user_idx, boolean active_yn, boolean delete_yn, int[] status, Long rentalIdx);
 }

@@ -501,8 +501,8 @@ public class MainController {
 
         Rental findRental = rentalRepository.getOne(rentalIdx);
 
-        Page<Rental> etcRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotInOrderByCreateAtDesc(findRental.getUser().getUserIdx(), true, false, new int[]{4}, pageable);
-        List<Rental> etc = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotIn(findRental.getUser().getUserIdx(), true, false, new int[]{4});
+        Page<Rental> etcRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotInAndRentalIdxNotOrderByCreateAtDesc(findRental.getUser().getUserIdx(), true, false, new int[]{4}, rentalIdx, pageable);
+        List<Rental> etc = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotInAndRentalIdxNot(findRental.getUser().getUserIdx(), true, false, new int[]{4}, rentalIdx);
 
         etcRentals.forEach(
                 etcs -> {
