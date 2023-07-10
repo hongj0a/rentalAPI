@@ -150,10 +150,6 @@ public class ChatController {
                     findRoom.setLastChatMessage(contentDto.getMessage());
                     findRoom.setUpdator(findUser.getEmail());
                     findRoom.setReadYn(false);
-
-                    if (findRoom.getToUser().getUserIdx() == findUser.getUserIdx()) {
-                        findRoom.setReadYn(true);
-                    }
                     findRoom.setUpdateAt(FrontUtil.getNowDate());
 
                     if (findRoom.getVisibleTo() != 0) {
@@ -629,11 +625,13 @@ public class ChatController {
                     }
 
                     rms.addProperty("lastMessage", rm.getLastChatMessage());
-                    if (rm.getUpdator().equals(findUser.getEmail())) {
+                    if (rm.getUpdator().equals(findUser.getEmail()) || rm.isReadYn() == true) {
                         rms.addProperty("readYn", true);
-                    } else if (!rm.getUpdator().equals(findUser.getEmail()) && rm.isReadYn() == true){
+                    }
+                    /*else if (!rm.getUpdator().equals(findUser.getEmail()) && rm.isReadYn() == true){
                         rms.addProperty("readYn", true);
-                    } else {
+                    } */
+                    else {
                         rms.addProperty("readYn", false);
                     }
                     List<RentalImage> img = rentalImageRepository.findByRental_rentalIdx(rm.getRental().getRentalIdx());
@@ -704,12 +702,18 @@ public class ChatController {
     @PostMapping("/delChatRoom")
     public ResponseEntity<JsonObject> delChatRoom(@RequestBody ChatRoomDto chatRoomDto, HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
+        String acToken = req.getHeader("Authorization").substring(7);
+        User findUser = userMining.getUserInfo(acToken);
 
         ChatRoom findChat = chatRepository.findByChatRoomIdx(chatRoomDto.getChatRoomIdx());
 
         if (findChat != null) {
             if (findChat.getLastChatMessage() == null) {
                 chatRepository.delete(findChat);
+            }
+            if (findChat.getToUser().getUserIdx() == findUser.getUserIdx()) {
+                findChat.setReadYn(true);
+                chatRepository.save(findChat);
             }
         }
 
