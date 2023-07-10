@@ -738,9 +738,9 @@ public class ChatController {
 
         if (findChat != null) {
             System.out.println("1 step");
-            if (readFlag == 1) {
+//            if (readFlag == 1) {
                 findChat.setReadYn(true);
-            }
+//            }
             if (findChat.isFirstYn() == true && (findChat.getRental().getUser().getUserIdx() == findUser.getUserIdx())) {
                 data.addProperty("ownerFirstYn", findChat.isFirstYn());
 
