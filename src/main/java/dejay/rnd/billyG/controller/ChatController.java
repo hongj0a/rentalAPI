@@ -149,11 +149,7 @@ public class ChatController {
 
                     findRoom.setLastChatMessage(contentDto.getMessage());
                     findRoom.setUpdator(findUser.getEmail());
-                    if (findRoom.getToUser().getUserIdx() == findUser.getUserIdx()) {
-                        findRoom.setReadYn(true);
-                    } else {
-                        findRoom.setReadYn(false);
-                    }
+                    findRoom.setReadYn(true);
                     findRoom.setUpdateAt(FrontUtil.getNowDate());
 
                     if (findRoom.getVisibleTo() != 0) {
@@ -632,7 +628,7 @@ public class ChatController {
                     if (rm.getUpdator().equals(findUser.getEmail())) {
                         rms.addProperty("readYn", true);
                     } else {
-                        rms.addProperty("readYn", rm.isReadYn());
+                        rms.addProperty("readYn", false);
                     }
                     List<RentalImage> img = rentalImageRepository.findByRental_rentalIdx(rm.getRental().getRentalIdx());
                     rms.addProperty("rentalIdx", rm.getRental().getRentalIdx());
@@ -742,9 +738,9 @@ public class ChatController {
 
         if (findChat != null) {
             System.out.println("1 step");
-//            if (readFlag == 1) {
+            if (readFlag == 1) {
                 findChat.setReadYn(true);
-//            }
+            }
             if (findChat.isFirstYn() == true && (findChat.getRental().getUser().getUserIdx() == findUser.getUserIdx())) {
                 data.addProperty("ownerFirstYn", findChat.isFirstYn());
 
