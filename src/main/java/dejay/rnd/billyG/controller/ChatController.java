@@ -631,7 +631,7 @@ public class ChatController {
                     /*else if (!rm.getUpdator().equals(findUser.getEmail()) && rm.isReadYn() == true){
                         rms.addProperty("readYn", true);
                     } */
-                    else {
+                    else if (rm.isReadYn() == false){
                         rms.addProperty("readYn", false);
                     }
                     List<RentalImage> img = rentalImageRepository.findByRental_rentalIdx(rm.getRental().getRentalIdx());
@@ -711,10 +711,8 @@ public class ChatController {
             if (findChat.getLastChatMessage() == null) {
                 chatRepository.delete(findChat);
             }
-            if (findChat.getToUser().getUserIdx() == findUser.getUserIdx()) {
-                findChat.setReadYn(true);
-                chatRepository.save(findChat);
-            }
+            findChat.setReadYn(true);
+            chatRepository.save(findChat);
         }
 
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
