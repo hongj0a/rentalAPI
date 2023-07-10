@@ -291,10 +291,22 @@ public class UserController {
         String acToken = req.getHeader("Authorization").substring(7);
         User otherUser = userMining.getUserInfo(acToken);
 
-        System.out.println("userIdx = " + userIdx);
         if (userIdx != 0 && userIdx != otherUser.getUserIdx()) {
+            ToBlock findBlockInfo = toBlockRepository.findByUser_userIdxAndBlockUser_userIdxAndDeleteYn(otherUser.getUserIdx(), userIdx, false);
+
+            if (findBlockInfo == null) {
+                //block 정보 없음 block 가능
+                data.addProperty("blockYn", true);
+            } else {
+                //block 정보 있음 block 불가능
+                data.addProperty("blockYn", false);
+            }
+
             otherUser = userRepository.getOne(userIdx);
+
             data.addProperty("isMine", false);
+
+
         } else if (userIdx == 0 || userIdx == otherUser.getUserIdx()) {
             data.addProperty("isMine", true);
         }
@@ -386,7 +398,6 @@ public class UserController {
             otherUser = userRepository.getOne(loginUser.getUserIdx());
         }
 
-        System.out.println("otherUser.getUserIdx() = " + otherUser.getUserIdx());
         if (type == 1) {
             //렌탈중인 게시글
             Page<Rental> etcRentals = rentalRepository.findByUser_userIdxAndActiveYnAndDeleteYnAndStatusNotInOrderByCreateAtDesc(otherUser.getUserIdx(), true, false, new int[]{4}, pageable);
@@ -787,62 +798,78 @@ public class UserController {
         Page<Likes> likes = likeRepository.findByUser_userIdxAndDeleteYnAndRental_statusNotInOrderByRental_PullUpAtDesc(findUser.getUserIdx(), false, new int[]{4}, pageable);
         List<Likes> likeSize = likeRepository.findByUser_userIdxAndDeleteYnAndRental_statusNotIn(findUser.getUserIdx(), false, new int[]{4} );
 
+        List<ToBlock> findBlock = toBlockRepository.findByUser_userIdxAndDeleteYn(findUser.getUserIdx(), false);
+
+        ArrayList<Long> blocks = new ArrayList<>();
+        for (int i = 0; i < findBlock.size(); i++) {
+            blocks.add(findBlock.get(i).getBlockUser().getUserIdx());
+        }
+        ArrayList<Long> sizes = new ArrayList<>();
+        for (int j = 0; j < likeSize.size(); j++) {
+            if (!blocks.contains(likeSize.get(j).getRental().getUser().getUserIdx())) {
+                sizes.add(likeSize.get(j).getLikeIdx());
+            }
+        }
+
         likes.forEach(
                 li -> {
-                    JsonObject my = new JsonObject();
-                    boolean rentalStatus;
+                    if (!blocks.contains(li.getRental().getUser().getUserIdx())) {
+                        JsonObject my = new JsonObject();
+                        boolean rentalStatus;
 
-                    my.addProperty("rentalSeq", li.getRental().getRentalIdx());
-                    my.addProperty("title", li.getRental().getTitle());
-                    my.addProperty("userNickName", li.getRental().getUser().getNickName());
+                        my.addProperty("rentalSeq", li.getRental().getRentalIdx());
+                        my.addProperty("title", li.getRental().getTitle());
+                        my.addProperty("userNickName", li.getRental().getUser().getNickName());
 
 
-                    List<RentalImage> images = rentalImageRepository.findByRental_rentalIdx(li.getRental().getRentalIdx());
-                    if (images.size() != 0) {
-                        my.addProperty("imageSeq", images.get(0).getImageIdx());
-                        my.addProperty("imageUrl", images.get(0).getImageUrl());
+                        List<RentalImage> images = rentalImageRepository.findByRental_rentalIdx(li.getRental().getRentalIdx());
+                        if (images.size() != 0) {
+                            my.addProperty("imageSeq", images.get(0).getImageIdx());
+                            my.addProperty("imageUrl", images.get(0).getImageUrl());
+                        }
+
+                        if (li.getRental().getStatus() == 1) {
+                            rentalStatus = true;
+                        } else {
+                            rentalStatus = false;
+                        }
+
+                        my.addProperty("dailyRentalFee", li.getRental().getRentalPrice());
+                        my.addProperty("regDate", li.getRental().getPullUpAt().getTime());
+                        my.addProperty("status", rentalStatus);
+
+                        //town 리스트 추출
+                        List<String> tLst = new ArrayList<>();
+                        if (null != li.getRental().getLeadTown()) {
+                            Town Ltown = townRepository.getOne(li.getRental().getLeadTown());
+                            tLst.add(Ltown.getTownName());
+                        }
+                        if (null != li.getRental().getTown1()) {
+                            Town town1 = townRepository.getOne(li.getRental().getTown1());
+                            tLst.add(town1.getTownName());
+                        }
+                        if (null != li.getRental().getTown2()) {
+                            Town town2 = townRepository.getOne(li.getRental().getTown2());
+                            tLst.add(town2.getTownName());
+                        }
+                        if (null != li.getRental().getTown3()) {
+                            Town town3 = townRepository.getOne(li.getRental().getTown3());
+                            tLst.add(town3.getTownName());
+                        }
+                        if (null != li.getRental().getTown4()) {
+                            Town town4 = townRepository.getOne(li.getRental().getTown4());
+                            tLst.add(town4.getTownName());
+                        }
+                        my.add("towns", gson.toJsonTree(tLst));
+
+                        myArr.add(my);
                     }
 
-                    if (li.getRental().getStatus() == 1) {
-                        rentalStatus = true;
-                    } else {
-                        rentalStatus = false;
-                    }
-
-                    my.addProperty("dailyRentalFee", li.getRental().getRentalPrice());
-                    my.addProperty("regDate", li.getRental().getPullUpAt().getTime());
-                    my.addProperty("status", rentalStatus);
-
-                    //town 리스트 추출
-                    List<String> tLst = new ArrayList<>();
-                    if (null != li.getRental().getLeadTown()) {
-                        Town Ltown = townRepository.getOne(li.getRental().getLeadTown());
-                        tLst.add(Ltown.getTownName());
-                    }
-                    if (null != li.getRental().getTown1()) {
-                        Town town1 = townRepository.getOne(li.getRental().getTown1());
-                        tLst.add(town1.getTownName());
-                    }
-                    if (null != li.getRental().getTown2()) {
-                        Town town2 = townRepository.getOne(li.getRental().getTown2());
-                        tLst.add(town2.getTownName());
-                    }
-                    if (null != li.getRental().getTown3()) {
-                        Town town3 = townRepository.getOne(li.getRental().getTown3());
-                        tLst.add(town3.getTownName());
-                    }
-                    if (null != li.getRental().getTown4()) {
-                        Town town4 = townRepository.getOne(li.getRental().getTown4());
-                        tLst.add(town4.getTownName());
-                    }
-                    my.add("towns", gson.toJsonTree(tLst));
-
-                    myArr.add(my);
                 }
         );
 
         data.add("myLikes", myArr);
-        data.addProperty("totalCount", likeSize.size());
+        data.addProperty("totalCount", sizes.size());
         return new ResponseEntity<>(RestApiRes.data(apiRes), new HttpHeaders(), apiRes.getHttpStatus());
 
     }
@@ -963,7 +990,6 @@ public class UserController {
         }
 
         if (images.size() != 0 && images != null) {
-
             for (int i = 0; i < images.size(); i++) {
                 if (!StringUtils.isEmpty(images.get(i).getOriginalFilename())) {
                     ReviewImage reviewImage = new ReviewImage();
