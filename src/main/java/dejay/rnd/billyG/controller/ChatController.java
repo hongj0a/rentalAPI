@@ -149,7 +149,11 @@ public class ChatController {
 
                     findRoom.setLastChatMessage(contentDto.getMessage());
                     findRoom.setUpdator(findUser.getEmail());
-                    findRoom.setReadYn(false);
+                    if (findRoom.getToUser().getUserIdx() == findUser.getUserIdx()) {
+                        findRoom.setReadYn(true);
+                    } else {
+                        findRoom.setReadYn(false);
+                    }
                     findRoom.setUpdateAt(FrontUtil.getNowDate());
 
                     if (findRoom.getVisibleTo() != 0) {
