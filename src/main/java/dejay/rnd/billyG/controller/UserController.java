@@ -110,7 +110,7 @@ public class UserController {
 
     @PostMapping("/editProfile")
     public ResponseEntity<JsonObject> editProfile(@RequestPart(value="image", required = false) MultipartFile multipartFile,
-            @RequestParam(value="nickName", required = false) String nickName,
+                                                  @RequestParam(value="nickName", required = false) String nickName,
                                                   HttpServletRequest req) throws ParseException, IOException {
         JsonObject data = new JsonObject();
 
@@ -201,7 +201,7 @@ public class UserController {
 
     @GetMapping("/doubleCheck")
     public ResponseEntity<JsonObject> doubleCheck(@RequestParam (value = "nickName") String nickName,
-                                                      HttpServletRequest req) throws AppException {
+                                                  HttpServletRequest req) throws AppException {
         JsonObject data = new JsonObject();
 
         //List<User> findUser = userService.findByNickName(nickName);
@@ -283,10 +283,10 @@ public class UserController {
 
     @GetMapping("/getUserDetailPage")
     public ResponseEntity<JsonObject> getUserDetailPage(@RequestParam (value = "userIdx") Long userIdx,
-                                                             HttpServletRequest req) throws AppException, ParseException {
+                                                        HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray townArr = new JsonArray();
-       // User otherUser;
+        // User otherUser;
 
         String acToken = req.getHeader("Authorization").substring(7);
         User otherUser = userMining.getUserInfo(acToken);
@@ -380,9 +380,9 @@ public class UserController {
 
     @GetMapping("/getOtherUserDetailPageList")
     public ResponseEntity<JsonObject> getOtherUserDetailPageList(@RequestParam (value = "userIdx") Long userIdx,
-                                                            @RequestParam (value = "type") int type,
-                                                            Pageable pageable,
-                                                            HttpServletRequest req) throws AppException, ParseException {
+                                                                 @RequestParam (value = "type") int type,
+                                                                 Pageable pageable,
+                                                                 HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray renArr = new JsonArray();
         JsonArray reviewArr = new JsonArray();
@@ -502,7 +502,7 @@ public class UserController {
 
     @GetMapping("/getReview")
     public ResponseEntity<JsonObject> getReview(@RequestParam (value = "reviewIdx") Long reviewIdx,
-                                                 HttpServletRequest req) throws AppException, ParseException {
+                                                HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray rvImg = new JsonArray();
 
@@ -558,7 +558,7 @@ public class UserController {
 
     @GetMapping("/emailCheck")
     public ResponseEntity<JsonObject> emailCheck(@RequestParam (value = "email") String email,
-                                                  HttpServletRequest req) throws AppException {
+                                                 HttpServletRequest req) throws AppException {
         JsonObject data = new JsonObject();
 
         User findUser = userRepository.findByEmailOrIdEmail(email, email);
@@ -591,7 +591,7 @@ public class UserController {
 
     @PostMapping("/setEmail")
     public ResponseEntity<JsonObject> setEmail(@RequestBody UserDto userDto,
-                                                  HttpServletRequest req) throws ParseException {
+                                               HttpServletRequest req) throws ParseException {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
@@ -608,7 +608,7 @@ public class UserController {
 
     @PostMapping("/setDoNotDisturb")
     public ResponseEntity<JsonObject> setDoNotDisturb(@RequestBody AlarmDto alarmDto,
-                                               HttpServletRequest req) throws ParseException {
+                                                      HttpServletRequest req) throws ParseException {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
@@ -726,7 +726,7 @@ public class UserController {
         List<Transaction> tranSize;
 
         if (rentalFlag == 0) {
-        //rental received
+            //rental received
             if (rentalStatus.length == 0) {
                 //전체는 0으로
                 transactions = transactionRepository.findByUser_userIdxAndCancelYnOrderByCreateAtDesc(findUser.getUserIdx(), false, pageable);
@@ -1045,16 +1045,13 @@ public class UserController {
 
         String acToken = req.getHeader("Authorization").substring(7);
         User findUser = userMining.getUserInfo(acToken);
-        
+
         Review findReview = reviewRepository.getOne(reviewDto.getReviewIdx());
         Transaction transaction = transactionRepository.getOne(findReview.getTransaction().getTransactionIdx());
-        
+
         findReview.setDeleteYn(true);
         findReview.setUpdator(findUser.getEmail());
         reviewService.deleteReview(findReview);
-
-        UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
-        if (userCount.getGiveReviewCnt()>0) userCount.setGiveReviewCnt(userCount.getGiveReviewCnt()-1);
 
         List<ReviewImage> imgs = reviewImageRepository.findByReview_ReviewIdx(findReview.getReviewIdx());
         for (int i = 0; i < imgs.size(); i++) {
@@ -1073,8 +1070,7 @@ public class UserController {
         for (int i = 0; i < reviews.size(); i++) {
             total += reviews.get(i).getReviewScore();
         }
-        if (reviews.size()==0) avg = 0;
-        else avg = total / reviews.size();
+        avg = total / reviews.size();
         starPoint = String.format("%.1f", avg);
 
         User starUser = userRepository.getOne(transaction.getRental().getUser().getUserIdx());
@@ -1157,7 +1153,7 @@ public class UserController {
 
     @GetMapping("/getMyArbitrationList")
     public ResponseEntity<JsonObject> getMyArbitrationList(Pageable pageable,
-                                                 HttpServletRequest req) throws AppException, ParseException {
+                                                           HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray amArr = new JsonArray();
         String acToken = req.getHeader("Authorization").substring(7);
@@ -1209,8 +1205,8 @@ public class UserController {
 
     @GetMapping("/getMyArbitration")
     public ResponseEntity<JsonObject> getMyArbitration(@RequestParam(value="amIdx") Long amIdx,
-                                                @RequestParam(value = "transactionIdx") Long transactionIdx,
-                                                HttpServletRequest req) throws AppException, ParseException {
+                                                       @RequestParam(value = "transactionIdx") Long transactionIdx,
+                                                       HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         JsonArray imageArr = new JsonArray();
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
@@ -1266,7 +1262,7 @@ public class UserController {
 
     @PostMapping("/delArbitration")
     public ResponseEntity<JsonObject> delArbitration(HttpServletRequest req,
-                                                   @RequestBody ArbitrationDto rmDto) throws ParseException {
+                                                     @RequestBody ArbitrationDto rmDto) throws ParseException {
         JsonObject data = new JsonObject();
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
@@ -1296,7 +1292,7 @@ public class UserController {
     }
     @GetMapping("/getArbitration")
     public ResponseEntity<JsonObject> getArbitration(@RequestParam(value = "transactionIdx") Long transactionIdx,
-                                                       HttpServletRequest req) throws AppException, ParseException {
+                                                     HttpServletRequest req) throws AppException, ParseException {
         JsonObject data = new JsonObject();
         RestApiRes<JsonObject> apiRes = new RestApiRes<>(data, req);
 
@@ -1323,9 +1319,9 @@ public class UserController {
     @Transactional(rollbackFor = Exception.class)
     @PostMapping(value = "/setArbitration", consumes = {"multipart/form-data"})
     public ResponseEntity<JsonObject> setArbitration(@RequestParam (value = "images", required = false) List<MultipartFile> images,
-                                                @RequestParam (value = "content") String content,
-                                                @RequestParam (value = "transactionIdx") Long transactionIdx,
-                                                HttpServletRequest req) throws AppException, ParseException, IOException {
+                                                     @RequestParam (value = "content") String content,
+                                                     @RequestParam (value = "transactionIdx") Long transactionIdx,
+                                                     HttpServletRequest req) throws AppException, ParseException, IOException {
         JsonObject data = new JsonObject();
 
         String acToken = req.getHeader("Authorization").substring(7);
@@ -1418,6 +1414,9 @@ public class UserController {
 
         List<ToBlock> total = toBlockRepository.findByUser_userIdxAndDeleteYn(findUser.getUserIdx(), false);
         Page<ToBlock> blocks = toBlockRepository.findByUser_userIdxAndDeleteYnOrderByCreateAtDesc(findUser.getUserIdx(), false, pageable);
+
+        System.out.println("findUser.getNickName() = " + findUser.getNickName());
+        System.out.println("total.get(0).getUser().getNickName() = " + total.get(0).getUser().getNickName());
 
         blocks.forEach(
                 block -> {
