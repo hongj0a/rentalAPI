@@ -1070,7 +1070,8 @@ public class UserController {
         for (int i = 0; i < reviews.size(); i++) {
             total += reviews.get(i).getReviewScore();
         }
-        avg = total / reviews.size();
+        if (reviews.size()==0) avg = 0;
+        else avg = total / reviews.size();
         starPoint = String.format("%.1f", avg);
 
         User starUser = userRepository.getOne(transaction.getRental().getUser().getUserIdx());
