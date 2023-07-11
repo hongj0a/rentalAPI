@@ -1053,6 +1053,9 @@ public class UserController {
         findReview.setUpdator(findUser.getEmail());
         reviewService.deleteReview(findReview);
 
+        UserCount userCount = userCountRepository.findByUser_UserIdx(findUser.getUserIdx());
+        if (userCount.getGiveReviewCnt()>0) userCount.setGiveReviewCnt(userCount.getGiveReviewCnt()-1);
+
         List<ReviewImage> imgs = reviewImageRepository.findByReview_ReviewIdx(findReview.getReviewIdx());
         for (int i = 0; i < imgs.size(); i++) {
 
