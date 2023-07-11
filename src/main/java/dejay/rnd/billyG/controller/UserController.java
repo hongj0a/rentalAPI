@@ -1416,12 +1416,12 @@ public class UserController {
         Page<ToBlock> blocks = toBlockRepository.findByUser_userIdxAndDeleteYnOrderByCreateAtDesc(findUser.getUserIdx(), false, pageable);
 
         System.out.println("findUser.getNickName() = " + findUser.getNickName());
-        System.out.println("total.get(0).getUser().getNickName() = " + total.get(0).getUser().getNickName());
+
 
         blocks.forEach(
                 block -> {
                     JsonObject bl = new JsonObject();
-
+                    System.out.println("total.get(0).getUser().getNickName() = " + block.getBlockUser().getNickName());
                     bl.addProperty("toBlockIdx", block.getToBlockIdx());
                     bl.addProperty("toBlockUserIdx", block.getBlockUser().getUserIdx());
                     bl.addProperty("toBlockUserNickName", block.getBlockUser().getNickName());
