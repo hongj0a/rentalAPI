@@ -45,7 +45,7 @@ dependencies {
 
 	// === QueryDsl 시작 ===
 
-	// == 스프링 부트 3.0 이상 ==
+	// == 스프링 부트 3.0 이상 ==©
 	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
 	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
 

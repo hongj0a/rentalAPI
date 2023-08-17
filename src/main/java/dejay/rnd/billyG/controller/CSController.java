@@ -4,7 +4,6 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dejay.rnd.billyG.api.RestApiRes;
-import dejay.rnd.billyG.config.ImageProperties;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.dto.InquiryDto;
 
@@ -14,6 +13,7 @@ import java.io.IOException;
 import dejay.rnd.billyG.except.AppException;
 import dejay.rnd.billyG.repository.*;
 import dejay.rnd.billyG.model.ImageFile;
+import dejay.rnd.billyG.repositoryImpl.UserRepositories;
 import dejay.rnd.billyG.service.FileUploadService;
 import dejay.rnd.billyG.service.OneToOneInquiryService;
 import dejay.rnd.billyG.util.FrontUtil;
@@ -33,7 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,13 +50,14 @@ public class CSController {
     private final InquiryImageRepository inquiryImageRepository;
     private final TermsRepository termsRepository;
     private final UserMining userMining;
+    private final UserRepositories userRepositories;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
     private final AmazonS3Client amazonS3Client;
 
-    public CSController( NoticeRepository noticeRepository, CategoryRepository categoryRepository, FaqRepository faqRepository, OneToOneInquiryRepository oneToOneInquiryRepository, UserRepository userRepository, OneToOneInquiryService oneToOneInquiryService, FileUploadService uploadService, InquiryImageRepository inquiryImageRepository, TermsRepository termsRepository, UserMining userMining, AmazonS3Client amazonS3Client) {
+    public CSController(NoticeRepository noticeRepository, CategoryRepository categoryRepository, FaqRepository faqRepository, OneToOneInquiryRepository oneToOneInquiryRepository, UserRepository userRepository, OneToOneInquiryService oneToOneInquiryService, FileUploadService uploadService, InquiryImageRepository inquiryImageRepository, TermsRepository termsRepository, UserMining userMining, UserRepositories userRepositories, AmazonS3Client amazonS3Client) {
         this.noticeRepository = noticeRepository;
         this.categoryRepository = categoryRepository;
         this.faqRepository = faqRepository;
@@ -66,6 +66,7 @@ public class CSController {
         this.oneToOneInquiryService = oneToOneInquiryService;
         this.uploadService = uploadService;
         this.inquiryImageRepository = inquiryImageRepository;
+        this.userRepositories = userRepositories;
         this.amazonS3Client = amazonS3Client;
         this.termsRepository = termsRepository;
         this.userMining = userMining;
@@ -117,6 +118,9 @@ public class CSController {
         JsonObject data = new JsonObject();
         JsonArray faqArr = new JsonArray();
 
+        List<User> lists = userRepositories.findByAllUsers();
+
+        System.out.println("#####################");
         List<Category> list = categoryRepository.findAllByCategoryTypeAndOrderNumNotInOrderByOrderNum(csType, new int[]{9999});
 
         list.forEach(

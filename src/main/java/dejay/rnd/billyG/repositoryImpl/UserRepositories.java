@@ -20,6 +20,15 @@ public class UserRepositories {
     private final EntityManager em;
     private final JPAQueryFactory queryFactory;
 
+
+
+
+    public List<User> findByAllUsers() {
+        String jpql = "select u from User as u where u.name = 'hong'";
+        return em.createQuery(jpql, User.class).getResultList();
+    }
+
+
     public List<User> findById(String email) {
         return em.createQuery("select u from User u where u.email = :email", User.class)
                 .setParameter("email", email)

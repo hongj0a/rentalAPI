@@ -3,13 +3,17 @@ package dejay.rnd.billyG.repositoryImpl;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPADeleteClause;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.jpa.impl.JPAUpdateClause;
 import dejay.rnd.billyG.domain.*;
 import dejay.rnd.billyG.repository.RentalRepository;
 import dejay.rnd.billyG.repository.RentalRepositoryCustom;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.query.criteria.JpaSubQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +33,8 @@ public class RentalRepositories implements RentalRepositoryCustom {
     private final RentalRepository rentalRepository;
 
     @Override
-    public Page<Rental> findAll(ArrayList<Integer> status, Integer filter, String title, Long[] towns, Long[] categories, Pageable pageable){
+    public Page<Rental> findAll(ArrayList<Integer> status, Integer filter, String title, Long[] towns,
+                                Long[] categories, Pageable pageable){
         QRental rental = QRental.rental;
         QRentalCategoryInfo rentalCategoryInfo = QRentalCategoryInfo.rentalCategoryInfo;
 
@@ -56,7 +61,8 @@ public class RentalRepositories implements RentalRepositoryCustom {
                             .and(builder)
                             .and(rental.activeYn.eq(true))
                             .and(rental.deleteYn.eq(false))
-                            .and(rental.user.status.notIn(30)))
+                            .and(rental.user.status.notIn(30))
+                    )
                     .orderBy(rental.viewCnt.desc())
                     .offset(pageable.getOffset())
                     .limit(pageable.getPageSize())
@@ -103,6 +109,7 @@ public class RentalRepositories implements RentalRepositoryCustom {
                     .or(rental.town3.in(towns))
                     .or(rental.town4.in(towns));
         }
+
         //0 처리..
         List<Rental> totalInfo = queryFactory.select(rental).distinct().from(rental)
                 .join(rental.rentalCategoryInfos, rentalCategoryInfo)
